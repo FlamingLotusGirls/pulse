@@ -14,3 +14,8 @@ Still to do:<br>
 * LEDs. Lighting for pulse pods<br>
 * Mobile Interactive. Code for whatever games on mobile interactive unit<br>
 * Geek console. UI, controls for the geeks back at the geek table.<br>
+
+* Pod_daemon    A daemon run at startup that coordinates the heartbeat sensor (BPM), POD LED's, and audio
+* MIU_daemon    A daemon run at startup that communicates with two heartbeat sensors (BPM), triggers LED fx, and sends out UDP packets
+* Heart_daemon  A daemon run at startup that listens to udp packets from two PODs and the MIU sensors
+
