@@ -161,10 +161,10 @@ static void pulseAudioListen()
         // wait for timeout, or event on a socket...
         rv = select(nfds, &read_fds, NULL, &except_fds, &timeout);
         
-        printf("After select, rv is %d\n", rv);
+//        printf("After select, rv is %d\n", rv);
         
         if (rv == 0) {
-            printf("listen timeout... all is well...\n");
+            printf("listen timeout... all is well...\n");  // leaving this in because Dave likes it
             continue; // timeout, nothing to do.
         }
         

@@ -26,7 +26,7 @@ static LinkedList *hbSoundList = NULL;
 
 
 // WAV parsing
-static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen);
+static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen, int *pcmDataLen);
 static void mungeWAVHeader(WAV_Header *header);
 
 
@@ -155,13 +155,15 @@ int PcmConfig_Read()
                     goto hb_sounds_iterate;
                 }
                 
-                unsigned char *pcmData = extractPCMFromWAV((unsigned char *)filedata, filesize);
+                int dataLen = 0;
+                unsigned char *pcmData = extractPCMFromWAV((unsigned char *)filedata, filesize, &dataLen);
                 if (!pcmData) {
                     printf("Could not extract PCM data from file %s\n", sound->filename);
                     goto hb_sounds_iterate;
                 }
                 
                 sound->data = (unsigned char *)pcmData;
+                sound->datalen = dataLen;
 hb_sounds_iterate:
                 if (filedata) {
                     free(filedata);
@@ -185,10 +187,10 @@ HbData* PcmConfig_getHbSound(int freqBPM)
 {
     LinkedList *entry = hbSoundList;
     HbData *bestSound = NULL;
-    printf("Looking for a sound with frequency %d\n", freqBPM);
+//    printf("Looking for a sound with frequency %d\n", freqBPM);
     while (entry) {
         HbData *sound = (HbData *)(entry->data);
-        printf("Sound start freqstart is %d, end is %d\n", sound->validFreqStart, sound->validFreqEnd);
+//        printf("Sound start freqstart is %d, end is %d\n", sound->validFreqStart, sound->validFreqEnd);
         if (sound && sound->validFreqStart <= freqBPM && sound->validFreqEnd >= freqBPM) {
             bestSound = sound;
         }
@@ -202,7 +204,7 @@ static char WAVE[4] = {'W', 'A', 'V', 'E'};
 static char FMT_[4] = {'f', 'm', 't', ' '};
 static char DATA[4] = {'d', 'a', 't', 'a'};
  
-static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen)
+static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen, int *pcmDataLen)
 {
     if (datalen <= sizeof(WAV_Header)) {
         printf("Invalid WAV file, cannot parse\n");
@@ -293,6 +295,10 @@ static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen)
     }
 
     memcpy(pcmData, wavData + headerSize + 8, dataSize);
+    
+    if (pcmDataLen) {
+        *pcmDataLen = dataSize;
+    }
     return pcmData;
 }
 
