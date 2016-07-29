@@ -10,7 +10,8 @@
 LIB=-L/usr/lib -l GoIO
 INC=-I. -I/usr/include/GoIO
 CCP=g++
-CC=gcc
+#CC=gcc
+CC=g++
 
 PulsePolarBPM: PulsePolarBPM.o BPMannounce.o
 	$(CCP) -o PulsePolarBPM PulsePolarBPM.o BPMannounce.o $(LIB)
