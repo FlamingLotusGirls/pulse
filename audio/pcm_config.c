@@ -280,7 +280,7 @@ static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen, int
         return NULL;
     }
     uint32_t dataSize = *(uint32_t *)(data_block + 4);
-    //dataSize = htonl(dataSize);
+    //dataSize = ~htonl(dataSize);
     if ((data_block - wavData) + 8 + dataSize > datalen) {
         printf("Invalid file - data is %d, but only %d bytes\n", dataSize, datalen - headerSize - 9);
         return NULL;
