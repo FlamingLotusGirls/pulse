@@ -249,21 +249,31 @@ ProcessNextMeasurement(double val)
 }
 
 void
-Usage() {
+Help() {
 	fprintf(stderr, "PulsePolarBPM -v -iPODID\n"
 		" -v for verbose output\n"
-		" -iPODID  where PODID is a small number indicating this pod\n\n");
-	exit(1);
+		" -iPODID  where PODID is a small number indicating this pod\n\n"
+		" -aIPADDR  where IPADDR is an IPv4 dotted quad\n\n"
+		" -pPORT where PORT is the port number\n\n");
 }
 
 void
-GetOpts(int argc, char* argv[], uint8_t* pod_id)
+Usage() { Help(); exit(1); }
+
+void
+GetOpts(int argc, char* argv[], uint8_t* pod_id, char** ip, short* port)
 {
 	int i;
 	for (i = 1; i < argc; i++) {
 
 		if (argv[i][0]=='-') {
 			switch(argv[i][1]) {
+			case 'h': Help();
+			break;
+			case 'a': *ip = argv[i]+2;
+			break;
+			case 'p': *port = atoi(argv[i]+2);
+			break;
 			case 'i': *pod_id = atoi(argv[i]+2);
 			break;
 			case 'v': verbose++;
@@ -294,14 +304,13 @@ int main(int argc, char* argv[])
 	gtype_int32 numMeasurements,i;
 
 	uint8_t pod_id = 1;
+	char* ip = (char*)"192.168.1.255"; // default.
+	short port = 1234;
 
-	GetOpts(argc, argv, &pod_id);
+	GetOpts(argc, argv, &pod_id, &ip, &port);
 
 	printf("GoIO_DeviceCheck version 1.1\n");
-	
 
-	char* ip = (char*)"192.168.1.100";
-	short port = 1234;
 	uint8_t sequence = 0; // packet sequence number
 	int sock;
 	struct sockaddr_in si_tobrain;
