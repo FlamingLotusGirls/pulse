@@ -2,26 +2,28 @@
 #
 # This script is meant to be the startup for a MIU raspberry pi.
 #
-# It will start the POD LED driver,
-# sounds module, and the attached BPM monitor.
+# It will start two instances of the interface for the BPM monitor.
+# Also control LED's for backpack.
 #
-# Assumptions: This script lives 
+# Assumptions: NONE use global paths.
 #
 
-echo starting POD PI on `hostname`
+echo starting MIU PI on `hostname`
 
 HOME=/home/flaming
-BPMMON=$HOME/BPM/PulsePolarBPM
+BPMMON=$HOME/pulse/BPM/PulsePolarBPM
 
 PODID=`cat /etc/pod.id`
+IP=192.168.1.255
+PORT=5000
 
 # TODO - figure out how to pick different BPM monitors.
 
 # start 1st BPM monitor.
-$BPMMON -i $PODID
+$BPMMON -i$PODID -a$IP -p$PORT &
 
 # start 2nd BPM monitor.
-$BPMMON -i $PODID
+$BPMMON -i$PODID -a$IP -p$PORT &
 
-# start LED backpack.
+# start LED backpack LED's.
 

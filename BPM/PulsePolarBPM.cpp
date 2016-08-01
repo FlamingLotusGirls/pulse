@@ -194,7 +194,7 @@ ProcessNextMeasurement(double val)
 	bs.justGenerated = 0; // by default, we only update state ...
 	bs.count++;
 
-	if (verbose) printf("%d: %f, s %ld, n %ld\n", bs.count, val, now.tv_sec, now.tv_nsec);
+	if (verbose>3) printf("%d: %f, s %ld, n %ld\n", bs.count, val, now.tv_sec, now.tv_nsec);
 
 	if (bs.count > 1) {
 
@@ -320,6 +320,10 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	if (verbose>0) {
+		printf("Use ip '%s' port %hd\n", ip, port);
+	}
+
 	Reset(); // reset the bpm state data.
 	GoIO_Init();
 
@@ -373,7 +377,7 @@ int main(int argc, char* argv[])
 							sequence++,
 							sock, &si_tobrain);
 
-						if (verbose) {
+						if (verbose>0) {
 							printf("period %f ms @%ld,%ld\n",
  								bs.currentBeatInterval_ms,
 								bs.prevBeatTime.tv_sec,

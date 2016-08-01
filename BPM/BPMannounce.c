@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <stdlib.h> // exit() on some platforms.
 #include <string.h> // memset() on some platforms.
@@ -20,10 +21,14 @@
 int
 SetupAnnounce_udp(char* ip, short port, int* sock, struct sockaddr_in* si_toserver)
 {
+	int opton=1;
 	if ((*sock=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))==-1) {
 		//Fatal("Can't create socket\n");
 		return -1;
 	}
+
+	setsockopt(*sock, SOL_SOCKET, SO_REUSEADDR, &opton, sizeof(opton));
+	setsockopt(*sock, SOL_SOCKET, SO_BROADCAST, &opton, sizeof(opton));
 
 	memset((char *)si_toserver, 0, sizeof(*si_toserver));
 	si_toserver->sin_family = AF_INET;
@@ -45,7 +50,7 @@ void
 AnnounceBPMdata_udp(double interval_ms, double elapsed_ms, uint8_t pod_id, uint8_t sequence, int sock, struct sockaddr_in* si) {
 
 	BPMPulseData_t data;
-	int i;
+	int ret;
 
 	data.beat_interval_ms = interval_ms;
 	data.elapsed_ms = elapsed_ms;
@@ -54,7 +59,9 @@ AnnounceBPMdata_udp(double interval_ms, double elapsed_ms, uint8_t pod_id, uint8
 	data.est_BPM = (interval_ms>0)? 60.*1000./interval_ms : 0;
 	data.local_time = time(NULL);
 
-	sendto(sock, (char*)&data, sizeof(data), 0, (struct sockaddr*)si, sizeof(struct sockaddr_in));
+	ret = sendto(sock, (char*)&data, sizeof(data), 0, (struct sockaddr*)si, sizeof(struct sockaddr_in));
+
+	if (ret != 0) { printf("OUCH! sendto() errno %d\n", errno); }
 }
 
 #ifdef UNIT_TEST
