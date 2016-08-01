@@ -24,8 +24,9 @@ import sys
 
 # Common variables
 #BROADCAST_ADDR = "224.51.105.104"
-BROADCAST_ADDR = "255.255.255.255"
+#BROADCAST_ADDR = "255.255.255.255"
 #BROADCAST_ADDR = "127.255.255.255"
+BROADCAST_ADDR = "192.168.1.255"
 HEARTBEAT_PORT = 5000
 COMMAND_PORT   = 5001
 MULTICAST_TTL  = 4
@@ -58,7 +59,7 @@ class Commands():
 
 running = True
 allowHeartBeats = True
-currentHeartBeatSource = 0
+currentHeartBeatSource = 1
 ser = None
 previousHeartBeatTime = None
 gReceiverId = 0  # XXX need to set the receiver Id, or more properly, the unit id, from a file or something
@@ -96,9 +97,10 @@ def createBroadcastListener(port, addr=BROADCAST_ADDR):
     return sock
     
 def handleHeartBeatData(heartBeatData):
-    source, sequenceId, beatIntervalMs, beatOffsetMs, timestamp, bpmApprox = struct.unpack("=BBHLLf", heartBeatData)
-    print "heartbeat source is %d bpm is %d" % (source, bpmApprox) # XXX bps is not what we want. We want bpm.
-    if source is currentHeartBeatSource and allowHeartBeats:
+	### This structure has to match the one in BPMPulseData_t BPMPulse.h
+    pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
+    print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox) # XXX bps is not what we want. We want bpm.
+    if pod_id is currentHeartBeatSource and allowHeartBeats:
         # XXX should use the beatOffset (time lapse since event) 
         # XXX much of current computations done assuming much simpler hb structure - can probably
         # make this all much easier now.
@@ -110,8 +112,10 @@ def handleHeartBeatData(heartBeatData):
             heartBeatStartTime = datetime.datetime.now()
             
         if heartBeatStartTime <= datetime.datetime.now():
+            print "1"
             loadEffect(HEARTBEAT, datetime.datetime.now())
         else:
+            print "2 ", heartBeatStartTime
             loadEffect(HEARTBEAT, heartBeatStartTime)
             
         sortEventQueue()
@@ -139,8 +143,8 @@ def handleCommandData(commandData):
         elif command is START_HEARTBEAT:
             allowHeartBeats = True
         elif command is USE_HEARTBEAT_SOURCE:
-            dummy1, dummy2, dummy3, source = struct.unpack("=BBHL", commandData)
-            currentHeartBeatSource = source
+            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
+            currentHeartBeatSource = pod_id
     
         sortEventQueue()
         
@@ -240,6 +244,8 @@ def createEventString(events):
                         
                  
 def sendEvents():
+    if (len(eventQueue)==0):
+        return
     global ser
     # getting all the events we want to get
     currentEvents = []
