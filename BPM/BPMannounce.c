@@ -51,6 +51,8 @@ AnnounceBPMdata_udp(double interval_ms, double elapsed_ms, uint8_t pod_id, uint8
 	data.elapsed_ms = elapsed_ms;
 	data.pod_id = pod_id;
 	data.rolling_sequence = sequence;
+	data.est_BPM = (interval_ms>0)? 60.*1000./interval_ms : 0;
+	data.local_time = time(NULL);
 
 	sendto(sock, (char*)&data, sizeof(data), 0, (struct sockaddr*)si, sizeof(struct sockaddr_in));
 }
