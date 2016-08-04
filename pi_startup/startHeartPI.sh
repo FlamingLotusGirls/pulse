@@ -15,5 +15,5 @@ PODID=`cat /etc/pod.id`
 
 echo starting HEART PI on `hostname`
 
-python $CONTROL &
+python $CONTROL >& /var/log/heart.log &
 

@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include <stdlib.h> // exit() on some platforms.
 #include <string.h> // memset() on some platforms.
@@ -26,6 +27,11 @@ SetupAnnounce_udp(char* ip, short port, int* sock, struct sockaddr_in* si_toserv
 		//Fatal("Can't create socket\n");
 		return -1;
 	}
+	// are sockets on raspbian set O_NONBLOCK by default?
+	int arg;
+	int flags = fcntl(*sock, F_GETFL, arg);
+	flags &= ~ O_NONBLOCK;
+	fcntl(*sock, F_SETFL, flags);
 
 	setsockopt(*sock, SOL_SOCKET, SO_REUSEADDR, &opton, sizeof(opton));
 	setsockopt(*sock, SOL_SOCKET, SO_BROADCAST, &opton, sizeof(opton));
@@ -61,7 +67,7 @@ AnnounceBPMdata_udp(double interval_ms, double elapsed_ms, uint8_t pod_id, uint8
 
 	ret = sendto(sock, (char*)&data, sizeof(data), 0, (struct sockaddr*)si, sizeof(struct sockaddr_in));
 
-	if (ret != 0) { printf("OUCH! sendto() errno %d\n", errno); }
+	if (ret != 0) { printf("OUCH! sendto() errno %d (%s)\n", errno, strerror(errno)); }
 }
 
 #ifdef UNIT_TEST

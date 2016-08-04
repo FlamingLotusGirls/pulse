@@ -20,10 +20,10 @@ PORT=5000
 # TODO - figure out how to pick different BPM monitors.
 
 # start 1st BPM monitor.
-$BPMMON -i$PODID -a$IP -p$PORT &
+$BPMMON -i$PODID -a$IP -p$PORT > /var/log/miuS1.log &
 
 # start 2nd BPM monitor.
-$BPMMON -i$PODID -a$IP -p$PORT &
+$BPMMON -i$PODID -a$IP -p$PORT > /var/log/miuS2.log &
 
 # start LED backpack LED's.
 

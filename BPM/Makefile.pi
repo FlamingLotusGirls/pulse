@@ -17,7 +17,7 @@ PulsePolarBPM: PulsePolarBPM.o BPMannounce.o
 	$(CCP) -o PulsePolarBPM PulsePolarBPM.o BPMannounce.o $(LIB)
 
 PulsePolarBPM.o: PulsePolarBPM.cpp
-	$(CCP) $(INC) -c  PulsePolarBPM.cpp
+	$(CCP) $(INC) -c  -DTARGET_OS_LINUX PulsePolarBPM.cpp
 
 BPMannounce.o: BPMannounce.c
 	$(CC) $(INC) -c  BPMannounce.c

@@ -16,7 +16,7 @@ IP=192.168.1.255 # broadcast.
 PORT=5000
 
 # start BPM monitor. Need to background this.
-$BPMMON -i$PODID -a$IP -p$PORT &
+$BPMMON -i$PODID -a$IP -p$PORT >& /var/log/pod.log &
 
 # start LED monitor... background.
 

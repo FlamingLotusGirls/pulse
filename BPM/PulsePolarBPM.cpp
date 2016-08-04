@@ -288,6 +288,23 @@ GetOpts(int argc, char* argv[], uint8_t* pod_id, char** ip, short* port)
 	}
 }
 
+void
+RunDummyLoopNoDeviceFound(uint8_t pod_id, int sock,
+	struct sockaddr_in* si_tobrain)
+{
+ uint8_t sequence = 0; // packet sequence number
+
+ for (;;) {
+   OSSleep(2000);
+   AnnounceBPMdata_udp(
+	0, // zero ms interval
+	1, // one delay means we found NO DEVICE!!!
+	pod_id,
+	sequence++,
+	sock, si_tobrain);
+ }
+}
+
 int main(int argc, char* argv[])
 {
 	char deviceName[GOIO_MAX_SIZE_DEVICE_NAME];
@@ -305,7 +322,9 @@ int main(int argc, char* argv[])
 
 	uint8_t pod_id = 1;
 	char* ip = (char*)"192.168.1.255"; // default.
-	short port = 1234;
+	short port = 5000;
+
+	time_t lastBeatSent = 0L;
 
 	GetOpts(argc, argv, &pod_id, &ip, &port);
 
@@ -331,10 +350,11 @@ int main(int argc, char* argv[])
 	printf("This app is linked to GoIO lib version %d.%d .\n", MajorVersion, MinorVersion);
 
 	bool bFoundDevice = GetAvailableDeviceName(deviceName, GOIO_MAX_SIZE_DEVICE_NAME, &vendorId, &productId);
-	if (!bFoundDevice)
+	if (!bFoundDevice) {
 		printf("No Go devices found.\n");
-	else
-	{
+		RunDummyLoopNoDeviceFound(pod_id, sock, &si_tobrain);
+
+	} else {
 		GOIO_SENSOR_HANDLE hDevice = GoIO_Sensor_Open(deviceName, vendorId, productId, 0);
 		if (hDevice != NULL)
 		{
@@ -370,6 +390,8 @@ int main(int argc, char* argv[])
 
 					if (bs.justGenerated) {
 
+						lastBeatSent = time(NULL);
+
 						AnnounceBPMdata_udp(
 							bs.currentBeatInterval_ms, 
 							diff_timespec_ms(&bs.prevBeatTime, &bs.prevTime),
@@ -387,7 +409,17 @@ int main(int argc, char* argv[])
 				}
 
 				// todo, calculate ms since last sample and subtract from 20
-				OSSleep(10);
+				OSSleep(10); // 10 ms.
+
+				if (time(NULL)-lastBeatSent > 2) {
+					lastBeatSent = time(NULL);
+					AnnounceBPMdata_udp(
+						0, // zero ms interval
+						0, // zero delay
+						pod_id,
+						sequence++,
+						sock, &si_tobrain);
+				}
 			}
 
 			//GoIO_Sensor_DDSMem_GetCalibrationEquation(hDevice, &equationType);
@@ -447,15 +479,14 @@ bool GetAvailableDeviceName(char *deviceName, gtype_int32 nameLength, gtype_int3
 	return bFoundDevice;
 }
 
-void OSSleep(
-	unsigned long msToSleep)//milliseconds
+void OSSleep(unsigned long msToSleep)//milliseconds
 {
 #ifdef TARGET_OS_WIN
 	::Sleep(msToSleep);
 #endif
 #ifdef TARGET_OS_LINUX
   struct timeval tv;
-  unsigned long usToSleep = msToSleep*1000;
+  uint64_t usToSleep = msToSleep*1000;
   tv.tv_sec = usToSleep/1000000;
   tv.tv_usec = usToSleep % 1000000;
   select (0, NULL, NULL, NULL, &tv);
