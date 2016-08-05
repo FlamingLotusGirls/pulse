@@ -39,7 +39,6 @@ static int  m_currentSoundLength           = 0;     // length of current sound, 
 static int  m_nextSoundLength              = 0;     // length of next sound, in frames
 static int  m_nextSoundTimeFrames          = 0;     // how many frames away from the current write pointer to start the next sound
 
-
 //static unsigned char *lastSoundBuf       = NULL;   // last sound we played, in case we have to re-play it
 //static int lastSoundLength          = 0;
 static int m_lastSoundFreqFrames      = 0;
@@ -392,6 +391,7 @@ static int setHwParams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwParams) {
         printf("Could not set buffer size: %s\n", snd_strerror(err));
         return err;
     }
+    
     if ((err = snd_pcm_hw_params_get_buffer_size(hwParams, &m_bufferSize_frames)) < 0) {
         printf("Could not get buffer size: %s\n", snd_strerror(err));
         return err;
@@ -1184,7 +1184,6 @@ static PulseSound *pulseSoundUpdate(PulseSound *sound, PcmSoundMsg *soundMsg) {
     
     return sound;
 }
-
 
 
 void pcmPlaybackStop() 

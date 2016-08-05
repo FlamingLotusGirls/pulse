@@ -24,6 +24,8 @@ struct __BPMPulseData_t {
  uint32_t elapsed_ms; // how long before now did this happen?
 
  float est_BPM; // computed as 60*1000/beat_interval_ms
+
+ uint32_t local_time; // taken from time() call.
  
 }__attribute__((packed)); 
 

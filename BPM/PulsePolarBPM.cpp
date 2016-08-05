@@ -194,7 +194,7 @@ ProcessNextMeasurement(double val)
 	bs.justGenerated = 0; // by default, we only update state ...
 	bs.count++;
 
-	if (verbose) printf("%d: %f, s %ld, n %ld\n", bs.count, val, now.tv_sec, now.tv_nsec);
+	if (verbose>3) printf("%d: %f, s %ld, n %ld\n", bs.count, val, now.tv_sec, now.tv_nsec);
 
 	if (bs.count > 1) {
 
@@ -249,21 +249,31 @@ ProcessNextMeasurement(double val)
 }
 
 void
-Usage() {
+Help() {
 	fprintf(stderr, "PulsePolarBPM -v -iPODID\n"
 		" -v for verbose output\n"
-		" -iPODID  where PODID is a small number indicating this pod\n\n");
-	exit(1);
+		" -iPODID  where PODID is a small number indicating this pod\n\n"
+		" -aIPADDR  where IPADDR is an IPv4 dotted quad\n\n"
+		" -pPORT where PORT is the port number\n\n");
 }
 
 void
-GetOpts(int argc, char* argv[], uint8_t* pod_id)
+Usage() { Help(); exit(1); }
+
+void
+GetOpts(int argc, char* argv[], uint8_t* pod_id, char** ip, short* port)
 {
 	int i;
 	for (i = 1; i < argc; i++) {
 
 		if (argv[i][0]=='-') {
 			switch(argv[i][1]) {
+			case 'h': Help();
+			break;
+			case 'a': *ip = argv[i]+2;
+			break;
+			case 'p': *port = atoi(argv[i]+2);
+			break;
 			case 'i': *pod_id = atoi(argv[i]+2);
 			break;
 			case 'v': verbose++;
@@ -276,6 +286,23 @@ GetOpts(int argc, char* argv[], uint8_t* pod_id)
 			Usage();
 		}
 	}
+}
+
+void
+RunDummyLoopNoDeviceFound(uint8_t pod_id, int sock,
+	struct sockaddr_in* si_tobrain)
+{
+ uint8_t sequence = 0; // packet sequence number
+
+ for (;;) {
+   OSSleep(2000);
+   AnnounceBPMdata_udp(
+	0, // zero ms interval
+	1, // one delay means we found NO DEVICE!!!
+	pod_id,
+	sequence++,
+	sock, si_tobrain);
+ }
 }
 
 int main(int argc, char* argv[])
@@ -294,14 +321,15 @@ int main(int argc, char* argv[])
 	gtype_int32 numMeasurements,i;
 
 	uint8_t pod_id = 1;
+	char* ip = (char*)"192.168.1.255"; // default.
+	short port = 5000;
 
-	GetOpts(argc, argv, &pod_id);
+	time_t lastBeatSent = 0L;
+
+	GetOpts(argc, argv, &pod_id, &ip, &port);
 
 	printf("GoIO_DeviceCheck version 1.1\n");
-	
 
-	char* ip = (char*)"192.168.1.100";
-	short port = 1234;
 	uint8_t sequence = 0; // packet sequence number
 	int sock;
 	struct sockaddr_in si_tobrain;
@@ -311,6 +339,10 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	if (verbose>0) {
+		printf("Use ip '%s' port %hd\n", ip, port);
+	}
+
 	Reset(); // reset the bpm state data.
 	GoIO_Init();
 
@@ -318,10 +350,11 @@ int main(int argc, char* argv[])
 	printf("This app is linked to GoIO lib version %d.%d .\n", MajorVersion, MinorVersion);
 
 	bool bFoundDevice = GetAvailableDeviceName(deviceName, GOIO_MAX_SIZE_DEVICE_NAME, &vendorId, &productId);
-	if (!bFoundDevice)
+	if (!bFoundDevice) {
 		printf("No Go devices found.\n");
-	else
-	{
+		RunDummyLoopNoDeviceFound(pod_id, sock, &si_tobrain);
+
+	} else {
 		GOIO_SENSOR_HANDLE hDevice = GoIO_Sensor_Open(deviceName, vendorId, productId, 0);
 		if (hDevice != NULL)
 		{
@@ -357,6 +390,8 @@ int main(int argc, char* argv[])
 
 					if (bs.justGenerated) {
 
+						lastBeatSent = time(NULL);
+
 						AnnounceBPMdata_udp(
 							bs.currentBeatInterval_ms, 
 							diff_timespec_ms(&bs.prevBeatTime, &bs.prevTime),
@@ -364,7 +399,7 @@ int main(int argc, char* argv[])
 							sequence++,
 							sock, &si_tobrain);
 
-						if (verbose) {
+						if (verbose>0) {
 							printf("period %f ms @%ld,%ld\n",
  								bs.currentBeatInterval_ms,
 								bs.prevBeatTime.tv_sec,
@@ -374,7 +409,17 @@ int main(int argc, char* argv[])
 				}
 
 				// todo, calculate ms since last sample and subtract from 20
-				OSSleep(10);
+				OSSleep(10); // 10 ms.
+
+				if (time(NULL)-lastBeatSent > 2) {
+					lastBeatSent = time(NULL);
+					AnnounceBPMdata_udp(
+						0, // zero ms interval
+						0, // zero delay
+						pod_id,
+						sequence++,
+						sock, &si_tobrain);
+				}
 			}
 
 			//GoIO_Sensor_DDSMem_GetCalibrationEquation(hDevice, &equationType);
@@ -434,15 +479,14 @@ bool GetAvailableDeviceName(char *deviceName, gtype_int32 nameLength, gtype_int3
 	return bFoundDevice;
 }
 
-void OSSleep(
-	unsigned long msToSleep)//milliseconds
+void OSSleep(unsigned long msToSleep)//milliseconds
 {
 #ifdef TARGET_OS_WIN
 	::Sleep(msToSleep);
 #endif
 #ifdef TARGET_OS_LINUX
   struct timeval tv;
-  unsigned long usToSleep = msToSleep*1000;
+  uint64_t usToSleep = msToSleep*1000;
   tv.tv_sec = usToSleep/1000000;
   tv.tv_usec = usToSleep % 1000000;
   select (0, NULL, NULL, NULL, &tv);

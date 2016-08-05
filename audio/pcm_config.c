@@ -368,13 +368,10 @@ static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen, int
         return NULL;
     }
    
-   /*  XXX FIXME - should be mono!!
     if (fmtChunk->nChannels != 1) {
         printf("Not mono (%d). Rejecting\n", fmtChunk->nChannels);
-        return NULL;
     }
-    */
-    
+
     uint32_t dataSize = *(uint32_t *)(data_block + 4);
     //dataSize = ~htonl(dataSize);
 
