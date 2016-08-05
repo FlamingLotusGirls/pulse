@@ -6,11 +6,11 @@ LIB=-L/usr/lib -l asound2
 INC=-I. -I/usr/include/alsa
 CCP=g++
 CC=gcc
-CFLAGS = -Wall -Werror -I. -I/usr/include/alsa
+CFLAGS = -std=gnu99 -Wall -Werror -I. -I/usr/include/alsa
 LDFLAGS = -L/usr/lib -lasound -lpthread -lrt
 
 PROJ = sound_test
-OBJS = pcm_config.o pcm_sound.o sound_test.o
+OBJS = pcm_config.o pcm_sound.o sound_test.o linked_list.o
 
 all: $(PROJ)
 

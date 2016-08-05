@@ -19,14 +19,14 @@ typedef struct {
     uint16_t wValidBitsPerSample;
     uint32_t dwChannelMask;
     uint32_t SubFormat[4];
-} FmtChunk;
+} __attribute__((packed))FmtChunk;
 
 typedef struct {
     uint32_t RIFF_ID;
     uint32_t cksize;
     uint32_t WAVEID;
-    FmtChunk fmtChunk;
-} WAV_Header;
+//    FmtChunk fmtChunk;
+} __attribute__((packed))WAV_Header;
 
 
 #define WAV_FORMAT_PCM 0x0001
