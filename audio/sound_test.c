@@ -53,10 +53,10 @@ typedef struct __attribute((packed)) {
     uint32_t command_data;        // may or may not have anything in it, depending on the command
 } PulseCommand_t;
 
-uint8_t myId = 0; // XXX need to read this from a config file somewhere
-uint8_t hbSource;   
-int hbSocket;
-int cmdSocket; 
+static uint8_t myId = 0; // XXX need to read this from a config file somewhere
+static uint8_t hbSource;   
+static int hbSocket;
+static int cmdSocket; 
     
 
 static int initBroadcastSocketListener(unsigned short port);
@@ -126,7 +126,7 @@ static int initBroadcastSocketListener(unsigned short port)
     addr.sin_port        = htons(port);
     addr.sin_addr.s_addr = inet_addr(BROADCAST_ADDR); /* INADDR_ANY; */
     
-    printf("Broadcast addr is 0x%x\n", inet_addr(BROADCAST_ADDR));
+//    printf("Broadcast addr is 0x%x\n", inet_addr(BROADCAST_ADDR));
     
     if ((rv = bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr))) < 0) {
         printf("bind returns %s\n", strerror(errno));
@@ -146,6 +146,9 @@ static void pulseAudioListen()
     printf("Command socket is %d\n", cmdSocket);
     printf("Heartbeat socket is %d\n", hbSocket);
     printf("nfds is %d\n", nfds);
+    pcmPlayBreathing(0,128);
+    pcmPlaySpecial(SOUND_KABOOM, 128);
+    pcmPlayHeartBeat(60, 128);
     while(1) {
         FD_ZERO(&read_fds);
         FD_ZERO(&except_fds);
@@ -215,7 +218,7 @@ static void pulseAudioListen()
                         printf("Heartbeat rate %d is out of bounds\n", hbRate);
                     } else {
                         printf("received heart beat at %d\n", hbRate);
-                        pcmPlayHeartBeat(hbRate);
+                        pcmPlayHeartBeat(hbRate, 128);
                     }
                 }
             }

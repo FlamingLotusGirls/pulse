@@ -12,44 +12,53 @@
 #include "pcm_config.h"
 #include "pcm_utils.h"
 #include "wav.h"
+#include "linked_list.h"
 
 // Read configuration file and load the various heartbeat sounds
 // file format is defined as: <filename>, validRateStart, validRateEnd
 // Both valid rate start and valid rate end are integers
 
-typedef struct __LinkedList{
-    struct __LinkedList *next;
-    void *data;
-} LinkedList;
-
 static LinkedList *hbSoundList = NULL;
+
+static PcmData *m_BreathingData = NULL;
+
+#define NUMBER_TRANSIENTS 1
+static PcmData m_transients[NUMBER_TRANSIENTS];
+static const char *m_transient_filenames[NUMBER_TRANSIENTS] = {"kaboom16.wav"};
+//static const char *m_transient_filenames[NUMBER_TRANSIENTS] = {"speakertest.wav"};
 
 
 // WAV parsing
 static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen, int *pcmDataLen);
 static void mungeWAVHeader(WAV_Header *header);
+static int pcmReadData(const char *filename, PcmData *data);
+static void releaseSound(HbData *sound);
+
+#define BREATHING_FILE_NAME "breathing1.wav"
 
 
-static LinkedList* LinkedListAdd(LinkedList *list, void *data)
+void PcmConfig_Shutdown()
 {
-    LinkedList *newList = (LinkedList *)malloc(sizeof(LinkedList));
-    newList->data = data;
-    newList->next = NULL;
+    while (hbSoundList) {
+        LinkedList *next = hbSoundList->next;
+        if (hbSoundList->data) {
+            releaseSound((HbData *)hbSoundList->data);
+        }
+        free(hbSoundList);
+        hbSoundList = next;
+    }
+    //XXX release breathing and transient sounds
+}
 
-    if (!list) {
-        return newList;
+static void releaseSound(HbData *sound)
+{
+    if (sound) {
+        if (sound->filename) {
+            free(sound->filename);
+            sound->filename = NULL;
+        }
+        free(sound);
     }
-    
-    LinkedList *tail;
-    LinkedList *curElement = list;
-    while(curElement) {
-       tail = curElement; 
-       curElement = curElement->next;
-    }
-    
-    tail->next = newList;
-    
-    return list;
 }
 
 int PcmConfig_Read()
@@ -70,7 +79,7 @@ int PcmConfig_Read()
         if (*strPtr == '#') {
             continue;
         }
-        printf("Read config file, line %s\n", strBuf);
+        printf("Read config file, line %s", strBuf);
         
         char *tokStr = strPtr;
         char *filename = NULL;
@@ -80,7 +89,8 @@ int PcmConfig_Read()
             tokStr = NULL;
             if (!filename) {
                 filename = strPtr;
-                printf("filename is %s\n", filename);
+                printf("filename is %s\n", filename);  // XXX watch it with the filename. It goes out of scope - this ain't java
+                
                 continue;
             }
             if (!validFreqStart) {
@@ -108,6 +118,13 @@ int PcmConfig_Read()
                     printf("Error out of memory\n");
                     break;
                 }
+
+                data->filename = (char *)malloc(strlen(filename) + 1);
+                if (!data->filename) {
+                    printf("Error our of memory\n");
+                    break;
+                }
+                strcpy(data->filename, filename);
                 data->filename = filename;
                 data->data = NULL;
                 data->validFreqStart = validFreqStart;
@@ -136,6 +153,7 @@ int PcmConfig_Read()
                 struct stat sb;
                 if (fstat(fd, &sb) != 0) {
                     printf("Could not stat file %s\n", sound->filename);
+                    goto hb_sounds_iterate;
                 }
                 int filesize = sb.st_size;
                 if (filesize <= 0) {
@@ -176,8 +194,94 @@ hb_sounds_iterate:
         }
     }
     
+    // and let's read in our breathing file too....
+    m_BreathingData = (PcmData *)malloc(sizeof(PcmData));
+    if (!m_BreathingData) {
+        printf("Memory allocation failure\n");
+        goto Exit;
+    }
+    
+    m_BreathingData->filename = strdup(BREATHING_FILE_NAME);
+    if (!m_BreathingData->filename) {
+        printf("Memory allocation failure\n");
+        goto Exit;
+    }
+        
+    if (pcmReadData(BREATHING_FILE_NAME, m_BreathingData) != 0){
+        printf("Error reading breathing data\n");
+        // XXX - not errorring out just yet since I don't actually have breathing data FIXME
+    }
+    
+    // and a transient
+    PcmData *transient = &m_transients[0];
+    transient->filename = strdup(m_transient_filenames[0]);
+    if (pcmReadData(transient->filename, transient) != 0) {
+        printf("Error reading transient data\n");
+        // XXX - not errorring out just yet since I don't actually have proper transient data FIXME
+    }
+    
+Exit:
     fclose(configFile);
+    
     return 0;
+}
+
+static int pcmReadData(const char *filename, PcmData *data)
+{
+    FILE *dataFile = fopen(filename, "rb");
+    char *filedata = NULL;
+    if (!dataFile) {
+        printf("Could not open sound data file %s\n", filename);
+        goto ErrorExit;
+    }
+    int fd = fileno(dataFile);
+    if (fd < 0) {
+        printf("Sound data file invalid %s\n", filename);
+        goto ErrorExit;
+    }
+    struct stat sb;
+    if (fstat(fd, &sb) != 0) {
+        printf("Could not stat file %s\n", filename);
+        goto ErrorExit;
+    }
+    int filesize = sb.st_size;
+    if (filesize <= 0) {
+        printf("Heartbeat data file size invalid %s, %d bytes\n", filename, filesize);
+        goto ErrorExit;
+    }
+    filedata = (char *)malloc(filesize);
+    if (!filedata) {
+        printf("Could not allocate memory (%d bytes) for file %s\n", filesize, filename);
+        goto ErrorExit;
+    }
+    
+    int elemRead = fread(filedata, filesize, 1, dataFile);
+    if (elemRead != 1) {
+        printf("Error reading data from file %s\n", filename);
+        goto ErrorExit;
+    }
+    
+    int dataLen = 0;
+    unsigned char *pcmData = extractPCMFromWAV((unsigned char *)filedata, filesize, &dataLen);
+    if (!pcmData) {
+        printf("Could not extract PCM data from file %s\n", filename);
+        goto ErrorExit;
+    }
+    
+    data->data = pcmData;
+    data->datalen = filesize;
+//    data->filename = filename; // watch that XXX
+    
+    return 0;
+    
+ErrorExit:
+    if (filedata) {
+        free(filedata);
+    }
+    if (dataFile) {
+        fclose(dataFile);
+    }
+    return -1;
 }
 
 // Iterate list of heartbeat sounds, looking for the right one
@@ -198,6 +302,18 @@ HbData* PcmConfig_getHbSound(int freqBPM)
     }
     return bestSound;
 }
+
+PcmData *PcmConfig_getBreathingSound()
+{
+    return m_BreathingData;
+}
+
+
+PcmData *PcmConfig_getTransientSound(TransientSoundType type)
+{
+    return &m_transients[0]; // XXX match with transient sound types!!
+}
+
 
 static char RIFF[4] = {'R', 'I', 'F', 'F'};
 static char WAVE[4] = {'W', 'A', 'V', 'E'};
@@ -223,69 +339,41 @@ static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen, int
         printf("Invalid WAV file, bad WAVE header\n");
         return NULL;
     }
-
-    if (memcmp(FMT_, (unsigned char *)&header->fmtChunk.ckID, 4)) {
-        printf("Invalid WAV file, bad FMT header\n");
-        return NULL;
+    
+    // Now let's find the format and data chunks...
+    FmtChunk *fmtChunk  = NULL;
+    unsigned char *data_block = NULL;
+    unsigned char *wavPtr = ((unsigned char *)header) + sizeof(WAV_Header);
+    while (!(fmtChunk && data_block) && (wavPtr < wavData + datalen)) {
+        printf("Found chunk (%c%c%c%c)\n", *wavPtr, *(wavPtr+1), *(wavPtr+2), *(wavPtr+3));
+        if (!memcmp(FMT_, wavPtr, 4)) {
+            fmtChunk = (FmtChunk *)wavPtr;
+        } else if (!memcmp(DATA, wavPtr, 4)){
+            data_block = wavPtr;
+        } 
+        wavPtr += 8 + *(uint32_t *)(wavPtr + 4); // skip header and following block
     }
-
-    if (header->fmtChunk.wFormatTag != WAV_FORMAT_PCM) {
-        printf("Not a PCM file (0x%x), rejecting\n", header->fmtChunk.wFormatTag);
-        return NULL;
-    }
-
-    if (header->fmtChunk.wBitsPerSample != 16) {
-        printf("Not 16 bits per sample (%d). Rejecting\n", header->fmtChunk.wBitsPerSample);
+    if (!(fmtChunk && data_block)) {
+        printf("Invalid WAV file, could not find format and data chunks\n");
         return NULL;
     }
     
-    if (header->fmtChunk.nSamplesPerSec != 44100) {
-        printf("Not 44.1K samples per second (%d), rejecting\n", header->fmtChunk.nSamplesPerSec);
+    if (fmtChunk->wBitsPerSample != 16) {
+        printf("Not 16 bits per sample (%d). Rejecting\n", fmtChunk->wBitsPerSample);
+        return NULL;
+    }
+    
+    if (fmtChunk->nSamplesPerSec != 44100) {
+        printf("Not 44.1K samples per second (%d), rejecting\n", fmtChunk->nSamplesPerSec);
         return NULL;
     }
    
-    if (header->fmtChunk.nChannels != 1) {
-        printf("Not mono (%d). Rejecting\n", header->fmtChunk.nChannels);
-        return NULL;
+    if (fmtChunk->nChannels != 1) {
+        printf("Not mono (%d). Rejecting\n", fmtChunk->nChannels);
     }
-    
-    // all should be well at this point. check the final data block
-    int headerSize = 12 + 8 + header->fmtChunk.cksize; // 12 byte RIFF header, 8 byte fmt header, and ftm chunk
-    if (headerSize >= datalen) {
-        printf("No data in file.\n");
-        return NULL;
-    }
-    printf("fmtChunk size is %d\n", header->fmtChunk.cksize);
-    
-    // Now let's wade through the remaining chunks, looking for 'data'
-    unsigned char *curPtr = wavData + headerSize;
-    unsigned char *data_block = NULL;
-    while ((curPtr - wavData) + 8 < datalen) {
-        uint32_t blockLen = *(uint32_t *)(curPtr + 4);
-        printf("Found block %c%c%c%c\n", *curPtr, *(curPtr+1), *(curPtr+2), *(curPtr+3));
-//        printf("Found block size 0x%x\n", blockLen);
-//        printf("Found block size %d\n", blockLen);
-        if (blockLen == 0) {
-            return NULL;
-        }
-        if (!memcmp(DATA, curPtr, 4)) {
-            data_block = curPtr;
-            break;
-        }
-        curPtr += 8 + blockLen;
-    } 
-    
-    if (!data_block) {
-        printf("data block not found\n");
-        return NULL;
-    }
+
     uint32_t dataSize = *(uint32_t *)(data_block + 4);
     //dataSize = ~htonl(dataSize);
-    if ((data_block - wavData) + 8 + dataSize > datalen) {
-        printf("Invalid file - data is %d, but only %d bytes\n", dataSize, datalen - headerSize - 9);
-        return NULL;
-    }
-    
 
     // allocate data, return copy of data from 
     unsigned char *pcmData = (unsigned char *)malloc(dataSize);
@@ -294,7 +382,7 @@ static unsigned char *extractPCMFromWAV(unsigned char *wavData, int datalen, int
         return NULL;
     }
 
-    memcpy(pcmData, wavData + headerSize + 8, dataSize);
+    memcpy(pcmData, data_block + 8, dataSize);
     
     if (pcmDataLen) {
         *pcmDataLen = dataSize;
