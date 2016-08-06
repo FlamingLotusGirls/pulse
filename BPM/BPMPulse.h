@@ -34,7 +34,7 @@ typedef struct __BPMPulseData_t BPMPulseData_t;
 extern int
 SetupAnnounce_udp(char* ip, short port, int* sock, struct sockaddr_in* si_toserver);
 
-extern void
+extern int
 AnnounceBPMdata_udp(double interval_ms, double elapsed_ms, uint8_t pod_id, uint8_t sequence, int sock, struct sockaddr_in* si);
 
 #ifdef __cplusplus__

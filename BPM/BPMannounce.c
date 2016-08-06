@@ -19,8 +19,34 @@
 
 #include "BPMPulse.h"
 
+
+//
+// pass in the beat period in milliseconds, also the elapsed time
+// in milliseconds from the most recent heart beat to now.
+//
 int
-SetupAnnounce_udp(char* ip, short port, int* sock, struct sockaddr_in* si_toserver)
+AnnounceBPMdata_udp(double interval_ms, double elapsed_ms, uint8_t pod_id, uint8_t sequence, int sock, struct sockaddr_in* si) {
+
+	BPMPulseData_t data;
+	int ret;
+
+	data.beat_interval_ms = interval_ms;
+	data.elapsed_ms = elapsed_ms;
+	data.pod_id = pod_id;
+	data.rolling_sequence = sequence;
+	data.est_BPM = (interval_ms>0)? 60.*1000./interval_ms : 0;
+	data.local_time = time(NULL);
+
+	ret = sendto(sock, (char*)&data, sizeof(data), 0, (struct sockaddr*)si, sizeof(struct sockaddr_in));
+
+	if (ret != 0) { printf("OUCH! sendto() errno %d (%s)\n", errno, strerror(errno)); return errno; }
+
+	return 0;
+}
+
+
+int
+TrySetup_udp(char* ip, short port, int* sock, struct sockaddr_in* si_toserver)
 {
 	int opton=1;
 	if ((*sock=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))==-1) {
@@ -42,32 +68,31 @@ SetupAnnounce_udp(char* ip, short port, int* sock, struct sockaddr_in* si_toserv
 
 	if (inet_aton(ip, &(si_toserver->sin_addr))==0) {
 		//Fatal("inet_aton() failed\n");
+		close(*sock);
+		*sock = -1;
 		return -2;
 	}
 
 	return 0; // good.
 }
 
-//
-// pass in the beat period in milliseconds, also the elapsed time
-// in milliseconds from the most recent heart beat to now.
-//
-void
-AnnounceBPMdata_udp(double interval_ms, double elapsed_ms, uint8_t pod_id, uint8_t sequence, int sock, struct sockaddr_in* si) {
 
-	BPMPulseData_t data;
-	int ret;
+// our dirty method to decide if the network is up yet. Note that
+// if we set up the socket before the network is up, it won't
+// be useable later when the network actually comes up :(
+int
+SetupAnnounce_udp(char* ip, short port, int* sock, struct sockaddr_in* si_toserver)
+{
+    for (;;) {
+	while (TrySetup_udp(ip, port, sock, si_toserver) != 0) {
+		printf("Can't setup udp socket, sleeping ...\n");
+		sleep(10);
+	}
 
-	data.beat_interval_ms = interval_ms;
-	data.elapsed_ms = elapsed_ms;
-	data.pod_id = pod_id;
-	data.rolling_sequence = sequence;
-	data.est_BPM = (interval_ms>0)? 60.*1000./interval_ms : 0;
-	data.local_time = time(NULL);
-
-	ret = sendto(sock, (char*)&data, sizeof(data), 0, (struct sockaddr*)si, sizeof(struct sockaddr_in));
-
-	if (ret != 0) { printf("OUCH! sendto() errno %d (%s)\n", errno, strerror(errno)); }
+	if (AnnounceBPMdata_udp(0, 0., 0, 0, *sock, si_toserver)==0) return 0; // yay!
+	printf("Network not ready, sleeping ...\n");
+	sleep(10);
+    }
 }
 
 #ifdef UNIT_TEST
