@@ -1,0 +1,17 @@
+{
+  "name": "hiromi-webservices",
+  "version": "1.0.0",
+  "description": "Prototype web services for Hiromi",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bob Kerns, Hiromi Ono",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "stream-to-string": "^1.1.0",
+    "winston": "^2.2.0"
+  }
+}
