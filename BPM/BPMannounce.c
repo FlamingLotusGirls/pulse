@@ -39,7 +39,9 @@ AnnounceBPMdata_udp(double interval_ms, double elapsed_ms, uint8_t pod_id, uint8
 
 	ret = sendto(sock, (char*)&data, sizeof(data), 0, (struct sockaddr*)si, sizeof(struct sockaddr_in));
 
-	if (ret != 0) { printf("OUCH! sendto() errno %d (%s)\n", errno, strerror(errno)); return errno; }
+	if (ret != 0) { 
+		if (errno==11) return 0; // benign.
+printf("OUCH! sendto() errno %d (%s)\n", errno, strerror(errno)); return errno; }
 
 	return 0;
 }
