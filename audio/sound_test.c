@@ -9,7 +9,8 @@
 
 #include "pcm_sound.h"
 
-#define BROADCAST_ADDR "255.255.255.255"
+//#define BROADCAST_ADDR "255.255.255.255"
+#define BROADCAST_ADDR "192.168.1.255"
 #define ALL_RECEIVERS 255
 #define HEARTBEAT_SOURCE 1
 #define COMMAND_PORT 5001
@@ -158,7 +159,7 @@ static void pulseAudioListen()
         FD_SET(hbSocket, &except_fds);
     
         // come up for air every second
-        timeout.tv_sec  = 1;
+        timeout.tv_sec  = 2;
         timeout.tv_usec = 0;
         
         // wait for timeout, or event on a socket...
