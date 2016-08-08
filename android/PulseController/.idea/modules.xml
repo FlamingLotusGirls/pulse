@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PluseController.iml" filepath="$PROJECT_DIR$/PluseController.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PulseController.iml" filepath="$PROJECT_DIR$/PulseController.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

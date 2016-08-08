@@ -1,4 +1,4 @@
-package org.flg.hiromi.plusecontroller;
+package org.flg.hiromi.pulsecontroller;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

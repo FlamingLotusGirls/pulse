@@ -1,4 +1,4 @@
-package org.flg.hiromi.plusecontroller;
+package org.flg.hiromi.pulsecontroller;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
