@@ -163,6 +163,7 @@ void pcmPlayHeartBeat(unsigned int freqBPM, unsigned char volume)
     }
     
     printf("BPM is %d, periodMs is %d\n", freqBPM, 1000*60/freqBPM);
+
     // Get sound appropriate for this frequency
     sound = PcmConfig_getHbSound(freqBPM);
     if (sound) {
@@ -244,7 +245,8 @@ int pcmPlaybackInit()
     
     printf("creating message queue with attrs!, message size is %ld\n", attrs.mq_msgsize);
     
-//    mq_unlink("/Pulse_PCM_MQ");
+ // This wipes out the message queue
+ mq_unlink("/Pulse_PCM_MQ");
 
     if ((commandmq = mq_open("/Pulse_PCM_MQ", O_RDWR|O_CREAT, S_IRWXU | S_IRWXG, &attrs)) < 0) { 
         printf("Error creating message queue: %s\n", strerror(errno));
