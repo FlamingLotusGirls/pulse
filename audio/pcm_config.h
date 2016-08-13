@@ -1,7 +1,7 @@
 #ifndef PCM_CONFIG_H
 #define PCM_CONFIG_H
 
-#define HB_CONFIG_FILE "hbconfig.conf"
+#define HB_CONFIG_FILE "/home/flaming/pulse/audio/hbconfig.conf"
 
 typedef struct {
     char          *filename;

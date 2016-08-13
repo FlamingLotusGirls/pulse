@@ -17,4 +17,6 @@ all: $(PROJ)
 $(PROJ): $(OBJS)
 
 
-clean: rm -f $(PROJ) $(OBJS)
+clean:
+	rm -f $(PROJ) $(OBJS)
+
