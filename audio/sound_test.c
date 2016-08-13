@@ -26,6 +26,9 @@ typedef unsigned long uint32_t;
 typedef unsigned short uint16_t;
 */
 
+#if 1
+#include "../BPM/BPMPulse.h"
+#else
 struct __BPMPulseData_t {
     uint8_t  pod_id; // which pod. pass as param in startup file.
 
@@ -46,6 +49,7 @@ struct __BPMPulseData_t {
 }__attribute__((packed)); 
 
 typedef struct __BPMPulseData_t BPMPulseData_t;
+#endif
 
 typedef struct __attribute((packed)) {
     uint8_t  receiver_id;         // which unit is this command for. 255 means 'this is for everyone'
@@ -66,6 +70,8 @@ static void pulseAudioListen();
 
 int main(int argc, char **argv)
 {
+
+
     if (pcmPlaybackInit() < 0) {
         printf("Failure to initialize sound system, aborting\n");
         return -1;
@@ -148,8 +154,8 @@ static void pulseAudioListen()
     printf("Heartbeat socket is %d\n", hbSocket);
     printf("nfds is %d\n", nfds);
     pcmPlayBreathing(0,128);
-    pcmPlaySpecial(SOUND_KABOOM, 128);
-    pcmPlayHeartBeat(60, 128);
+    //pcmPlaySpecial(SOUND_KABOOM, 128);
+    pcmPlayHeartBeat(40, 128);
     while(1) {
         FD_ZERO(&read_fds);
         FD_ZERO(&except_fds);
