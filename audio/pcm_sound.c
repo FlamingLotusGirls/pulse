@@ -23,26 +23,10 @@
 
 
 #define REQUESTED_FRAME_RATE 44100
-//#define REQUESTED_BUFFER_SIZE_US 500000
 #define REQUESTED_BUFFER_SIZE_US 100000
-//#define REQUESTED_PERIOD_SIZE_US 100000
 #define PERIODS_PER_BUFFER 4
-//#define REQUESTED_PERIOD_SIZE_US  20000
 
 // NB - sounds are assumed to be mono. We'll handle putting the sound into both speakers if necessary
-
-/*
-static unsigned char *m_currentSoundBuf    = NULL;  // sound we're currently playing. 
-static unsigned char *m_currentSoundBufPtr = NULL;  // pointer to current data in the current sound buffer
-static unsigned char *m_nextSoundBuf       = NULL;  // Next sound to play
-static int  m_currentSoundLength           = 0;     // length of current sound, in frames
-static int  m_nextSoundLength              = 0;     // length of next sound, in frames
-static int  m_nextSoundTimeFrames          = 0;     // how many frames away from the current write pointer to start the next sound
-
-//static unsigned char *lastSoundBuf       = NULL;   // last sound we played, in case we have to re-play it
-//static int lastSoundLength          = 0;
-static int m_lastSoundFreqFrames      = 0;
-*/
 
 static pthread_t playbackThread;
 
@@ -122,10 +106,8 @@ static int setSwParams(snd_pcm_t *handle, snd_pcm_sw_params_t *swParams);
 
 // playback thread
 static void* pcmPlaybackThread(void *arg);
-//static int feedBuffer(void); 
 static snd_pcm_sframes_t getAudioDelay(void);
 static int initializeSilentBuffer(int silentTimeMs); 
-//static int fillBufferWithSilence(int silentBytes, int *reInit); 
 static int fillBufferWithSound(unsigned char *soundBuffer, int soundBytes, int *reInit);
 static int xrun_recovery(snd_pcm_t *handle, int err);
 
@@ -174,7 +156,6 @@ void pcmPlayHeartBeat(unsigned int freqBPM, unsigned char volume)
 }
 
 
-// XXX handle frequency not specified!!! FIXME!!!
 void pcmPlayBreathing(unsigned int freqBPM, unsigned char volume)
 {
     PcmData *breathing = PcmConfig_getBreathingSound();
@@ -245,8 +226,8 @@ int pcmPlaybackInit()
     
     printf("creating message queue with attrs!, message size is %ld\n", attrs.mq_msgsize);
     
- // This wipes out the message queue
- mq_unlink("/Pulse_PCM_MQ");
+    // This wipes out the message queue - remove for production XXX
+    mq_unlink("/Pulse_PCM_MQ");
 
     if ((commandmq = mq_open("/Pulse_PCM_MQ", O_RDWR|O_CREAT, S_IRWXU | S_IRWXG, &attrs)) < 0) { 
         printf("Error creating message queue: %s\n", strerror(errno));
@@ -340,12 +321,10 @@ static int setHwParams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwParams) {
     }
 
     if ((err = snd_pcm_hw_params_set_access(handle, hwParams, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-//    if ((err = snd_pcm_hw_params_set_access(handle, hwParams, SND_PCM_ACCESS_RW_NONINTERLEAVED)) < 0) {
         printf("Could not set raw interleaved access: %s\n", snd_strerror(err));
         return err;
     }
 
-//    if ((err = snd_pcm_hw_params_set_format(handle, hwParams, SND_PCM_FORMAT_U8 )) < 0) {
     if ((err = snd_pcm_hw_params_set_format(handle, hwParams, SND_PCM_FORMAT_S16_LE )) < 0) {
         printf("Could not sent sound format to 16bit: %s\n", snd_strerror(err));
         return err;
@@ -367,7 +346,6 @@ static int setHwParams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwParams) {
     
     printf("Init: Frame rate is %d\n", m_frameRate);
     unsigned int requestedBufferSize = (REQUESTED_BUFFER_SIZE_US) * (REQUESTED_FRAME_RATE/10)/100000;
-    // and let's 
     // and let's make sure it is divisible by our period size
     snd_pcm_uframes_t requestedPeriodSize = requestedBufferSize/PERIODS_PER_BUFFER;
         
@@ -562,34 +540,6 @@ static void* pcmPlaybackThread(void *arg)
                                         m_soundList = LinkedListAdd(m_soundList, sound);
                                     }
                                 }
-                                /*
-                                m_nextSoundBuf    = soundMsg.soundBuf;
-                                m_nextSoundLength = soundMsg.bufLen/(m_nChannels * m_bytesPerSample); // get length in frames
-                                printf("Sound is %d frames (%d bytes)\n", m_nextSoundLength, soundMsg.bufLen);
-                                
-                                struct timespec nextTime;
-                                nextTime.tv_sec  = soundMsg.startTime.tv_sec;
-                                nextTime.tv_nsec = soundMsg.startTime.tv_nsec;
-                                int deltaS = nextTime.tv_sec - currentTime.tv_sec;
-                                if (nextTime.tv_nsec < currentTime.tv_nsec) {
-                                    deltaS -= 1;
-                                    nextTime.tv_nsec += 1000000000;
-                                }
-                                int deltaNs = nextTime.tv_nsec - currentTime.tv_nsec;
-                                int nextSoundDelayMs = (deltaS * 1000) +  deltaNs/1000000; // how long to wait to play the next sound
-                                printf("Next sound delay (ms) is %d\n", nextSoundDelayMs);
-                                int nextSoundDelayFrames = (nextSoundDelayMs * m_frameRate)/1000;
-                                snd_pcm_sframes_t delayFrames = getAudioDelay();
-                                int delayMs = delayFrames*1000/m_frameRate; // XXXX check this
-                                printf("Audio buffer delay (ms) is %d\n", delayMs);
-                                m_nextSoundTimeFrames = nextSoundDelayFrames - delayFrames;
-                                m_nextSoundTimeFrames = MAX(0, m_nextSoundTimeFrames);
-                                printf("NextSoundTimeFrames is %d\n", m_nextSoundTimeFrames);
-                                printf("Wait time between sounds is %d\n", soundMsg.periodMs);
-                                //lastSoundBuf    = m_nextSoundBuf;
-                                //lastSoundLength     = m_nextSoundLength;
-                                m_lastSoundFreqFrames = (soundMsg.periodMs * m_frameRate)/ 1000;
-                                */
                             }
                         }
                     } 
@@ -639,7 +589,6 @@ static void* pcmPlaybackThread(void *arg)
                                 }
                             }
                         }
-                        //feedBuffer();
                     }
                 }
             }
@@ -694,7 +643,6 @@ static void fillLocalBufferWithSound(unsigned char volume, int channel, unsigned
             int16_t data = *dataPtr;
             int16_t existingData;
             if (volume != 128) { // need to change volume. Check for overruns
-//                data = (int16_t) (((uint32_t)(data * volume)) >> 7);
                 data = (int16_t) (((uint32_t)(data * volume))/128);
                 if (volume > 128 && data < *dataPtr) {
                     data = 0xFFFF; 
@@ -856,157 +804,6 @@ static int soundFillLocalBuffer(PulseSound *sound) {
 }
 
 
-#if 0
-// write one period to the buffer
-static int feedBuffer(void) {
-    int reInit = 0;
-    int totalFramesFilled = 0;
-    int bytesPerFrame = m_nChannels * m_bytesPerSample;
-    
-    // if we're currently playing a sound, attempt to finish it
-    if (m_currentSoundBuf) {
-        assert(m_currentSoundBufPtr);
-        int framesToWrite = MIN(m_currentSoundDataLength - ((m_currentSoundBufPtr - m_currentSoundBuf))/bytesPerFrame, m_periodSize_frames);
-//        printf("WRITE SOUND DATA 1\n");
-        int framesFilled = fillBufferWithSound(m_currentSoundBufPtr, framesToWrite, &reInit);
-//        printf("Wrote %d frames\n", framesFilled);
-        if (framesFilled >= 0) {
-//            printf("Wrote %d frames to sound buffer\n", framesFilled);
-            totalFramesFilled    += framesFilled;
-            m_currentSoundBufPtr += framesFilled * bytesPerFrame;
-            if (m_currentSoundBufPtr - m_currentSoundBuf >= m_currentSoundDataLength * bytesPerFrame) {  
-                // we've finished the current sound. Reset variables. 
-                // But first, set the next sound if there isn't one already
-                printf("!!!! Finished current sound\n");
-                if (!m_nextSoundBuf) {  // Auto fill the next sound, if there is no queue'd one
-                    m_nextSoundBuf        = m_currentSoundBuf; 
-                    m_nextSoundLength     = m_currentSoundDataLength;
-                    m_nextSoundTimeFrames = m_lastSoundFreqFrames - m_currentSoundDataLength + totalFramesFilled; // NB - at this point, nextSoundTime is supposed to be offset from the beginning of the period. That's why we add totalFramesFilled
-                    if (m_nextSoundTimeFrames <=0 ){
-                        printf("!!!! Maximum beat frequency for this sound!\n");
-                        m_nextSoundTimeFrames = 0;
-                    }
-                    printf("Auto filling next sound, m_nextSoundtimeFrames is %d\n", m_nextSoundTimeFrames);
-                }
-                m_currentSoundBuf    = NULL;
-                m_currentSoundBufPtr = NULL;
-                m_currentSoundDataLength = 0;
-            }
-            if (framesFilled != framesToWrite) {
-                printf("Primary write: Did not write as many frames as expected: %d written, vs %d expected\n", framesFilled, framesToWrite);
-                if (reInit) {
-                    if (m_nextSoundBuf) {
-                        m_nextSoundTimeFrames = MAX(0, m_nextSoundTimeFrames - framesFilled);
-                    }
-                    return -1;
-                }
-            }
-        } else {
-            // This is an unrecoverable error. Not sure what to do.
-            printf("Audio system unrecoverable error. Ack Ack Ack\n"); // XXX FIXME
-        }   
-    }
-        
-    // if there's space in the buffer, add more stuff
-    // silence and then the next sound, if there is a next sound.
-    if (totalFramesFilled < m_periodSize_frames) {
-        assert(!m_currentSoundBuf); 
-        int framesFilled = 0;
-        int framesToWrite = 0;
-        if (!m_nextSoundBuf) {
-            // no next sound - fill the rest of the thing with silence...
-            framesToWrite = m_periodSize_frames - totalFramesFilled;
-//            printf("Silence fill 1\n");
-            framesFilled = fillBufferWithSilence(framesToWrite, &reInit);
-        } else if (m_nextSoundTimeFrames > totalFramesFilled) {
-            // if next sound starts after the end of what we've got, fill the bits between
-            // with silence.
-            framesToWrite = MIN(m_periodSize_frames-totalFramesFilled, m_nextSoundTimeFrames - totalFramesFilled);
-            printf("Silence fill 2\n");
-            framesFilled = fillBufferWithSilence(framesToWrite, &reInit);
-        } else {
-            printf("!!!CSW!!! No silence - maximum heartbeat with this sound?\n");
-        }
-        if (framesFilled >= 0) {
-            totalFramesFilled += framesFilled;
-            if (framesFilled != framesToWrite) {
-                printf("Fill silence: Did not write as many bytes as expected: %d written, vs %d expected\n", framesFilled, framesToWrite);
-                if (reInit) {
-                    if (m_nextSoundBuf) {
-                        m_nextSoundTimeFrames = MAX(0, m_nextSoundTimeFrames - framesFilled);
-                    }
-                    return -1;
-                } 
-            }
-        } else {
-            // This is an unrecoverable error. Not sure what to do.
-            printf("Audio system unrecoverable error. Ack Ack Ack\n"); // XXX FIXME
-        }
-        
-        // Next sound, if there's space for it
-        if (totalFramesFilled < m_periodSize_frames) {
-            assert(m_nextSoundBuf);
-            m_currentSoundBuf     = m_nextSoundBuf;
-            m_currentSoundBufPtr  = m_currentSoundBuf;
-            m_currentSoundDataLength  = m_nextSoundLength;
-            m_nextSoundData        = NULL;
-            m_nextSoundTimeFrames = 0;
-            framesToWrite = MIN(m_currentSoundDataLength, m_periodSize_frames -totalFramesFilled);
-//            printf("WRITE SOUND DATA 2\n");
-            framesFilled = fillBufferWithSound(m_currentSoundBuf, framesToWrite, &reInit);
-            printf("Wrote %d frames\n", framesFilled);
-            if (framesFilled >= 0) {
-                totalFramesFilled += framesFilled;
-                if (m_currentSoundLength <= framesFilled) {
-                    m_currentSoundBuf    = NULL;
-                    m_currentSoundBufPtr = NULL;
-                    m_currentSoundLength = 0;
-                } else {
-                    m_currentSoundBufPtr += framesFilled * bytesPerFrame;
-                }
-                if (framesFilled != framesToWrite) {
-                    printf("2ndary Fill sound: Did not write as many frames as expected: %d written, vs %d expected\n", framesFilled, framesToWrite);
-                    if (reInit) {
-                        return -1;
-                    } 
-                } 
-            } else {
-                // This is an unrecoverable error. Not sure what to do.
-                printf("Audio system unrecoverable error. Ack Ack Ack\n"); // XXX FIXME
-            }
-        }
-        
-        // And finally, silence, if there's space for it
-        if (totalFramesFilled < m_periodSize_frames) {
-            assert(!m_currentSoundBuf);
-            assert(!m_nextSoundBuf);
-            framesToWrite = totalFramesFilled < m_periodSize_frames;
-            framesFilled = fillBufferWithSilence(framesToWrite, &reInit);
-            if (framesFilled >= 0) {
-                totalFramesFilled += framesFilled;
-                if (framesFilled != framesToWrite) {
-                    printf("Did not write as many frames as expected: %d written, vs %d expected\n", framesFilled, framesToWrite);
-                    if (reInit) {
-                        return -1;
-                    } 
-                }
-            } else {
-                // This is an unrecoverable error. Not sure what to do.
-                printf("Audio system unrecoverable error. Ack Ack Ack\n"); // XXX FIXME
-            }
-        }
-        
-        // adjust nextSoundTimeBytes, if necessary
-        if (m_nextSoundBuf) {
-            m_nextSoundTimeFrames -= totalFramesFilled;
-//            printf("nextSoundTimeFrames is %d\n", nextSoundTimeFrames);
-        }
-    }
-    
-    return 0;
-}
-#endif //0
-
 static snd_pcm_sframes_t getAudioDelay(void)
 {
     int err;
@@ -1037,14 +834,6 @@ static int initializeSilentBuffer(int silentTimeMs)
     return 0;
 }
 
-/*
-static int fillBufferWithSilence(int silentFrames, int *reInit) 
-{
-//    printf("Writing some silence...\n");
-    return fillBufferWithSound(m_silentBuffer, silentFrames, reInit);
-}
-*/
- 
 
 static int fillBufferWithSound(unsigned char *soundBuffer, int nFramesToWrite, int *reInit)
 {
