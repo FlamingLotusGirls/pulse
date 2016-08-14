@@ -130,7 +130,10 @@ public class PulseCommChannel extends Binder {
         conn.setRequestMethod(method);
         JSONObject obj = readResponse(conn);
         if (obj.getString("status").equals("OK")) {
-            return obj.getInt("value");
+            if (obj.has("value")) {
+                return obj.getInt("value");
+            }
+            return 1;
         }
         throw new RuntimeException(("Error:" + obj.getString("message")));
     }
@@ -165,7 +168,7 @@ public class PulseCommChannel extends Binder {
     public void trigger(final String name) {
         run(new Callable<Void>() {
             public Void call() throws Exception {
-                sendBack(name, invoke(PUT, "/val?name=" + name));
+                sendBack(name, invoke(PUT, "/trigger?name=" + name));
                 return null;
             }
         });

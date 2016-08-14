@@ -14,22 +14,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import org.json.*;
-import android.net.Uri;
 import android.content.Intent;
 
 public class MainActivity extends ActionBarActivity {
-
-    private static SeekBar seek_bar;
-    private static TextView text_view;
+    private TextView text_view;
 
     private PulseCommChannel commChannel;
 
@@ -42,19 +30,16 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             commChannel = (PulseCommChannel)service;
-            commChannel.watch("slider1", new PulseCommChannel.IntWatcher() {
-                @Override
-                public void onChange(String name, int val) {
-                    text_view.setText("Covered : " + val + " / " + seek_bar.getMax());
-                    seek_bar.setProgress(val);
-                }
-            });
             commChannel.registerErrorWatcher(new PulseCommChannel.ErrWatcher() {
                 @Override
                 public void onError(Throwable t) {
                     Toast.makeText(MainActivity.this, "Error in REST service: " + t.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
+            initSeekbar(R.id.slider1);
+            initButton(R.id.button);
+            initButton(R.id.button2);
+            initButton(R.id.button3);
         }
 
         @Override
@@ -67,8 +52,6 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        addButtonClickListner();
-        seekbar();
     }
 
     @Override
@@ -84,25 +67,32 @@ public class MainActivity extends ActionBarActivity {
         super.onStop();
     }
 
-    public void addButtonClickListner()
+    public void initButton(int id)
     {
-        Button btnA = (Button)findViewById(R.id.button);
+        Button btnA = (Button)findViewById(id);
         btnA.setOnClickListener(new View.OnClickListener() {
             @Override
 
             public void onClick(View arg)
             {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.satalaj.com"));
-                startActivity(intent);
+                if (commChannel != null) {
+                    commChannel.trigger((String) arg.getTag());
+                }
             }
 
         });
     }
-    public void seekbar(){
-        seek_bar = (SeekBar)findViewById(R.id.slider1);
+    public void initSeekbar(int id){
+        final SeekBar seek_bar = (SeekBar)findViewById(id);
         text_view = (TextView)findViewById(R.id.textView2);
-        text_view.setText("Covered : " + seek_bar.getProgress() + " / " + seek_bar.getMax());
-
+        text_view.setText(seek_bar.getTag() + " : " + seek_bar.getProgress() + " / " + seek_bar.getMax());
+        commChannel.watch((String)seek_bar.getTag(), new PulseCommChannel.IntWatcher() {
+            @Override
+            public void onChange(String name, int val) {
+                text_view.setText("Covered : " + val + " / " + seek_bar.getMax());
+                seek_bar.setProgress(val);
+            }
+        });
         seek_bar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     int progress_value;
@@ -111,7 +101,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         progress_value = progress;
                         if (commChannel != null) {
-                            commChannel.setIntParam("slider1", progress);
+                            commChannel.setIntParam((String)seekBar.getTag(), progress);
                         }
                     }
 
