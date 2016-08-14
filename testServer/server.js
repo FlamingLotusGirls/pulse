@@ -91,6 +91,12 @@ app.get('/val', (req, res) => {
     res.send({status: "OK", param: param, value: value});
 });
 
+app.put('/trigger', (req, res) => {
+    let event = req.query.name;
+    log.info("Trigger %s", event);
+    res.send({status: "OK", name: event});
+});
+
 // Send files in the params/ subdirectory. Use ".json" for json files, .txt for text files.
 // http://localhost:8081/params/fuel.json
 app.use("/params", express.static("params", {}))
