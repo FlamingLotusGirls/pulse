@@ -34,13 +34,25 @@ public class MainActivity extends ActionBarActivity {
     private PulseCommChannel commChannel;
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
+        /**
+         * Once the service is connected, we hook up the uI
+         * @param name
+         * @param service
+         */
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             commChannel = (PulseCommChannel)service;
-            commChannel.watch("Slider1", new PulseCommChannel.IntWatcher() {
+            commChannel.watch("slider1", new PulseCommChannel.IntWatcher() {
                 @Override
                 public void onChange(String name, int val) {
                     text_view.setText("Covered : " + val + " / " + seek_bar.getMax());
+                    seek_bar.setProgress(val);
+                }
+            });
+            commChannel.registerErrorWatcher(new PulseCommChannel.ErrWatcher() {
+                @Override
+                public void onError(Throwable t) {
+                    Toast.makeText(MainActivity.this, "Error in REST service: " + t.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -99,7 +111,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         progress_value = progress;
                         if (commChannel != null) {
-                            commChannel.setIntParam("Slider1", progress);
+                            commChannel.setIntParam("slider1", progress);
                         }
                     }
 

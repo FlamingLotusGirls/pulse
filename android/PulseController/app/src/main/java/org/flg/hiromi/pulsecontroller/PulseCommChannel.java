@@ -185,7 +185,7 @@ public class PulseCommChannel extends Binder {
     public void watch(String name, IntWatcher cb) {
         List<IntWatcher> ws = getWatchers(name);
         ws.add(cb);
-        getIntParam("param");
+        getIntParam(name);
     }
 
     /**
