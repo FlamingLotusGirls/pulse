@@ -1,5 +1,7 @@
 /*********************************************************************************
 
+TODO: pod_id indentifies sensor source, but there are two on MIU
+
 PulsePolarBPM.cpp
 
 Read samples from the Polar heart beat sensor.
@@ -79,10 +81,11 @@ int clock_gettime(int clk_id, struct timespec *t){
 #endif
 
 static int verbose = 0;
+static bool keepRunning = true; // this will keep the main loop running, can set to false in a signal handler. 
 
 const char *deviceDesc[8] = {"?", "?", "Go! Temp", "Go! Link", "Go! Motion", "?", "?", "Mini GC"};
 
-bool GetAvailableDeviceName(char *deviceName, gtype_int32 nameLength, gtype_int32 *pVendorId, gtype_int32 *pProductId);
+int GetAvailableDeviceNames(char *deviceName, char* deviceName2, gtype_int32 nameLength, gtype_int32 *pVendorId, gtype_int32 *pProductId);
 static void OSSleep(unsigned long msToSleep);
 
 
@@ -111,10 +114,14 @@ typedef struct {
 
  int earlyMaxBooboo;
 
+ time_t lastBeatSent;
+ uint8_t sequence;
+
 } bpm_det_state_t;
 
 static clockid_t sWhich_clock = CLOCK_MONOTONIC_RAW;
-static bpm_det_state_t bs;
+static bpm_det_state_t bs1;
+static bpm_det_state_t bs2; // for second sensor.
 
 
 unsigned
@@ -161,14 +168,7 @@ diff_timespec_ms(struct timespec* start, struct timespec* finish) {
 }
 
 void
-Reset() {
-	bs.b_i_idx = 0;
-	bs.dtCount = bs.count = 0;
-	bs.earlyMaxBooboo = 0;
-	bs.consecutiveBeats = 0;
-
-	memset(&bs, sizeof(bs), 0);
-}
+Reset(bpm_det_state_t& bs) { memset(&bs, sizeof(bs), 0); }
 
 
 // interval at 30  bpm is 2000 ms
@@ -186,7 +186,7 @@ legal_interval_range(unsigned beat_interval_ms)
 //
 //
 void
-ProcessNextMeasurement(double val)
+ProcessNextMeasurement(double val, bpm_det_state_t& bs)
 {
 	struct timespec now;
 	clock_gettime(sWhich_clock, &now);
@@ -289,8 +289,7 @@ GetOpts(int argc, char* argv[], uint8_t* pod_id, char** ip, short* port)
 }
 
 void
-RunDummyLoopNoDeviceFound(uint8_t pod_id, int sock,
-	struct sockaddr_in* si_tobrain)
+RunDummyLoopNoDeviceFound(uint8_t pod_id, int sock, struct sockaddr_in* si_tobrain)
 {
  uint8_t sequence = 0; // packet sequence number
 
@@ -305,32 +304,102 @@ RunDummyLoopNoDeviceFound(uint8_t pod_id, int sock,
  }
 }
 
-int main(int argc, char* argv[])
-{
-	char deviceName[GOIO_MAX_SIZE_DEVICE_NAME];
-	gtype_int32 vendorId;		//USB vendor id
-	gtype_int32 productId;		//USB product id
-	char tmpstring[100];
-	gtype_uint16 MajorVersion;
-	gtype_uint16 MinorVersion;
 
+bool
+SetupGoIO(char* deviceName, gtype_int32 vendorId, gtype_int32 productId, GOIO_SENSOR_HANDLE& hDevice)
+{
+	hDevice = GoIO_Sensor_Open(deviceName, vendorId, productId, 0);
+	if (hDevice != NULL)
+	{
+		char tmpstring[100];
+		printf("Successfully opened %s device %s .\n", deviceDesc[productId], deviceName);
+
+		unsigned char charId;
+		GoIO_Sensor_DDSMem_GetSensorNumber(hDevice, &charId, 0, 0);
+		printf("Sensor id = %d", charId);
+
+		GoIO_Sensor_DDSMem_GetLongName(hDevice, tmpstring, sizeof(tmpstring));
+		if (strlen(tmpstring) != 0)
+			printf("(%s)", tmpstring);
+		printf("\n");
+
+		// period is in milliseconds. see above ...
+		GoIO_Sensor_SetMeasurementPeriod(hDevice, MEASUREMENT_PERIOD, SKIP_TIMEOUT_MS_DEFAULT);
+		GoIO_Sensor_SendCmdAndGetResponse(hDevice, SKIP_CMD_ID_START_MEASUREMENTS, NULL, 0, NULL, NULL, SKIP_TIMEOUT_MS_DEFAULT);
+		return true;
+	}
+	return false;
+}
+
+
+void
+GoIOReadAndProcessOneMeasurement(GOIO_SENSOR_HANDLE hDevice, bpm_det_state_t& bs, int sock, struct sockaddr_in* si_tobrain, uint8_t pod_id)
+{
 	gtype_int32 rawMeasurement;
 	gtype_real64 volts;
 	gtype_real64 calbMeasurement;
-
 	gtype_int32 numMeasurements,i;
+
+	// block until one sample is ready ...
+	numMeasurements = GoIO_Sensor_ReadRawMeasurements(hDevice, &rawMeasurement, 1);
+
+	if (numMeasurements) {
+		volts = GoIO_Sensor_ConvertToVoltage(hDevice, rawMeasurement);
+		calbMeasurement = GoIO_Sensor_CalibrateData(hDevice, volts);
+
+		ProcessNextMeasurement(calbMeasurement,bs);
+
+		if (bs.justGenerated) {
+
+			bs.lastBeatSent = time(NULL);
+
+			AnnounceBPMdata_udp(
+				bs.currentBeatInterval_ms, 
+				diff_timespec_ms(&bs.prevBeatTime, &bs.prevTime),
+				pod_id,
+				bs.sequence++,
+				sock, si_tobrain);
+
+			if (verbose>0) {
+				printf("period %f ms @%ld,%ld\n",
+					bs.currentBeatInterval_ms,
+					bs.prevBeatTime.tv_sec,
+					bs.prevBeatTime.tv_nsec);
+			}
+		}
+	}
+
+	// todo, calculate ms since last sample and subtract from 20
+	//OSSleep(10); // 10 ms.
+
+	if (time(NULL)-bs.lastBeatSent > 2) {
+		bs.lastBeatSent = time(NULL);
+		AnnounceBPMdata_udp(
+			0, // zero ms interval
+			0, // zero delay
+			pod_id,
+			bs.sequence++,
+			sock, si_tobrain);
+	}
+}
+
+int main(int argc, char* argv[])
+{
+	char deviceName[GOIO_MAX_SIZE_DEVICE_NAME];
+	char deviceName2[GOIO_MAX_SIZE_DEVICE_NAME];
+
+	gtype_int32 vendorId;		//USB vendor id
+	gtype_int32 productId;		//USB product id
+
+	gtype_uint16 MajorVersion;
+	gtype_uint16 MinorVersion;
 
 	uint8_t pod_id = 1;
 	char* ip = (char*)"192.168.1.255"; // default.
 	short port = 5000;
 
-	time_t lastBeatSent = 0L;
-
 	GetOpts(argc, argv, &pod_id, &ip, &port);
 
-	printf("GoIO_DeviceCheck version 1.1\n");
-
-	uint8_t sequence = 0; // packet sequence number
 	int sock;
 	struct sockaddr_in si_tobrain;
 
@@ -343,101 +412,71 @@ int main(int argc, char* argv[])
 		printf("Use ip '%s' port %hd\n", ip, port);
 	}
 
-	Reset(); // reset the bpm state data.
+	Reset(bs1); // reset the bpm state data.
+	Reset(bs2); // reset the bpm state data.
 	GoIO_Init();
 
 	GoIO_GetDLLVersion(&MajorVersion, &MinorVersion);
 	printf("This app is linked to GoIO lib version %d.%d .\n", MajorVersion, MinorVersion);
 
-	bool bFoundDevice = GetAvailableDeviceName(deviceName, GOIO_MAX_SIZE_DEVICE_NAME, &vendorId, &productId);
-	if (!bFoundDevice) {
+	//bool bFoundDevice = GetAvailableDeviceName(deviceName, GOIO_MAX_SIZE_DEVICE_NAME, &vendorId, &productId);
+
+	int nGoIOFound = GetAvailableDeviceNames(deviceName, deviceName2, GOIO_MAX_SIZE_DEVICE_NAME, &vendorId, &productId);
+
+	if (!nGoIOFound) {
 		printf("No Go devices found.\n");
 		RunDummyLoopNoDeviceFound(pod_id, sock, &si_tobrain);
-
 	} else {
-		GOIO_SENSOR_HANDLE hDevice = GoIO_Sensor_Open(deviceName, vendorId, productId, 0);
-		if (hDevice != NULL)
-		{
-			printf("Successfully opened %s device %s .\n", deviceDesc[productId], deviceName);
+		GOIO_SENSOR_HANDLE hDevice=0L,hDevice2=0L;
 
-			unsigned char charId;
-			GoIO_Sensor_DDSMem_GetSensorNumber(hDevice, &charId, 0, 0);
-			printf("Sensor id = %d", charId);
+		if (deviceName[0])  SetupGoIO(deviceName,  vendorId, productId, hDevice);
+		if (deviceName2[0]) SetupGoIO(deviceName2, vendorId, productId, hDevice2);
 
-			GoIO_Sensor_DDSMem_GetLongName(hDevice, tmpstring, sizeof(tmpstring));
-			if (strlen(tmpstring) != 0)
-				printf("(%s)", tmpstring);
-			printf("\n");
+		if (!hDevice && !hDevice2) return -1; // need at least 1!
 
-			// period is in milliseconds. see above ...
-			GoIO_Sensor_SetMeasurementPeriod(hDevice, MEASUREMENT_PERIOD, SKIP_TIMEOUT_MS_DEFAULT);
-			GoIO_Sensor_SendCmdAndGetResponse(hDevice, SKIP_CMD_ID_START_MEASUREMENTS, NULL, 0, NULL, NULL, SKIP_TIMEOUT_MS_DEFAULT);
+		//
+		// MAIN LOOP - keep reading measurements forever ....
+		// ... or until we read a command to stop on the network ...
 
-			//
-			// MAIN LOOP - keep reading measurements forever ....
-			// ... or until we read a command to stop on the network ...
-			bool keepGoing = true;
-			while (keepGoing) {
-//printf("101\n");
-				// block until one sample is ready ...
-				numMeasurements = GoIO_Sensor_ReadRawMeasurements(hDevice, &rawMeasurement, 1);
+		// yeah, it's forever at the moment. Defer restart to watchdog?
+		while (keepRunning) {
+			GoIOReadAndProcessOneMeasurement(hDevice,  bs1, sock, &si_tobrain, pod_id);
+			GoIOReadAndProcessOneMeasurement(hDevice2, bs2, sock, &si_tobrain, pod_id+1);
+			OSSleep(10); // 10 ms.
 
-				if (numMeasurements) {
-					volts = GoIO_Sensor_ConvertToVoltage(hDevice, rawMeasurement);
-					calbMeasurement = GoIO_Sensor_CalibrateData(hDevice, volts);
-
-					ProcessNextMeasurement(calbMeasurement);
-
-					if (bs.justGenerated) {
-
-						lastBeatSent = time(NULL);
-
-						AnnounceBPMdata_udp(
-							bs.currentBeatInterval_ms, 
-							diff_timespec_ms(&bs.prevBeatTime, &bs.prevTime),
-							pod_id,
-							sequence++,
-							sock, &si_tobrain);
-
-						if (verbose>0) {
-							printf("period %f ms @%ld,%ld\n",
- 								bs.currentBeatInterval_ms,
-								bs.prevBeatTime.tv_sec,
-								bs.prevBeatTime.tv_nsec);
-						}
-					}
-				}
-
-				// todo, calculate ms since last sample and subtract from 20
-				OSSleep(10); // 10 ms.
-
-				if (time(NULL)-lastBeatSent > 2) {
-					lastBeatSent = time(NULL);
-					AnnounceBPMdata_udp(
-						0, // zero ms interval
-						0, // zero delay
-						pod_id,
-						sequence++,
-						sock, &si_tobrain);
-				}
-			}
-
-			//GoIO_Sensor_DDSMem_GetCalibrationEquation(hDevice, &equationType);
-			//gtype_real32 a, b, c;
-			//unsigned char activeCalPage = 0;
-			//GoIO_Sensor_DDSMem_GetActiveCalPage(hDevice, &activeCalPage);
-			//GoIO_Sensor_DDSMem_GetCalPage(hDevice, activeCalPage, &a, &b, &c, units, sizeof(units));
-			//printf("Average measurement = %8.3f %s .\n", averageCalbMeasurement, units);
-
-			GoIO_Sensor_Close(hDevice);
+			// TODO - check global signal handler flags to exit ...
 		}
+
+		GoIO_Sensor_Close(hDevice);
+		GoIO_Sensor_Close(hDevice2);
 	}
 
 	GoIO_Uninit();
 	return 0;
 }
 
+int GetAvailableDeviceNames(char *deviceName, char* deviceName2, gtype_int32 nameLength, gtype_int32 *pVendorId, gtype_int32 *pProductId)
+{
+	deviceName[0] = 0;
+	deviceName2[0] = 0;
+	int nDevices = GoIO_UpdateListOfAvailableDevices(VERNIER_DEFAULT_VENDOR_ID, SKIP_DEFAULT_PRODUCT_ID);
 
+	if (nDevices > 0)
+	{
+		GoIO_GetNthAvailableDeviceName(deviceName, nameLength, VERNIER_DEFAULT_VENDOR_ID, SKIP_DEFAULT_PRODUCT_ID, 0);
+
+		*pVendorId = VERNIER_DEFAULT_VENDOR_ID;
+		*pProductId = SKIP_DEFAULT_PRODUCT_ID;
+	}
+	if (nDevices > 1)
+	{
+		GoIO_GetNthAvailableDeviceName(deviceName, nameLength, VERNIER_DEFAULT_VENDOR_ID, SKIP_DEFAULT_PRODUCT_ID, 1);
+	}
+
+	return nDevices;
+}
+
+#if 0
 bool GetAvailableDeviceName(char *deviceName, gtype_int32 nameLength, gtype_int32 *pVendorId, gtype_int32 *pProductId)
 {
 	bool bFoundDevice = false;
@@ -478,6 +517,7 @@ bool GetAvailableDeviceName(char *deviceName, gtype_int32 nameLength, gtype_int3
 
 	return bFoundDevice;
 }
+#endif
 
 void OSSleep(unsigned long msToSleep)//milliseconds
 {
