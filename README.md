@@ -42,3 +42,10 @@ https://github.com/FlamingLotusGirls/pulse/pulls
 * Pod_daemon - A daemon run at startup that coordinates the heartbeat sensor (BPM), POD LED's, and audio
 * MIU_daemon - A daemon run at startup that communicates with two heartbeat sensors (BPM), triggers LED fx, and sends out UDP packets
 * Heart_daemon - A daemon run at startup that listens to udp packets from two PODs and the MIU sensors
+
+## Lights
+
+```
+cd lights
+./setup.sh # installs dependencies to ./vendor, runs make
+```
