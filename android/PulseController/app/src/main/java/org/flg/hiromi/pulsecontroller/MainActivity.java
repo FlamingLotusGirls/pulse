@@ -3,6 +3,8 @@ package org.flg.hiromi.pulsecontroller;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
@@ -21,6 +23,7 @@ public class MainActivity extends ActionBarActivity {
 
     private PulseCommChannel commChannel;
 
+    //  connect to our background communication service.
     private ServiceConnection serviceConnection = new ServiceConnection() {
         /**
          * Once the service is connected, we hook up the uI
@@ -33,7 +36,7 @@ public class MainActivity extends ActionBarActivity {
             commChannel.registerErrorWatcher(new PulseCommChannel.ErrWatcher() {
                 @Override
                 public void onError(Throwable t) {
-                    Toast.makeText(MainActivity.this, "Error in REST service: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Error in REST service: " + t.toString(), Toast.LENGTH_LONG).show();
                 }
             });
             initSeekbar(R.id.slider1);
@@ -67,26 +70,49 @@ public class MainActivity extends ActionBarActivity {
         super.onStop();
     }
 
+    /**
+     * Initialize a button. The button must have a tag field with the name of the event to send.
+     * @param id
+     */
     public void initButton(int id)
     {
-        Button btnA = (Button)findViewById(id);
+        final Button btnA = (Button)findViewById(id);
+        commChannel.watchEvent((String) btnA.getTag(), new PulseCommChannel.IntWatcher() {
+            @Override
+            public void onChange(String name, int val, boolean update) {
+                text_view.setText(btnA.getTag() + " : " + val);
+                // Set the button background back
+                Drawable bg = (Drawable)btnA.getTag(R.id.button);
+                if (bg != null) {
+                    btnA.setBackground(bg);
+                }
+            }
+        });
         btnA.setOnClickListener(new View.OnClickListener() {
             @Override
-
             public void onClick(View arg)
             {
                 if (commChannel != null) {
                     commChannel.trigger((String) arg.getTag());
+                    Drawable bg = btnA.getBackground();
+                    btnA.setTag(R.id.button, bg);
+                    // Set the button color to show it's currently being processed
+                    btnA.setBackgroundColor(Color.BLUE);
                 }
             }
 
         });
     }
+
+    /**
+     * Initialize a seek bar. The seek bar must have a tag field with the name of the parameter to set.
+     * @param id
+     */
     public void initSeekbar(int id){
         final SeekBar seek_bar = (SeekBar)findViewById(id);
         text_view = (TextView)findViewById(R.id.textView2);
         text_view.setText(seek_bar.getTag() + " : " + seek_bar.getProgress() + " / " + seek_bar.getMax());
-        commChannel.watch((String)seek_bar.getTag(), new PulseCommChannel.IntWatcher() {
+        commChannel.watchParameter((String)seek_bar.getTag(), new PulseCommChannel.IntWatcher() {
             @Override
             public void onChange(String name, int val, boolean update) {
                 text_view.setText(seek_bar.getTag() + " : " + val + " / " + seek_bar.getMax());

@@ -190,11 +190,24 @@ public class PulseCommChannel extends Binder {
         return ws;
     }
 
-    // Watch for changes
-    public void watch(String name, IntWatcher cb) {
+    /**
+     * Watch for parameter changes
+     * @param name Parameter name
+     * @param cb Callback on parameter change
+     */
+    public void watchParameter(String name, IntWatcher cb) {
+        watchEvent(name, cb);
+        getIntParam(name);
+    }
+
+    /**
+     * Watch for events
+     * @param name Parameter name
+     * @param cb Callback on event
+     */
+    public void watchEvent(String name, IntWatcher cb) {
         List<IntWatcher> ws = getWatchers(name);
         ws.add(cb);
-        getIntParam(name);
     }
 
     /**
