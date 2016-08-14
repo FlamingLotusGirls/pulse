@@ -18,5 +18,5 @@ $SRCDIR/pulse/pi_startup/cycleLogs.sh $LOG
 
 echo starting HEART PI on `hostname` > $LOG
 
-stdbuf -oL python $CONTROL >>& $LOG &
+stdbuf -oL python $CONTROL >> $LOG 2>&1 &
 
