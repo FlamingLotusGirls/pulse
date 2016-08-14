@@ -48,6 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
+#include <signal.h>
 #include <sys/time.h>
 #include <stdlib.h>
 #include <GoIO_DLL_interface.h>
@@ -383,6 +384,12 @@ GoIOReadAndProcessOneMeasurement(GOIO_SENSOR_HANDLE hDevice, bpm_det_state_t& bs
 	}
 }
 
+void quitRunning(int sig)
+{
+	if (sig==15) keepRunning=false;
+}
+
+
 int main(int argc, char* argv[])
 {
 	char deviceName[GOIO_MAX_SIZE_DEVICE_NAME];
@@ -399,6 +406,8 @@ int main(int argc, char* argv[])
 	short port = 5000;
 
 	GetOpts(argc, argv, &pod_id, &ip, &port);
+
+	signal(15, quitRunning);
 
 	int sock;
 	struct sockaddr_in si_tobrain;
