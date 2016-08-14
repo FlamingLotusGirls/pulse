@@ -88,9 +88,11 @@ public class MainActivity extends ActionBarActivity {
         text_view.setText(seek_bar.getTag() + " : " + seek_bar.getProgress() + " / " + seek_bar.getMax());
         commChannel.watch((String)seek_bar.getTag(), new PulseCommChannel.IntWatcher() {
             @Override
-            public void onChange(String name, int val) {
-                text_view.setText("Covered : " + val + " / " + seek_bar.getMax());
-                seek_bar.setProgress(val);
+            public void onChange(String name, int val, boolean update) {
+                text_view.setText(seek_bar.getTag() + " : " + val + " / " + seek_bar.getMax());
+                if (!update) {
+                    seek_bar.setProgress(val);
+                }
             }
         });
         seek_bar.setOnSeekBarChangeListener(

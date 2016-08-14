@@ -33,7 +33,13 @@ public class PulseCommChannel extends Binder {
     }
 
     public interface IntWatcher {
-        public void onChange(String name, int val);
+        /**
+         *
+         * @param name Name of the parameter changed
+         * @param val New value of the parameter
+         * @param update true if this is the result of an update.
+         */
+        public void onChange(String name, int val, boolean update);
     }
     private final Map<String,List<IntWatcher>> watchers = new HashMap<>();
     private final List<ErrWatcher> errWatchers = new ArrayList<>();
@@ -69,13 +75,13 @@ public class PulseCommChannel extends Binder {
     /**
      * Send an int value back to the main thread.
      */
-    private void sendBack(final String name, final int val) {
+    private void sendBack(final String name, final int val, final boolean update) {
         main.post(new Runnable() {
             @Override
             public void run() {
                 for (IntWatcher iw : getWatchers(name)) {
                     try {
-                        iw.onChange(name, val);
+                        iw.onChange(name, val, update);
                     } catch (Error | Exception t) {
                         Log.e("SVC", "Error while reporting change.", t);
                         sendError(t);
@@ -145,7 +151,7 @@ public class PulseCommChannel extends Binder {
     public void setIntParam(final String param, final int value) {
         run(new Callable<Void>() {
             public Void call() throws Exception {
-                sendBack(param, invoke(PUT, "/val?param=" + param + "&value=" + value));
+                sendBack(param, invoke(PUT, "/val?param=" + param + "&value=" + value), true);
                 return null;
             }
         });
@@ -155,7 +161,7 @@ public class PulseCommChannel extends Binder {
     public void getIntParam(final String param) {
         run(new Callable<Void>() {
             public Void call() throws Exception {
-                sendBack(param, invoke(GET, "/val?param=" + param));
+                sendBack(param, invoke(GET, "/val?param=" + param), false);
                 return null;
             }
         });
@@ -168,7 +174,7 @@ public class PulseCommChannel extends Binder {
     public void trigger(final String name) {
         run(new Callable<Void>() {
             public Void call() throws Exception {
-                sendBack(name, invoke(PUT, "/trigger?name=" + name));
+                sendBack(name, invoke(PUT, "/trigger?name=" + name), true);
                 return null;
             }
         });
