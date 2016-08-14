@@ -85,6 +85,7 @@ public class MainActivity extends ActionBarActivity {
                 Drawable bg = (Drawable)btnA.getTag(R.id.button);
                 if (bg != null) {
                     btnA.setBackground(bg);
+                    btnA.setEnabled(true);
                 }
             }
         });
@@ -98,6 +99,7 @@ public class MainActivity extends ActionBarActivity {
                     btnA.setTag(R.id.button, bg);
                     // Set the button color to show it's currently being processed
                     btnA.setBackgroundColor(Color.BLUE);
+                    btnA.setEnabled(false);
                 }
             }
 
