@@ -1,6 +1,10 @@
 package org.flg.hiromi.pulsecontroller;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +31,26 @@ public class MainActivity extends ActionBarActivity {
     private static SeekBar seek_bar;
     private static TextView text_view;
 
+    private PulseCommChannel commChannel;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            commChannel = (PulseCommChannel)service;
+            commChannel.watch("Slider1", new PulseCommChannel.IntWatcher() {
+                @Override
+                public void onChange(String name, int val) {
+                    text_view.setText("Covered : " + val + " / " + seek_bar.getMax());
+                }
+            });
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            commChannel = null;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +58,20 @@ public class MainActivity extends ActionBarActivity {
         addButtonClickListner();
         seekbar();
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, PulseCommService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        unbindService(serviceConnection);
+        super.onStop();
+    }
+
     public void addButtonClickListner()
     {
         Button btnA = (Button)findViewById(R.id.button);
@@ -53,7 +91,6 @@ public class MainActivity extends ActionBarActivity {
         text_view = (TextView)findViewById(R.id.textView2);
         text_view.setText("Covered : " + seek_bar.getProgress() + " / " + seek_bar.getMax());
 
-
         seek_bar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     int progress_value;
@@ -61,64 +98,23 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         progress_value = progress;
-                        text_view.setText("Covered : " + progress + " / " + seek_bar.getMax());
-                        Toast.makeText(MainActivity.this, "SeekBar in progress", Toast.LENGTH_LONG).show();
+                        if (commChannel != null) {
+                            commChannel.setIntParam("Slider1", progress);
+                        }
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-                        Toast.makeText(MainActivity.this, "SeekBar in StartTracking", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(MainActivity.this, "SeekBar in StartTracking", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                        text_view.setText("Covered : " + progress_value + " / " + seek_bar.getMax());
-                        Toast.makeText(MainActivity.this, "SeekBar in StopTracking", Toast.LENGTH_LONG).show();
+                        //xtext_view.setText("Covered : " + progress_value + " / " + seek_bar.getMax());
+                        //Toast.makeText(MainActivity.this, "SeekBar in StopTracking", Toast.LENGTH_LONG).show();
                     }
                 }
         );
-    }
-
-    public int getParam(String param) {
-        try {
-            HttpURLConnection conn = (HttpURLConnection)new URL("http://192.168.58.17:8081/val?param=" + param ).openConnection();
-            conn.setRequestMethod("GET");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            try {
-                String jsonText = "";
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    jsonText += line;
-                }
-                JSONObject obj = new JSONObject(jsonText);
-                return obj.getInt("value");
-            } finally {
-                reader.close();
-            }
-        } catch (IOException | JSONException e) {
-            throw new Error("Could not open connection: " + e);
-        }
-    }
-
-    public int setParam(String param, String value) {
-        try {
-            HttpURLConnection conn = (HttpURLConnection)new URL("http://192.168.58.17:8081/val?param=" + param + "&value=" + value).openConnection();
-            conn.setRequestMethod("PUT");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            try {
-                String jsonText = "";
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    jsonText += line;
-                }
-                JSONObject obj = new JSONObject(jsonText);
-                return obj.getInt("value");
-            } finally {
-                reader.close();
-            }
-        } catch (IOException | JSONException e) {
-            throw new Error("Could not open connection: " + e);
-        }
     }
 
     @Override
