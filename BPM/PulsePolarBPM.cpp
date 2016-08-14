@@ -294,7 +294,7 @@ RunDummyLoopNoDeviceFound(uint8_t pod_id, int sock, struct sockaddr_in* si_tobra
 {
  uint8_t sequence = 0; // packet sequence number
 
- for (;;) {
+ while (keepRunning) {
    OSSleep(2000);
    AnnounceBPMdata_udp(
 	0, // zero ms interval
@@ -328,6 +328,8 @@ SetupGoIO(char* deviceName, gtype_int32 vendorId, gtype_int32 productId, GOIO_SE
 		GoIO_Sensor_SetMeasurementPeriod(hDevice, MEASUREMENT_PERIOD, SKIP_TIMEOUT_MS_DEFAULT);
 		GoIO_Sensor_SendCmdAndGetResponse(hDevice, SKIP_CMD_ID_START_MEASUREMENTS, NULL, 0, NULL, NULL, SKIP_TIMEOUT_MS_DEFAULT);
 		return true;
+	} else {
+		printf("Can't open '%s'\n", deviceName);
 	}
 	return false;
 }
@@ -479,7 +481,7 @@ int GetAvailableDeviceNames(char *deviceName, char* deviceName2, gtype_int32 nam
 	}
 	if (nDevices > 1)
 	{
-		GoIO_GetNthAvailableDeviceName(deviceName, nameLength, VERNIER_DEFAULT_VENDOR_ID, SKIP_DEFAULT_PRODUCT_ID, 1);
+		GoIO_GetNthAvailableDeviceName(deviceName2, nameLength, VERNIER_DEFAULT_VENDOR_ID, SKIP_DEFAULT_PRODUCT_ID, 1);
 	}
 
 	return nDevices;
