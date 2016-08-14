@@ -1,4 +1,4 @@
-package pulsecontroller.hiromi.flg.org.pulsecontroller;
+package org.flg.hiromi.pulsecontroller;
 
 import org.junit.Test;
 

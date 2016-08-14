@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +18,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import org.json.*;
+import android.net.Uri;
+import android.content.Intent;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -26,9 +31,23 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        addButtonClickListner();
         seekbar();
     }
+    public void addButtonClickListner()
+    {
+        Button btnA = (Button)findViewById(R.id.button);
+        btnA.setOnClickListener(new View.OnClickListener() {
+            @Override
 
+            public void onClick(View arg)
+            {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.satalaj.com"));
+                startActivity(intent);
+            }
+
+        });
+    }
     public void seekbar(){
         seek_bar = (SeekBar)findViewById(R.id.slider1);
         text_view = (TextView)findViewById(R.id.textView2);

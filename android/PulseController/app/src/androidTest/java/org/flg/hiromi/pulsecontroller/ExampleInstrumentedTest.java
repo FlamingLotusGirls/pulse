@@ -1,4 +1,4 @@
-package pulsecontroller.hiromi.flg.org.pulsecontroller;
+package org.flg.hiromi.pulsecontroller;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("pulsecontroller.hiromi.flg.org.pulsecontroller", appContext.getPackageName());
+        assertEquals("org.flg.hiromi.org.flg.hiromi.pulsecontroller.hiromi.flg.org.org.flg.hiromi.org.flg.hiromi.pulsecontroller", appContext.getPackageName());
     }
 }
