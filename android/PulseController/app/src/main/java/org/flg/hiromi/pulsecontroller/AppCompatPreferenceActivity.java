@@ -112,7 +112,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            startActivity(new Intent(this, MainActivity.class));
+            navigateUpTo(new Intent(this, MainActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }
