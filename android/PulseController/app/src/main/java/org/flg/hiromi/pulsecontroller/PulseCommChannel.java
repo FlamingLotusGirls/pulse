@@ -72,6 +72,7 @@ public class PulseCommChannel extends Binder {
                 BASE_URL = prefs.getString("base_url", "http://10.0.2.2:8081");
             }
         });
+
     }
 
     /**
@@ -148,6 +149,12 @@ public class PulseCommChannel extends Binder {
         }
     }
 
+    private int invoke(int methodID, int endpointID, Object...formatArgs) throws IOException, JSONException {
+        String method = service.getString(methodID);
+        String endpoint = service.getString(endpointID, formatArgs);
+        return invoke(method, endpoint);
+    }
+
     private int invoke(String method, String endpoint) throws IOException, JSONException {
         HttpURLConnection conn = (HttpURLConnection)new URL(BASE_URL + endpoint).openConnection();
         conn.setRequestMethod(method);
@@ -166,7 +173,10 @@ public class PulseCommChannel extends Binder {
             @Override
             public Void call() {
                 try {
-                    HttpURLConnection conn = (HttpURLConnection)new URL(BASE_URL + "/status").openConnection();
+                    String endpoint = service.getString(R.string.url_status);
+                    String method = service.getString(R.string.url_status_method);
+                    HttpURLConnection conn = (HttpURLConnection)new URL(BASE_URL + endpoint).openConnection();
+                    conn.setRequestMethod(method);
                     final JSONObject status = readResponse(conn);
                     main.post(new Runnable() {
                         @Override
@@ -199,14 +209,11 @@ public class PulseCommChannel extends Binder {
         });
     }
 
-    private static final String PUT = "PUT";
-    private static final String GET = "GET";
-
     // Set a parameter to an integer value
     public void setIntParam(final String param, final int value) {
         run(new Callable<Void>() {
             public Void call() throws Exception {
-                sendBack(param, invoke(PUT, "/val?param=" + param + "&value=" + value), true);
+                sendBack(param, invoke(R.string.url_param_set_method, R.string.url_param_set, param, value), true);
                 return null;
             }
         });
@@ -216,7 +223,7 @@ public class PulseCommChannel extends Binder {
     public void getIntParam(final String param) {
         run(new Callable<Void>() {
             public Void call() throws Exception {
-                sendBack(param, invoke(GET, "/val?param=" + param), false);
+                sendBack(param, invoke(R.string.url_param_get_method, R.string.url_param_get, param), false);
                 return null;
             }
         });
@@ -229,7 +236,7 @@ public class PulseCommChannel extends Binder {
     public void trigger(final String name) {
         run(new Callable<Void>() {
             public Void call() throws Exception {
-                sendBack(name, invoke(PUT, "/trigger?name=" + name), true);
+                sendBack(name, invoke(R.string.url_trigger_method, R.string.url_trigger, name), true);
                 return null;
             }
         });
