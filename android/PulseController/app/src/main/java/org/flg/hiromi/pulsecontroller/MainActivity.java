@@ -86,7 +86,8 @@ public class MainActivity extends ActionBarActivity {
         commChannel.watchEvent((String) btnA.getTag(), new PulseCommChannel.IntWatcher() {
             @Override
             public void onChange(String name, int val, boolean update) {
-                text_view.setText(btnA.getTag() + " : " + val);
+                String state = (val == 0) ? "Failed" : "OK";
+                text_view.setText(btnA.getTag() + " : " + state);
                 // Set the button background back
                 Drawable bg = (Drawable)btnA.getTag(R.id.button);
                 if (bg != null) {
@@ -100,6 +101,7 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(View arg)
             {
                 if (commChannel != null) {
+                    text_view.setText(btnA.getTag() + " :");
                     commChannel.trigger((String) arg.getTag());
                     Drawable bg = btnA.getBackground();
                     btnA.setTag(R.id.button, bg);
