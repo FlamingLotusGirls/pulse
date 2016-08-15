@@ -16,12 +16,18 @@ HOME=/home/flaming
 BPMMON=$HOME/pulse/BPM/PulsePolarBPM
 SOUND=$HOME/pulse/audio/sound_test
 
+BPMLOG=/var/log/pod.log
+SOUNDLOG=/var/log/sound.log
+
+$HOME/pulse/pi_startup/cycleLogs.sh $BPMLOG
+
 # start BPM monitor. Need to background this.
-$BPMMON -i$PODID -a$IP -p$PORT >& /var/log/pod.log &
+stdbuf -oL $BPMMON -i$PODID -a$IP -p$PORT >& $BPMLOG &
 
 # start LED monitor... background.
 
+$HOME/pulse/pi_startup/cycleLogs.sh $SOUNDLOG
 # start audio ...
-$SOUND -i$PODID >& /var/log/sound.log &
+stdbuf -oL $SOUND -i$PODID >& $SOUNDLOG &
 
 

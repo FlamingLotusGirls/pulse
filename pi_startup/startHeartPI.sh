@@ -12,8 +12,11 @@ SRCDIR=/home/flaming
 CONTROL=$SRCDIR/pulse/network/heartbeat_controller.py
 
 PODID=`cat /etc/pod.id`
+LOG=/var/log/heart.log
 
-echo starting HEART PI on `hostname`
+$SRCDIR/pulse/pi_startup/cycleLogs.sh $LOG
 
-python $CONTROL >& /var/log/heart.log &
+echo starting HEART PI on `hostname` > $LOG
+
+stdbuf -oL python $CONTROL >> $LOG 2>&1 &
 
