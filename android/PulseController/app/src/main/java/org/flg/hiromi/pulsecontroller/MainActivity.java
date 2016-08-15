@@ -3,10 +3,12 @@ package org.flg.hiromi.pulsecontroller;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +24,8 @@ public class MainActivity extends ActionBarActivity {
     private TextView text_view;
 
     private PulseCommChannel commChannel;
+
+    private SharedPreferences prefs;
 
     //  connect to our background communication service.
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -54,6 +58,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        prefs = PreferenceManager
+                .getDefaultSharedPreferences(this);
         setContentView(R.layout.activity_main);
     }
 
@@ -163,8 +169,8 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent().setClass(getApplicationContext(), SettingsActivity.class));
             return true;
         }
 

@@ -1,8 +1,11 @@
 package org.flg.hiromi.pulsecontroller;
 
 import android.app.Service;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -49,10 +52,21 @@ public class PulseCommChannel extends Binder {
 
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
     private final Handler main;
+    private final SharedPreferences prefs;
+    private String BASE_URL;
 
     public PulseCommChannel(PulseCommService service) {
         this.service = service;
         main = new Handler(service.getMainLooper());
+        prefs = PreferenceManager
+                .getDefaultSharedPreferences(service);
+        BASE_URL = prefs.getString("base_url", "http://10.0.2.2:8081");
+        prefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                BASE_URL = prefs.getString("base_url", "http://10.0.2.2:8081");
+            }
+        });
     }
 
     /**
@@ -128,8 +142,6 @@ public class PulseCommChannel extends Binder {
             reader.close();
         }
     }
-
-    private final String BASE_URL = "http://10.0.2.2:8081";
 
     private int invoke(String method, String endpoint) throws IOException, JSONException {
         HttpURLConnection conn = (HttpURLConnection)new URL(BASE_URL + endpoint).openConnection();
