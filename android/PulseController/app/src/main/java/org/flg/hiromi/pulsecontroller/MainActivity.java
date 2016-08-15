@@ -13,6 +13,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -60,10 +62,25 @@ public class MainActivity extends ActionBarActivity {
                     }
                 }
             });
-            initSeekbar(R.id.slider1);
-            initButton(R.id.button);
-            initButton(R.id.button2);
-            initButton(R.id.button3);
+            View v = findViewById(R.id.nandesuka);
+            initControls(v);
+        }
+
+        private void initControls(View v) {
+            if (v instanceof Button) {
+                if (v.getTag() instanceof String) {
+                    initButton((Button)v);
+                }
+            } else if (v instanceof SeekBar) {
+                if (v.getTag() instanceof String) {
+                    initSeekbar((SeekBar)v);
+                }
+            } else if (v instanceof ViewGroup) {
+                ViewGroup p = (ViewGroup)v;
+                for (int i = 0; i < p.getChildCount(); i++) {
+                    initControls(p.getChildAt(i));
+                }
+            }
         }
 
         @Override
@@ -95,11 +112,10 @@ public class MainActivity extends ActionBarActivity {
 
     /**
      * Initialize a button. The button must have a tag field with the name of the event to send.
-     * @param id
+     * @param btnA
      */
-    public void initButton(int id)
+    public void initButton(final Button btnA)
     {
-        final Button btnA = (Button)findViewById(id);
         commChannel.watchEvent((String) btnA.getTag(), new PulseCommChannel.IntWatcher() {
             @Override
             public void onChange(String name, int val, boolean update) {
@@ -133,10 +149,9 @@ public class MainActivity extends ActionBarActivity {
 
     /**
      * Initialize a seek bar. The seek bar must have a tag field with the name of the parameter to set.
-     * @param id
+     * @param seek_bar
      */
-    public void initSeekbar(int id){
-        final SeekBar seek_bar = (SeekBar)findViewById(id);
+    public void initSeekbar(final SeekBar seek_bar) {
         text_view = (TextView)findViewById(R.id.textView_status);
         text_view.setText(seek_bar.getTag() + " : " + seek_bar.getProgress() + " / " + seek_bar.getMax());
         commChannel.watchParameter((String)seek_bar.getTag(), new PulseCommChannel.IntWatcher() {
