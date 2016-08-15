@@ -94,7 +94,8 @@ app.get('/val', (req, res) => {
 app.put('/trigger', (req, res) => {
     let event = req.query.name;
     log.info("Trigger %s", event);
-    res.send({status: "OK", name: event});
+    // A delay before sending confirmation to allow the UI feedback to be visible.
+    setTimeout(() => res.send({status: "OK", name: event}), 1500);
 });
 
 // Send files in the params/ subdirectory. Use ".json" for json files, .txt for text files.
