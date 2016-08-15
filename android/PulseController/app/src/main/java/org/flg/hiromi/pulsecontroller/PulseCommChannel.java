@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,13 +45,17 @@ public class PulseCommChannel extends Binder {
          */
         public void onChange(String name, int val, boolean update);
     }
+
+    public interface StatusWatcher {
+        public void onStatus(JSONObject status);
+    }
     private final Map<String,List<IntWatcher>> watchers = new HashMap<>();
     private final List<ErrWatcher> errWatchers = new ArrayList<>();
+    private final List<StatusWatcher> statusWatchers = new ArrayList<>();
     private final PulseCommService service;
 
+    private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
-
-    private final ExecutorService executor = Executors.newFixedThreadPool(2);
     private final Handler main;
     private final SharedPreferences prefs;
     private String BASE_URL;
@@ -156,6 +161,44 @@ public class PulseCommChannel extends Binder {
         throw new RuntimeException(("Error:" + obj.getString("message")));
     }
 
+    public void readStatus()  {
+        run(new Callable<Void>() {
+            @Override
+            public Void call() {
+                try {
+                    HttpURLConnection conn = (HttpURLConnection)new URL(BASE_URL + "/status").openConnection();
+                    final JSONObject status = readResponse(conn);
+                    main.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (StatusWatcher w : statusWatchers) {
+                                try {
+                                    w.onStatus(status);
+                                } catch (Exception | Error t) {
+                                    sendError(t);
+                                }
+                            }
+                        }
+                    });
+                } catch (IOException | JSONException e) {
+                    main.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (StatusWatcher w : statusWatchers) {
+                                try {
+                                    w.onStatus(null);
+                                } catch (Exception | Error t) {
+                                    sendError(t);
+                                }
+                            }
+                        }
+                    });
+                }
+                return null;
+            }
+        });
+    }
+
     private static final String PUT = "PUT";
     private static final String GET = "GET";
 
@@ -223,10 +266,18 @@ public class PulseCommChannel extends Binder {
     }
 
     /**
-     * Register an ErrWatcher to be notified of any service errors.
+     * Register an {@link ErrWatcher} to be notified of any service errors.
      * @param watcher
      */
     public void registerErrorWatcher(ErrWatcher watcher) {
         errWatchers.add(watcher);
+    }
+
+    /**
+     * Register a {@link StatusWatcher} to be notified of connection and device status
+     * @param watcher
+     */
+    public void registerStatusWatcher(StatusWatcher watcher) {
+        statusWatchers.add(watcher);
     }
 }

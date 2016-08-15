@@ -98,6 +98,10 @@ app.put('/trigger', (req, res) => {
     setTimeout(() => res.send({status: "OK", name: event}), 1500);
 });
 
+app.get('/status', (req, res) => {
+    res.send({status: "OK", params: PARAMS, nodes: {node1: "OK", node2: "OK"}});
+});
+
 // Send files in the params/ subdirectory. Use ".json" for json files, .txt for text files.
 // http://localhost:8081/params/fuel.json
 app.use("/params", express.static("params", {}))

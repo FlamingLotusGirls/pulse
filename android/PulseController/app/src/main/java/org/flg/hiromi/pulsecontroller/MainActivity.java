@@ -20,6 +20,8 @@ import android.widget.Toast;
 
 import android.content.Intent;
 
+import org.json.JSONObject;
+
 public class MainActivity extends ActionBarActivity {
     private TextView text_view;
 
@@ -41,6 +43,21 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onError(Throwable t) {
                     Toast.makeText(MainActivity.this, "Error in REST service: " + t.toString(), Toast.LENGTH_LONG).show();
+                }
+            });
+            final int colorOK = getResources().getColor(R.color.colorOK);
+            final int colorDisconnected = getResources().getColor(R.color.colorDisconnected);
+            commChannel.registerStatusWatcher(new PulseCommChannel.StatusWatcher() {
+                @Override
+                public void onStatus(JSONObject status) {
+                    TextView text = (TextView)MainActivity.this.findViewById(R.id.textView_connect);
+                    if (status != null) {
+                        text.setText("Connected OK");
+                        text.setTextColor(colorOK);
+                    } else {
+                        text.setText("Disconnected");
+                        text.setTextColor(colorDisconnected);
+                    }
                 }
             });
             initSeekbar(R.id.slider1);
