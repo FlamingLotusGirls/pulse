@@ -1,6 +1,8 @@
 # Python for controlling the DMX lights according to UDP packets
 # Some (most) code was shamelessly stolen from Carolyn Wales
 
+# TODO: Shut off heartbeats when packets aren't being sent in anymore. This is related to using BPM to time heartbeats sine currently excess heartbeats are being put into the queue
+
 import datetime
 import os
 from operator import itemgetter, attrgetter
@@ -37,10 +39,10 @@ HEARTBEAT = 1
 STROBE     = 2
    # = 3
 
+
+
 effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
            STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
-        #    ,
-        #    ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]]}
 
 class Commands():
     STOP_ALL             = 1
