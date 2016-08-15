@@ -199,7 +199,7 @@ if __name__ == '__main__':
         while (running):
             readfds = [heartBeatListener, commandListener]
             if not eventQueue:
-                print "no event queue"
+                # TODO: Need way to turn this on and off
                 dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 255, autorender = True)
                 inputReady, outputReady, exceptReady = select(readfds, [], [])
             else:
