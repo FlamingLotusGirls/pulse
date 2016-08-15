@@ -46,11 +46,9 @@ class Commands():
     STOP_ALL             = 1
     STOP_HEARTBEAT       = 2
     START_HEARTBEAT      = 3
-    START_EFFECT         = 4
-    STOP_EFFECT          = 5
+    START_STROBE         = 4
+    STOP_STROBE          = 5
     USE_HEARTBEAT_SOURCE = 6
-
-
 
 
 
@@ -107,7 +105,6 @@ def handleCommandData(commandData):
         if command is Command.STOP_ALL:
             removeAllEffects()
         elif command is STOP_HEARTBEAT:
-            allowHeartBeats = False
             stopHeartBeat()
         elif command is START_EFFECT:
             dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
@@ -123,16 +120,12 @@ def handleCommandData(commandData):
 
         sortEventQueue()
 
-# hexStr = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
-# def intToHex(myInt):
-#     if myInt < 0:
-#         return "0"
-#     modulus = myInt % 16
-#     div     = myInt // 16
-#
-#     div = min(15, div)
-#
-#     return hexStr[div] + hexStr[modulus]
+def stopHeartBeat():
+    eventQueue[:] = [e for e in eventQueue if (e.get("effectId") != HEARBTEAT)]
+    allowHeartBeats = False
+
+def removeAllEffects():
+    eventQueue = []
 
 def loadEffect(effectId, startTime): # TODO: The information we need is heartbear duration
     if effects[effectId] != None:
@@ -142,12 +135,13 @@ def loadEffect(effectId, startTime): # TODO: The information we need is heartbea
             canonicalEvent["effectId"] = effectId
             #print "add event" + str(event)
             # canonicalEvent["controllerId"] = intToHex(event[0]//8)
-            canonicalEvent["channel"]      = event[0] %8
-            canonicalEvent["onOff"]        = event[1]
+            # canonicalEvent["channel"]      = event[0] %8
+            # canonicalEvent["onOff"]        = event[1]
             canonicalEvent["time"]         = startTime + datetime.timedelta(milliseconds = event[2])
             #print "canonical event is " + str(canonicalEvent)
             #print "timedelta is " + str(datetime.timedelta(milliseconds = event[2]))
             eventQueue.append(canonicalEvent)
+
 
 
 def sortEventQueue():
@@ -155,6 +149,7 @@ def sortEventQueue():
 
 
 def renderEvents():
+    # print "eventqueue: ", eventQueue
     if len(eventQueue) == 0:
         return
     global dmx
@@ -174,96 +169,23 @@ def renderEvents():
 
     if currentEvents:
         if not dmx:
-            # pass
             dmx = pysimpledmx.DMXConnection(DMX_ADDRESS)
         for event in currentEvents:
+
             process_heartbeat(event)
 
 def process_heartbeat(event):
-    heartbeat.heartbeat1(dmx)
-
-
-
+    # TODO: Still need to listen to port with select while playing
+    # TODO: Also need to figure out timing
     # TODO: Ask carolyn about heartbeat... they seem to discard information about frequency
+
+    # heartbeat.heartbeat1(dmx)
+    heartbeat.heartbeat1_5(dmx)
+
 
     print "event ", event
 
-
-
-
-
-
-
-    # while now < timeWindow:
-    #     if (now + datetime.timedelta(milliseconds = seventh)) < timeWindow:
-    #         dmx.setChannel(DMX_RED_CHANNEL, 100)
-    #         dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 100)
-    #         dmx.render()
-
-
-
-
-    now = datetime.datetime.now()
-
-
-
-    time.sleep(1)
-
-    for i in range(20):
-        dmx.setChannel(DMX_RED_CHANNEL, 100 - i)
-        dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 100-i)
-        dmx.render()
-        time.sleep(0.001)
-    dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 100)
-    for i in range(85):
-        dmx.setChannel(DMX_RED_CHANNEL, 100 + i*2)
-        dmx.render()
-        time.sleep(0.002)
-    for i in range(100):
-        dmx.setChannel(DMX_RED_CHANNEL, 200 - i)
-        dmx.render()
-        time.sleep(0.001)
-    for i in range(75):
-        dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 100 + i*2)
-        dmx.render()
-        time.sleep(0.002)
-    for i in range(100):
-        dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 200 - i)
-        dmx.render()
-        time.sleep(0.001)
-    time.sleep(1)
-
-    for i in range(20):
-        dmx.setChannel(DMX_RED_CHANNEL, 100 - i)
-        dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 100 - i)
-        dmx.render()
-        time.sleep(0.001)
-    for i in range(85):
-        dmx.setChannel(DMX_RED_CHANNEL, 100 + i*2)
-        dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 100 + i*2)
-        dmx.render()
-        time.sleep(0.002)
-    for i in range(100):
-        dmx.setChannel(DMX_RED_CHANNEL, 200 - i)
-        dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 200 - i)
-        dmx.render()
-        time.sleep(0.001)
-    for i in range(75):
-        dmx.setChannel(DMX_RED_CHANNEL, 100 + i*2)
-        dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 100 + i*2)
-        dmx.render()
-        time.sleep(0.002)
-    for i in range(100):
-        dmx.setChannel(DMX_RED_CHANNEL, 200 - i)
-        dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 200 - i)
-        dmx.render()
-        time.sleep(0.001)
-    time.sleep(1)
-
-
-    sys.exit()
-
-
+    # sys.exit()
 
 
 if __name__ == '__main__':
@@ -272,16 +194,13 @@ if __name__ == '__main__':
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
     commandListener   = createBroadcastListener(COMMAND_PORT)
     eventQueue = []
-    print datetime.datetime.now()
-    print datetime.datetime.now()
-    print datetime.datetime.now()
-    print datetime.datetime.now()
-
 
     try:
         while (running):
             readfds = [heartBeatListener, commandListener]
             if not eventQueue:
+                print "no event queue"
+                dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 255, autorender = True)
                 inputReady, outputReady, exceptReady = select(readfds, [], [])
             else:
                 waitTime = (eventQueue[len(eventQueue)-1]["time"] - datetime.datetime.now()).total_seconds()
@@ -290,6 +209,7 @@ if __name__ == '__main__':
                 inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime)
 
             if inputReady:
+                dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 0, autorender = True)
                 for fd in inputReady:
                     if fd is heartBeatListener:
                         heartBeatData = fd.recv(1024)

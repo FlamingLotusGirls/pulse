@@ -2,11 +2,6 @@
 
 import datetime
 import os
-# from operator import itemgetter, attrgetter
-# from select import select
-import serial
-import socket
-import struct
 import sys
 import pysimpledmx
 import time
@@ -47,11 +42,6 @@ def heartbeat1_5(dmx):
     now = datetime.datetime.now()
     dmx.setChannel(ALL_RED_CHANNELS, 100)
     dmx.render()
-    # for i in range(20):
-    #     dmx.setChannel(DMX_RED_CHANNEL, 100 - i)
-    #     dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 100 - i)
-    #     dmx.render()
-    #     time.sleep(0.001)
     time.sleep(0.2)
     for i in range(50):
         dmx.setChannel(ALL_RED_CHANNELS, 100 + i*3)
@@ -68,11 +58,7 @@ def heartbeat1_5(dmx):
     dmx.setChannel(ALL_RED_CHANNELS, 100)
     dmx.render()
     time.sleep(0.2)
-    # for i in range(100):
-    #     dmx.setChannel(DMX_RED_CHANNEL, 200 - i)
-    #     dmx.setChannel(DMX_RED_CHANNEL + DMX_CHANNEL_COUNT, 200 - i)
-    #     dmx.render()
-    #     time.sleep(0.001)
+
     print "difference1_5 = ", (datetime.datetime.now() - now)
 
 def heartbeat2(dmx):
