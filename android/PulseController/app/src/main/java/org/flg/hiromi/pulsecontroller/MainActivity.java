@@ -165,25 +165,21 @@ public class MainActivity extends ActionBarActivity {
         });
         seek_bar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
-                    int progress_value;
 
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        progress_value = progress;
-                        if (commChannel != null) {
-                            commChannel.setIntParam((String)seekBar.getTag(), progress);
-                        }
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-                        //Toast.makeText(MainActivity.this, "SeekBar in StartTracking", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                        //xtext_view.setText("Covered : " + progress_value + " / " + seek_bar.getMax());
-                        //Toast.makeText(MainActivity.this, "SeekBar in StopTracking", Toast.LENGTH_LONG).show();
+                        int progress= seekBar.getProgress();
+                        if (commChannel != null) {
+                            commChannel.setIntParam((String)seekBar.getTag(), progress);
+                        }
                     }
                 }
         );
