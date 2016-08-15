@@ -120,7 +120,7 @@ public class MainActivity extends ActionBarActivity {
      */
     public void initSeekbar(int id){
         final SeekBar seek_bar = (SeekBar)findViewById(id);
-        text_view = (TextView)findViewById(R.id.textView2);
+        text_view = (TextView)findViewById(R.id.textView_status);
         text_view.setText(seek_bar.getTag() + " : " + seek_bar.getProgress() + " / " + seek_bar.getMax());
         commChannel.watchParameter((String)seek_bar.getTag(), new PulseCommChannel.IntWatcher() {
             @Override

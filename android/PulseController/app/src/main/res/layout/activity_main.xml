@@ -24,16 +24,6 @@
         android:layout_below="@+id/textView"
         android:tag="@string/slider_1_tag" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text=""
-        android:id="@+id/textView2"
-        android:layout_below="@+id/slider1"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="23dp" />
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -64,5 +54,28 @@
         android:layout_alignParentStart="true"
         android:tag="@string/button_3_tag"
         android:textStyle="bold" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorStatus">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text=""
+            android:id="@+id/textView_status"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text=""
+            android:id="@+id/textView_connect"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
 
 </RelativeLayout>
