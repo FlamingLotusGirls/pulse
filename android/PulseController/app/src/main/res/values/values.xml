@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primary_text_disabled_material_light">#fff6a1</color>
+    <item type="id" name="button_background"/>
 </resources>

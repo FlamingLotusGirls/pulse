@@ -13,4 +13,12 @@
         android:singleLine="true"
         android:title="@string/pref_title_base_url" />
 
+    <ListPreference
+        android:key="protocol"
+        android:defaultValue="REST"
+        android:entries="@array/pref_protocol_labels"
+        android:entryValues="@array/pref_protocols"
+        android:title="@string/pref_title_protocol"
+        android:summary="%s" />
+
 </PreferenceScreen>

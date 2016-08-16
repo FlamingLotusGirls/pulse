@@ -11,8 +11,17 @@
     <!-- Example General settings -->
     <string name="pref_header_network">Network</string>
 
-    <string name="pref_title_base_url">Server Base URL</string>
+    <string name="pref_title_base_url">Server Base REST URL</string>
     <string name="pref_default_base_url">http://10.0.2.2:8081</string>
+    <string name="pref_title_protocol">Communications Protocol</string>
+    <string-array name="pref_protocols">
+        <item>REST</item>
+        <item>UDP</item>
+    </string-array>
+    <string-array name="pref_protocol_labels">
+        <item>REST</item>
+        <item>UDP</item>
+    </string-array>
 
     <!-- URL formats -->
     <string name="url_trigger">/trigger?name=%s</string>
@@ -32,5 +41,14 @@
     <string name="button_2_tag">poof_2</string>
     <string name="button_1_tag">poof_1</string>
     <string name="slider_1_tag">rate_1</string>
+
+    <string name="heartbeat_1">Heartbeat 1</string>
+    <string name="heartbeat_2">Heartbeat 2</string>
+
+    <string-array name="spinner_1_entries">
+        <item>Heartbeat Left</item>
+        <item>Heartbeat Right</item>
+        <item>Heartbeat Synth</item>
+    </string-array>
 
 </resources>

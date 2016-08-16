@@ -2,10 +2,13 @@ package org.flg.hiromi.pulsecontroller;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 
 public class PulseCommService extends Service {
+    private SharedPreferences prefs;
 
     private final Runnable statusMon = new Runnable() {
         @Override
@@ -24,8 +27,23 @@ public class PulseCommService extends Service {
     private Handler handler = new Handler();
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
-        channel = new RESTPulseCommChannel(this);
+        switch (prefs.getString("protocol", "REST")) {
+            case "REST":
+                channel = new RESTPulseCommChannel(this);
+                break;
+            case "UDP":
+                channel = new UDPPulseCommChannel(this);
+                break;
+            default:
+                channel = null;
+        }
         handler.postDelayed(statusMon, 1000);
         return channel;
     }
