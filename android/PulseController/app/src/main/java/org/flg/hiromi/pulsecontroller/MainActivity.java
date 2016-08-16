@@ -14,7 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -27,7 +26,7 @@ import org.json.JSONObject;
 public class MainActivity extends ActionBarActivity {
     private TextView text_view;
 
-    private PulseCommChannel commChannel;
+    private IPulseCommChannel commChannel;
 
     private SharedPreferences prefs;
 
@@ -40,8 +39,8 @@ public class MainActivity extends ActionBarActivity {
          */
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            commChannel = (PulseCommChannel)service;
-            commChannel.registerErrorWatcher(new PulseCommChannel.ErrWatcher() {
+            commChannel = (IPulseCommChannel)service;
+            commChannel.registerErrorWatcher(new IPulseCommChannel.ErrWatcher() {
                 @Override
                 public void onError(Throwable t) {
                     Toast.makeText(MainActivity.this, "Error in REST service: " + t.toString(), Toast.LENGTH_LONG).show();
@@ -49,7 +48,7 @@ public class MainActivity extends ActionBarActivity {
             });
             final int colorOK = getResources().getColor(R.color.colorOK);
             final int colorDisconnected = getResources().getColor(R.color.colorDisconnected);
-            commChannel.registerStatusWatcher(new PulseCommChannel.StatusWatcher() {
+            commChannel.registerStatusWatcher(new IPulseCommChannel.StatusWatcher() {
                 @Override
                 public void onStatus(JSONObject status) {
                     TextView text = (TextView)MainActivity.this.findViewById(R.id.textView_connect);
@@ -116,7 +115,7 @@ public class MainActivity extends ActionBarActivity {
      */
     public void initButton(final Button btnA)
     {
-        commChannel.watchEvent((String) btnA.getTag(), new PulseCommChannel.IntWatcher() {
+        commChannel.watchEvent((String) btnA.getTag(), new IPulseCommChannel.IntWatcher() {
             @Override
             public void onChange(String name, int val, boolean update) {
                 String state = (val == 0) ? "Failed" : "OK";
@@ -154,7 +153,7 @@ public class MainActivity extends ActionBarActivity {
     public void initSeekbar(final SeekBar seek_bar) {
         text_view = (TextView)findViewById(R.id.textView_status);
         text_view.setText(seek_bar.getTag() + " : " + seek_bar.getProgress() + " / " + seek_bar.getMax());
-        commChannel.watchParameter((String)seek_bar.getTag(), new PulseCommChannel.IntWatcher() {
+        commChannel.watchParameter((String)seek_bar.getTag(), new IPulseCommChannel.IntWatcher() {
             @Override
             public void onChange(String name, int val, boolean update) {
                 text_view.setText(seek_bar.getTag() + " : " + val + " / " + seek_bar.getMax());

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pulse_cmds">
+        <item></item>
+        <item>STOP_ALL</item>
+        <item>STOP_HEARTBEAT</item>
+        <item>START_EFFECT</item>
+        <item>STOP_EFFECT</item>
+        <item>USE_HEARTBEAT_SOURCE</item>
+    </string-array>
+</resources>

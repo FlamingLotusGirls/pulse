@@ -4,10 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.widget.Toast;
-
-import org.json.JSONObject;
 
 public class PulseCommService extends Service {
 
@@ -24,12 +20,12 @@ public class PulseCommService extends Service {
     public PulseCommService() {
     }
 
-    private PulseCommChannel channel = null;
+    private IPulseCommChannel channel = null;
     private Handler handler = new Handler();
 
     @Override
     public IBinder onBind(Intent intent) {
-        channel = new PulseCommChannel(this);
+        channel = new RESTPulseCommChannel(this);
         handler.postDelayed(statusMon, 1000);
         return channel;
     }
