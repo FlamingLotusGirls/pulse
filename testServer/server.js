@@ -4,6 +4,7 @@ var app = express();
 var child_process = require('child_process');
 var toString = require('stream-to-string');
 var log = require('./log.js');
+var dgram = require('dgram');
 
 app.get('/', (req, res) => res.send("Hello, World"));
 
@@ -115,4 +116,27 @@ var server = app.listen(8081, function () {
   log.info("Example app listening at http://%s:%s", host, port)
 
 });
+
+const udp = dgram.createSocket('udp4');
+var seq = 0;
+function sendPulse(id) {
+    try {
+        console.log('hb' + id)
+        const message = Buffer.alloc(16);
+        message.fill(0);
+        message.writeUInt8(id, 0);
+        seq = (seq + 1) && 0xff;
+        message.writeUInt8(seq, 1);
+        message.writeUInt16LE(1000, 2);
+        message.writeUInt32LE(0, 4);
+        message.writeFloatLE(60.0, 8);
+        message.writeUInt32LE(Date.now() & 0xfffffff, 12);
+        udp.send(message, 5000, "127.0.0.1");
+    } catch (e) {
+        console.error("Error: " + e);
+    }
+}
+
+setInterval(() => sendPulse(0), 1000);
+setInterval(() => sendPulse(1), 823);
 

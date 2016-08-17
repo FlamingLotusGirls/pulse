@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -79,27 +80,6 @@ public class MainActivity extends ActionBarActivity {
             initControls(v);
         }
 
-        private void initControls(View v) {
-            if (v instanceof Button) {
-                if (v.getTag() instanceof String) {
-                    initButton((Button)v);
-                }
-            } else if (v instanceof SeekBar) {
-                if (v.getTag() instanceof String) {
-                    initSeekbar((SeekBar) v);
-                }
-            } else if (v instanceof Spinner) {
-                if (v.getTag() instanceof String) {
-                    initSpinner((Spinner)v);
-                }
-            } else if (v instanceof ViewGroup) {
-                ViewGroup p = (ViewGroup)v;
-                for (int i = 0; i < p.getChildCount(); i++) {
-                    initControls(p.getChildAt(i));
-                }
-            }
-        }
-
         @Override
         public void onServiceDisconnected(ComponentName name) {
             commChannel = null;
@@ -112,6 +92,8 @@ public class MainActivity extends ActionBarActivity {
         private HeartbeatService.Channel beatChannel = null;
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            pulse_icon_1 = (ImageView)findViewById(R.id.pulse_icon_1);
+            pulse_icon_2 = (ImageView)findViewById(R.id.pulse_icon_2);
             beatChannel = (HeartbeatService.Channel)service;
             ((HeartbeatService.Channel) service).registerListener(new HeartbeatService.HeartbeatListener() {
                 @Override
@@ -156,6 +138,27 @@ public class MainActivity extends ActionBarActivity {
             beatChannel.unregisterListeners();
         }
     };
+    
+    private void initControls(View v) {
+        if (v instanceof Button) {
+            if (v.getTag() instanceof String) {
+                initButton((Button)v);
+            }
+        } else if (v instanceof SeekBar) {
+            if (v.getTag() instanceof String) {
+                initSeekbar((SeekBar) v);
+            }
+        } else if (v instanceof Spinner) {
+            if (v.getTag() instanceof String) {
+                initSpinner((Spinner)v);
+            }
+        } else if (v instanceof ViewGroup) {
+            ViewGroup p = (ViewGroup)v;
+            for (int i = 0; i < p.getChildCount(); i++) {
+                initControls(p.getChildAt(i));
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,8 +167,6 @@ public class MainActivity extends ActionBarActivity {
                 .getDefaultSharedPreferences(this);
         setContentView(R.layout.activity_main);
         text_view = (TextView)findViewById(R.id.textView_status);
-        pulse_icon_1 = (ImageView)findViewById(R.id.pulse_icon_1);
-        pulse_icon_2 = (ImageView)findViewById(R.id.pulse_icon_2);
     }
 
     @Override
@@ -175,6 +176,17 @@ public class MainActivity extends ActionBarActivity {
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
         intent = new Intent(this, HeartbeatService.class);
         bindService(intent, pulseServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        setContentView(R.layout.activity_main);
+        text_view = (TextView)findViewById(R.id.textView_status);
+        pulse_icon_1 = (ImageView)findViewById(R.id.pulse_icon_1);
+        pulse_icon_2 = (ImageView)findViewById(R.id.pulse_icon_2);
+        View v = findViewById(R.id.nandesuka);
+        initControls(v);
     }
 
     @Override

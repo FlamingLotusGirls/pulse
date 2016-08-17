@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 public class HeartbeatService extends Service {
-    private boolean runOK = false;
+    private volatile boolean runOK = false;
     public interface HeartbeatListener {
         public void onBeat(Pulse pulse);
         public void onError(Throwable t);
@@ -71,7 +71,9 @@ public class HeartbeatService extends Service {
 
     private DatagramSocket openSocket(int port) {
         try {
-            return new DatagramSocket(port);
+            DatagramSocket sock = new DatagramSocket(port);
+            sock.setReuseAddress(true);
+            return sock;
         } catch (SocketException e) {
             sendError(e);
         }
@@ -86,7 +88,7 @@ public class HeartbeatService extends Service {
 
     private final class HeartbeatThread extends Thread {
         public void run() {
-            while (runOK) {
+            while (runOK && heartbeatThread == this) {
                 byte[] data = new byte[20];
                 DatagramPacket pkt = new DatagramPacket(data, data.length);
                 try {
@@ -113,20 +115,27 @@ public class HeartbeatService extends Service {
         }
     }
 
-    private Thread heartbeatThread = null;
+    private volatile Thread heartbeatThread = null;
+
+    private void startThread() {
+        if (!runOK) {
+            heartbeatSocket = openSocket(5000);
+            runOK = true;
+            heartbeatThread = new HeartbeatThread();
+            heartbeatThread.start();
+        }
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
         main = new Handler(getMainLooper());
-        heartbeatSocket = openSocket(5000);
-        runOK = true;
-        heartbeatThread = new HeartbeatThread();
-        heartbeatThread.start();
+        startThread();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        startThread();
         return new Channel();
     }
 
