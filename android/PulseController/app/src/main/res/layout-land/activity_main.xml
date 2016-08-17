@@ -68,7 +68,7 @@
         android:entries="@array/spinner_1_entries"
         android:background="@android:drawable/btn_dropdown"
         android:popupBackground="@android:drawable/btn_default_small"
-        android:tag="animal"
+        android:tag="beat"
         style="@android:style/Widget.Spinner.DropDown" />
 
     <RelativeLayout

@@ -138,7 +138,7 @@ public class MainActivity extends ActionBarActivity {
             beatChannel.unregisterListeners();
         }
     };
-    
+
     private void initControls(View v) {
         if (v instanceof Button) {
             if (v.getTag() instanceof String) {
