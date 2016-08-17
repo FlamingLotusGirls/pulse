@@ -62,8 +62,8 @@ app.get('/ls/json', (req, res) => {
 
 // Our test system state
 var PARAMS = {
-    slider1: 5,
-    slider2: 30
+    source: 1,
+    bpm: 60,
 };
 
 // Do a PUT request to:
@@ -124,13 +124,16 @@ function sendPulse(id) {
         console.log('hb' + id)
         const message = Buffer.alloc(16);
         message.fill(0);
-        message.writeUInt8(id, 0);
+        message.writeUInt8(id, 0); // pod_id
         seq = (seq + 1) && 0xff;
-        message.writeUInt8(seq, 1);
-        message.writeUInt16LE(1000, 2);
-        message.writeUInt32LE(0, 4);
-        message.writeFloatLE(60.0, 8);
-        message.writeUInt32LE(Date.now() & 0xfffffff, 12);
+        message.writeUInt8(seq, 1);    // rolling_sequence
+        message.writeUInt16LE(1000, 2); // beat_interval_ms
+        message.writeUInt32LE(0, 4);    // elapsed_ms
+        message.writeFloatLE(60.0, 8);  // est_BPM
+        message.writeUInt32LE(Date.now() & 0xfffffff, 12); // time
+        // Send to localhost port 5000; must set up emulator to forward
+        // telnet to emulator, authorize, and enter
+        // redir add udp:5000:5000
         udp.send(message, 5000, "127.0.0.1");
     } catch (e) {
         console.error("Error: " + e);

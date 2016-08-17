@@ -68,7 +68,7 @@
         android:entries="@array/spinner_1_entries"
         android:background="@android:drawable/btn_dropdown"
         android:popupBackground="@android:drawable/btn_default_small"
-        android:tag="beat"
+        android:tag="@string/spinner_1_tag"
         style="@android:style/Widget.Spinner.DropDown" />
 
     <RelativeLayout
@@ -91,7 +91,7 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text=""
             android:id="@+id/textView_connect"
-            android:layout_toStartOf="@+id/pulse_icon_2" />
+            android:layout_toStartOf="@+id/pulse_icon_3" />
 
         <ImageView
             android:maxHeight="20dp"
@@ -114,5 +114,16 @@
             android:layout_toStartOf="@+id/pulse_icon_1"
             android:id="@+id/pulse_icon_2"
             android:contentDescription="@string/heartbeat_2" />
+
+        <ImageView
+            android:maxHeight="20dp"
+            android:maxWidth="20dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:srcCompat="@drawable/pulse_icon"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@+id/pulse_icon_2"
+            android:id="@+id/pulse_icon_3"
+            android:contentDescription="@string/heartbeat_3" />
     </RelativeLayout>
 </RelativeLayout>

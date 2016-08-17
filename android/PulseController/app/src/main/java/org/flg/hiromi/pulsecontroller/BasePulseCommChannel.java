@@ -28,8 +28,10 @@ public abstract class BasePulseCommChannel extends Binder implements IPulseCommC
     protected final Handler main;
     private final Map<String,List<IntWatcher>> watchers = new HashMap<>();
     private final List<ErrWatcher> errWatchers = new ArrayList<>();
+    private final ExecutorService executor;
 
-    public BasePulseCommChannel(PulseCommService service) {
+    public BasePulseCommChannel(PulseCommService service, int nThreads) {
+        executor = Executors.newFixedThreadPool(nThreads);
         this.service = service;
         main = new Handler(service.getMainLooper());
     }
@@ -51,6 +53,30 @@ public abstract class BasePulseCommChannel extends Binder implements IPulseCommC
                 }
             }
         });
+    }
+
+    /**
+     * Send an error back to a handler a specific named parameter or trigger.
+     * @param name
+     * @param t
+     */
+    protected void sendError(final String name, final Throwable t) {
+        if (name != null) {
+            main.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (IntWatcher iw : getWatchers(name)) {
+                        try {
+                            iw.onError(name, t);
+                        } catch (Error | Exception t) {
+                            Log.e("SVC", "Error while reporting change.", t);
+                            sendError(t);
+                        }
+                    }
+                }
+            });
+        }
+        sendError(t);
     }
 
     // Send an error to any watchers/listeners.
@@ -139,5 +165,27 @@ public abstract class BasePulseCommChannel extends Binder implements IPulseCommC
     @Override
     public void registerStatusWatcher(StatusWatcher watcher) {
         statusWatchers.add(watcher);
+    }
+
+    /**
+     * Run an action on one of our background threads.
+     * @param name
+     * @param cb
+     */
+    protected void run(final String name, final Callable<?> cb) {
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    cb.call();
+                } catch (Exception | Error t) {
+                    sendError(name, t);
+                }
+            }
+        });
+    }
+
+    protected void run(final Callable<?> cb) {
+        run(null, cb);
     }
 }

@@ -40,12 +40,17 @@
     <string name="button_3_tag">poof_3</string>
     <string name="button_2_tag">poof_2</string>
     <string name="button_1_tag">poof_1</string>
-    <string name="slider_1_tag">rate_1</string>
+    <string name="slider_1_tag">bpm</string>
+    <string name="spinner_1_tag">source</string>
 
-    <string name="heartbeat_1">Heartbeat 1</string>
-    <string name="heartbeat_2">Heartbeat 2</string>
+    <!-- Descrptions of the three beating hearts -->
+    <string name="heartbeat_1">Heartbeat Left</string>
+    <string name="heartbeat_2">Heartbeat Synth</string>
+    <string name="heartbeat_3">Heartbeat Right</string>
 
+    <!-- Drop-down list of heartbeat sources. Ordered by ID -->
     <string-array name="spinner_1_entries">
+        <item>None</item>
         <item>Heartbeat Left</item>
         <item>Heartbeat Right</item>
         <item>Heartbeat Synth</item>

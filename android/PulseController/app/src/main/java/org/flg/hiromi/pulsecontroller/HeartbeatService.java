@@ -9,7 +9,10 @@ import android.os.IBinder;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -71,7 +74,7 @@ public class HeartbeatService extends Service {
 
     private DatagramSocket openSocket(int port) {
         try {
-            DatagramSocket sock = new DatagramSocket(port);
+            DatagramSocket sock = new DatagramSocket(5000);
             sock.setReuseAddress(true);
             return sock;
         } catch (SocketException e) {

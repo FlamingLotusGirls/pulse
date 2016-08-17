@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by rwk on 2016-08-13.
@@ -20,11 +18,10 @@ import java.util.concurrent.Executors;
 public class RESTPulseCommChannel extends BasePulseCommChannel {
 
     private final SharedPreferences prefs;
-    private final ExecutorService executor = Executors.newFixedThreadPool(3);
     private String BASE_URL;
 
     public RESTPulseCommChannel(PulseCommService service) {
-        super(service);
+        super(service, 3);
         prefs = PreferenceManager
                 .getDefaultSharedPreferences(service);
         BASE_URL = prefs.getString("base_url", "http://10.0.2.2:8081");
@@ -101,7 +98,7 @@ public class RESTPulseCommChannel extends BasePulseCommChannel {
     // Set a parameter to an integer value
     @Override
     public void setIntParam(final String param, final int value) {
-        run(new Callable<Void>() {
+        run(param, new Callable<Void>() {
             public Void call() throws Exception {
                 sendBack(param, invoke(R.string.url_param_set_method, R.string.url_param_set, param, value), true);
                 return null;
@@ -112,7 +109,7 @@ public class RESTPulseCommChannel extends BasePulseCommChannel {
     // Get an integer value.
     @Override
     public void getIntParam(final String param) {
-        run(new Callable<Void>() {
+        run(param, new Callable<Void>() {
             public Void call() throws Exception {
                 sendBack(param, invoke(R.string.url_param_get_method, R.string.url_param_get, param), false);
                 return null;
@@ -126,7 +123,7 @@ public class RESTPulseCommChannel extends BasePulseCommChannel {
      */
     @Override
     public void trigger(final String name) {
-        run(new Callable<Void>() {
+        run(name, new Callable<Void>() {
             public Void call() throws Exception {
                 sendBack(name, invoke(R.string.url_trigger_method, R.string.url_trigger, name), true);
                 return null;
@@ -134,20 +131,4 @@ public class RESTPulseCommChannel extends BasePulseCommChannel {
         });
     }
 
-    /**
-     * Run an action on one of our background threads.
-     * @param cb
-     */
-    protected void run(final Callable<?> cb) {
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    cb.call();
-                } catch (Exception | Error t) {
-                    sendError(t);
-                }
-            }
-        });
-    }
 }

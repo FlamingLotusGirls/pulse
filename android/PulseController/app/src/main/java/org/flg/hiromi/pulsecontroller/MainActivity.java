@@ -86,19 +86,28 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
-    private ImageView pulse_icon_1 = null;
-    private ImageView pulse_icon_2 = null;
     private ServiceConnection pulseServiceConnection = new ServiceConnection() {
         private HeartbeatService.Channel beatChannel = null;
+
+        // Map the podID to the right icon.
+        private ImageView chooseIcon(int podId) {
+            ImageView pulse_icon_1 = (ImageView)findViewById(R.id.pulse_icon_1);
+            ImageView pulse_icon_2 = (ImageView)findViewById(R.id.pulse_icon_2);
+            ImageView pulse_icon_3 = (ImageView)findViewById(R.id.pulse_icon_3);
+            switch (podId % 3) {
+                case 0: return pulse_icon_3;
+                case 1: return pulse_icon_1;
+                case 2: return pulse_icon_2;
+            }
+            return null;
+        }
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            pulse_icon_1 = (ImageView)findViewById(R.id.pulse_icon_1);
-            pulse_icon_2 = (ImageView)findViewById(R.id.pulse_icon_2);
             beatChannel = (HeartbeatService.Channel)service;
             ((HeartbeatService.Channel) service).registerListener(new HeartbeatService.HeartbeatListener() {
                 @Override
                 public void onBeat(Pulse pulse) {
-                    final ImageView icon = ((pulse.getPod() & 1) == 0) ? pulse_icon_1 : pulse_icon_2;
+                    final ImageView icon = chooseIcon(pulse.getPod());
                     final float iy = icon.getY();
                     if (icon != null) {
                         try {
@@ -126,9 +135,6 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onError(Throwable t) {
                     Toast.makeText(MainActivity.this, "Pulse Error: " + t, Toast.LENGTH_LONG).show();
-                    if (pulse_icon_1 != null) {
-                        pulse_icon_1.setImageAlpha(255);
-                    }
                 }
             });
         }
@@ -183,8 +189,6 @@ public class MainActivity extends ActionBarActivity {
         super.onConfigurationChanged(newConfig);
         setContentView(R.layout.activity_main);
         text_view = (TextView)findViewById(R.id.textView_status);
-        pulse_icon_1 = (ImageView)findViewById(R.id.pulse_icon_1);
-        pulse_icon_2 = (ImageView)findViewById(R.id.pulse_icon_2);
         View v = findViewById(R.id.nandesuka);
         initControls(v);
     }
@@ -207,6 +211,17 @@ public class MainActivity extends ActionBarActivity {
             public void onChange(String name, int val, boolean update) {
                 String state = (val == 0) ? "Failed" : "OK";
                 text_view.setText(btnA.getTag() + ": " + state);
+                // Set the button background back
+                Drawable bg = (Drawable)btnA.getTag(R.id.button_background);
+                if (bg != null) {
+                    btnA.setBackground(bg);
+                    btnA.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void onError(String name, Throwable t) {
+                text_view.setText(btnA.getTag() + ": " + t.toString());
                 // Set the button background back
                 Drawable bg = (Drawable)btnA.getTag(R.id.button_background);
                 if (bg != null) {
@@ -243,6 +258,10 @@ public class MainActivity extends ActionBarActivity {
                     spinner.setSelection(val);
                 }
             }
+
+            @Override
+            public void onError(String name, Throwable t) {
+            }
         });
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -274,6 +293,10 @@ public class MainActivity extends ActionBarActivity {
                 if (!update) {
                     seek_bar.setProgress(val);
                 }
+            }
+
+            @Override
+            public void onError(String name, Throwable t) {
             }
         });
         seek_bar.setOnSeekBarChangeListener(

@@ -38,6 +38,8 @@ public interface IPulseCommChannel extends IBinder {
          * @param update true if this is the result of an update.
          */
         public void onChange(String name, int val, boolean update);
+
+        public void onError(String name, Throwable t);
     }
 
     public interface StatusWatcher {

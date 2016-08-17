@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Data for UDP communications -->
+
     <string-array name="pulse_cmds">
         <item></item>
         <item>STOP_ALL</item>
@@ -8,4 +10,87 @@
         <item>STOP_EFFECT</item>
         <item>USE_HEARTBEAT_SOURCE</item>
     </string-array>
+
+    <!-- Effect ALL_POOF -->
+    <integer-array name="all_poof">
+        <item>255</item>
+        <item>0</item>
+        <item>4</item>
+        <item>3</item>
+    </integer-array>
+
+    <!-- Effect poof_1 -->
+    <integer-array name="poof_1">
+        <item>1</item>
+        <item>0</item>
+        <item>4</item>
+        <item>3</item>
+    </integer-array>
+
+    <!-- Effect ALL_POOF -->
+    <integer-array name="poof_2">
+        <item>2</item>
+        <item>0</item>
+        <item>4</item>
+        <item>3</item>
+    </integer-array>
+
+    <!-- Effect ALL_POOF -->
+    <integer-array name="poof_3">
+        <item>3</item>
+        <item>0</item>
+        <item>4</item>
+        <item>3</item>
+    </integer-array>
+
+    <!-- Command STOP_ALL -->
+    <integer-array name="stop_all">
+        <item>255</item>
+        <item>0</item>
+        <item>1</item>
+        <item>0</item>
+    </integer-array>
+
+    <array name="triggers">
+        <item>@array/all_poof</item>
+        <item>@array/stop_all</item>
+        <item>@array/poof_1</item>
+        <item>@array/poof_2</item>
+        <item>@array/poof_3</item>
+    </array>
+
+    <string-array name="trigger_names">
+        <item>all_poof</item>
+        <item>stop_all</item>
+        <item>poof_1</item>
+        <item>poof_2</item>
+        <item>poof_3</item>
+    </string-array>
+
+    <!-- Parameter source -->
+    <integer-array name="source">
+        <item>2</item>
+        <item>0</item>
+        <item>6</item>
+        <item>0</item> <!-- Will be filled in -->
+    </integer-array>
+
+    <!-- Parameter bpm -->
+    <integer-array name="bpm">
+        <item>2</item>
+        <item>0</item>
+        <item>7</item> <!-- Dummy command: Not sure how this is set? -->
+        <item>0</item> <!-- Will be filled in -->
+    </integer-array>
+
+    <array name="params">
+        <item>@array/source</item>
+        <item>@array/bpm</item>
+    </array>
+
+    <string-array name="param_names">
+        <item>source</item>
+        <item>bpm</item>
+    </string-array>
+
 </resources>
