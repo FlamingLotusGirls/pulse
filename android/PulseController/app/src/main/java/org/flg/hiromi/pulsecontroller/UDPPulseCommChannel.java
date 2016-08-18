@@ -28,7 +28,7 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
     private final InetAddress broadcast;
     private InetAddress getBroadcast() {
         try {
-            return InetAddress.getByName("10.0.2.2");
+            return InetAddress.getByName("10.0.2.255");
         } catch (UnknownHostException e) {
             sendError(e);
         }
@@ -39,8 +39,7 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
             DatagramSocket sock = new DatagramSocket(null);
             sock.setReuseAddress(true);
             sock.setBroadcast(true);
-            sock.bind(new
-                    InetSocketAddress(5001));
+            sock.bind(new InetSocketAddress(5001));
             return sock;
         } catch (SocketException e) {
             sendError(e);

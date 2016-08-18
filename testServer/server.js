@@ -5,6 +5,7 @@ var child_process = require('child_process');
 var toString = require('stream-to-string');
 var log = require('./log.js');
 var dgram = require('dgram');
+var util = require('util');
 
 app.get('/', (req, res) => res.send("Hello, World"));
 
@@ -117,7 +118,7 @@ var server = app.listen(8081, function () {
 
 });
 
-const udp = dgram.createSocket('udp4');
+const udp_pulse = dgram.createSocket({type: 'udp4', reuseAddr: true});
 var seq = 0;
 function sendPulse(id) {
     try {
@@ -134,7 +135,7 @@ function sendPulse(id) {
         // Send to localhost port 5000; must set up emulator to forward
         // telnet to emulator, authorize, and enter
         // redir add udp:5000:5000
-        udp.send(message, 5000, "127.0.0.1");
+        udp_pulse.send(message, 5000, "127.0.0.1");
     } catch (e) {
         console.error("Error: " + e);
     }
@@ -142,4 +143,28 @@ function sendPulse(id) {
 
 setInterval(() => sendPulse(0), 1000);
 setInterval(() => sendPulse(1), 823);
+
+function decode_cmd(msg) {
+    return util.inspect([
+        msg.readUInt8(0),
+        msg.readUInt8(1),
+        msg.readUInt16LE(2),
+        msg.readUInt32LE(2)
+    ]);
+}
+
+const udp_cmd = dgram.createSocket({type: 'udp4', reuseAddr: true});
+
+udp_cmd
+    .on('error', (err) => console.error("Binding Error", err))
+    .on('listening', () => console.log(`Listening on UDP port ${udp_cmd.address().port}`))
+    .on('message', (msg, info) => console.log(`UDP port ${info.address}:${info.port} => ${decode_cmd(msg)}`))
+    .bind({port: 5001});
+
+try {
+    udp_cmd.setBroadcast(true);
+} catch (e) {
+    console.error("Error: " + e.message);
+}
+
 
