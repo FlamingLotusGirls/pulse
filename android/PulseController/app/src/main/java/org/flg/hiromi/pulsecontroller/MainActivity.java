@@ -52,12 +52,12 @@ public class MainActivity extends ActionBarActivity {
          * @param service
          */
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+        public void onServiceConnected(final ComponentName name, IBinder service) {
             commChannel = (IPulseCommChannel)service;
             commChannel.registerErrorWatcher(new IPulseCommChannel.ErrWatcher() {
                 @Override
                 public void onError(Throwable t) {
-                    Toast.makeText(MainActivity.this, "Error in REST service: " + t.toString(), Toast.LENGTH_LONG).show();
+                    onServiceError(name.flattenToShortString(), t);
                 }
             });
             final int colorOK = getResources().getColor(R.color.colorOK);
@@ -86,6 +86,13 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
+    private void onServiceError(String name, Throwable t) {
+        String msg = t.getMessage();
+        msg = t.getClass().getSimpleName() + (msg == null ? "" : ": " + msg);
+        Toast.makeText(this, "Error in REST service: " + msg, Toast.LENGTH_LONG).show();
+        text_view.setText("Error: " + msg);
+    }
+
     private ServiceConnection pulseServiceConnection = new ServiceConnection() {
         private HeartbeatService.Channel beatChannel = null;
 
@@ -102,7 +109,7 @@ public class MainActivity extends ActionBarActivity {
             return null;
         }
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+        public void onServiceConnected(final ComponentName name, IBinder service) {
             beatChannel = (HeartbeatService.Channel)service;
             ((HeartbeatService.Channel) service).registerListener(new HeartbeatService.HeartbeatListener() {
                 @Override
@@ -134,7 +141,7 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 public void onError(Throwable t) {
-                    Toast.makeText(MainActivity.this, "Pulse Error: " + t, Toast.LENGTH_LONG).show();
+                    onServiceError(name.flattenToShortString(), t);
                 }
             });
         }
@@ -200,6 +207,14 @@ public class MainActivity extends ActionBarActivity {
         super.onStop();
     }
 
+    private void resetButton(Button btnA) {
+        // Set the button background back
+        Drawable bg = (Drawable) btnA.getTag(R.id.button_background);
+        if (bg != null) {
+            btnA.setBackground(bg);
+            btnA.setEnabled(true);
+        }
+    }
     /**
      * Initialize a button. The button must have a tag field with the name of the event to send.
      * @param btnA
@@ -211,23 +226,15 @@ public class MainActivity extends ActionBarActivity {
             public void onChange(String name, int val, boolean update) {
                 String state = (val == 0) ? "Failed" : "OK";
                 text_view.setText(btnA.getTag() + ": " + state);
-                // Set the button background back
-                Drawable bg = (Drawable)btnA.getTag(R.id.button_background);
-                if (bg != null) {
-                    btnA.setBackground(bg);
-                    btnA.setEnabled(true);
-                }
+                resetButton(btnA);
             }
 
             @Override
             public void onError(String name, Throwable t) {
-                text_view.setText(btnA.getTag() + ": " + t.toString());
+                onServiceError(name, t);
                 // Set the button background back
                 Drawable bg = (Drawable)btnA.getTag(R.id.button_background);
-                if (bg != null) {
-                    btnA.setBackground(bg);
-                    btnA.setEnabled(true);
-                }
+                resetButton(btnA);
             }
         });
         btnA.setOnClickListener(new View.OnClickListener() {
@@ -261,6 +268,7 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void onError(String name, Throwable t) {
+                onServiceError(name, t);
             }
         });
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -297,6 +305,7 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void onError(String name, Throwable t) {
+                onServiceError(name, t);
             }
         });
         seek_bar.setOnSeekBarChangeListener(

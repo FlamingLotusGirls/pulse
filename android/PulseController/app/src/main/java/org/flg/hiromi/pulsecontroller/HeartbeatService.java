@@ -73,14 +73,21 @@ public class HeartbeatService extends Service {
     }
 
     private DatagramSocket openSocket(int port) {
-        try {
-            DatagramSocket sock = new DatagramSocket(5000);
-            sock.setReuseAddress(true);
-            return sock;
-        } catch (SocketException e) {
-            sendError(e);
+        while (true) {
+            try {
+                DatagramSocket sock = new DatagramSocket(null);
+                sock.setReuseAddress(true);
+                sock.bind(new InetSocketAddress(5000));
+                return sock;
+            } catch (SocketException e) {
+                sendError(e);
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                return null;
+            }
         }
-        return null;
     }
 
     private DatagramSocket heartbeatSocket = null;

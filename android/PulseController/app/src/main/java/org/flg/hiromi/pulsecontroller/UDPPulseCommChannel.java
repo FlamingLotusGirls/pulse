@@ -36,9 +36,11 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
     }
     private DatagramSocket openSocket(int port) {
         try {
-            DatagramSocket sock = new DatagramSocket(5001);
+            DatagramSocket sock = new DatagramSocket(null);
             sock.setReuseAddress(true);
             sock.setBroadcast(true);
+            sock.bind(new
+                    InetSocketAddress(5001));
             return sock;
         } catch (SocketException e) {
             sendError(e);

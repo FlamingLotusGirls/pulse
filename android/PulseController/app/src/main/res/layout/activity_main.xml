@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
@@ -8,65 +9,147 @@
     android:id="@+id/nandesuka"
     android:background="@drawable/heart_image_fx">
 
-    <TextView android:text="@string/title_slider1" android:layout_width="wrap_content"
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/group_1"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/textView"
-        android:textSize="@dimen/control_label" />
+        android:layout_alignParentTop="true"
+        app:columnCount="3"
+        app:rowCount="4"
+        app:useDefaultMargins="true"
+        android:background="@android:drawable/picture_frame" >
 
-    <SeekBar
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/slider_1"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:max="127"
-        android:indeterminate="false"
-        android:progress="0"
-        android:layout_below="@+id/textView"
-        android:tag="@string/slider_1_tag" />
+        <Button
+            android:text="@string/button_1"
+            android:id="@+id/button_1"
+            android:tag="@string/button_1_tag"
+            android:textStyle="bold"
+            app:layout_row="0"
+            app:layout_column="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_1"
-        android:id="@+id/button_1"
-        android:layout_marginTop="99dp"
-        android:layout_below="@+id/slider_1"
-        android:layout_alignParentStart="true"
-        android:tag="@string/button_1_tag"
-        android:textStyle="bold" />
+        <Button
+            android:text="@string/button_2"
+            android:id="@+id/button_2"
+            android:tag="@string/button_2_tag"
+            android:textStyle="bold"
+            app:layout_column="0"
+            app:layout_row="1"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_2"
-        android:id="@+id/button_2"
-        android:layout_below="@+id/button_1"
-        android:layout_alignParentStart="true"
-        android:tag="@string/button_2_tag"
-        android:textStyle="bold" />
+        <Button
+            android:text="@string/button_3"
+            android:id="@+id/button_3"
+            android:tag="@string/button_3_tag"
+            android:textStyle="bold"
+            app:layout_row="2"
+            app:layout_column="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_3"
-        android:id="@+id/button_3"
-        android:layout_below="@+id/button_2"
-        android:layout_alignParentStart="true"
-        android:tag="@string/button_3_tag"
-        android:textStyle="bold" />
+        <Button
+            android:text="@string/button_2b"
+            android:id="@+id/button_2b"
+            android:tag="@string/button_2b_tag"
+            android:textStyle="bold"
+            app:layout_column="1"
+            app:layout_row="1"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
 
-    <Spinner
-        android:layout_width="wrap_content"
+        <Button
+            android:text="@string/button_3b"
+            android:id="@+id/button_3b"
+            android:tag="@string/button_3b_tag"
+            android:textStyle="bold"
+            app:layout_column="1"
+            app:layout_row="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1" />
+
+        <Button
+            android:text="@string/button_4b"
+            android:id="@+id/button_4b"
+            android:tag="@string/button_4b_tag"
+            android:textStyle="bold"
+            app:layout_column="2"
+            app:layout_row="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1" />
+
+        <Spinner
+            android:id="@+id/spinner_1"
+            android:entries="@array/spinner_1_entries"
+            android:background="@android:drawable/btn_dropdown"
+            android:popupBackground="@android:drawable/btn_default_small"
+            android:tag="@string/spinner_1_tag"
+            style="@android:style/Widget.Spinner.DropDown"
+            app:layout_row="0"
+            app:layout_column="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+
+        <Button
+            android:text="@string/button_1b"
+            android:id="@+id/button_1b"
+            android:tag="@string/button_1b_tag"
+            android:textStyle="bold"
+            app:layout_column="1"
+            app:layout_row="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1" />
+    </android.support.v7.widget.GridLayout>
+
+    <android.support.v7.widget.GridLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button_3"
-        android:layout_marginTop="45dp"
-        android:id="@+id/spinner_1"
-        android:entries="@array/spinner_1_entries"
-        android:background="@android:drawable/btn_dropdown"
-        android:popupBackground="@android:drawable/btn_default_small"
-        android:tag="@string/spinner_1_tag"
-        style="@android:style/Widget.Spinner.DropDown" />
+        android:layout_below="@id/group_1"
+        app:columnCount="2"
+        app:rowCount="3"
+        app:useDefaultMargins="true"
+        android:background="@android:drawable/picture_frame" >
+        <TextView android:text="@string/title_slider1" android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView"
+            android:textSize="@dimen/control_label"
+            app:layout_column="0"
+            app:layout_columnSpan="2"
+            app:layout_row="0"
+            app:layout_gravity="center_horizontal"/>
+
+        <SeekBar
+            android:id="@+id/slider1"
+            android:max="200"
+            android:indeterminate="false"
+            android:progress="60"
+            android:tag="@string/slider_1_tag"
+            app:layout_column="0"
+            app:layout_row="1"
+            app:layout_columnSpan="2"
+            app:layout_gravity="fill_horizontal"/>
+
+        <Button
+            android:text="@string/fx_1"
+            android:id="@+id/button_fx_1"
+            android:tag="@string/fx_1_tag"
+            android:textStyle="bold"
+            app:layout_column="0"
+            app:layout_row="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1" />
+
+        <Button
+            android:text="@string/fx_2"
+            android:id="@+id/button_fx_2"
+            android:tag="@string/fx_2_tag"
+            android:textStyle="bold"
+            app:layout_column="1"
+            app:layout_row="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1" />
+    </android.support.v7.widget.GridLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -123,5 +206,4 @@
             android:id="@+id/pulse_icon_3"
             android:contentDescription="@string/heartbeat_3" />
     </RelativeLayout>
-
 </RelativeLayout>

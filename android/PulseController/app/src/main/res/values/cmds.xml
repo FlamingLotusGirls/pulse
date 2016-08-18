@@ -27,7 +27,7 @@
         <item>3</item>
     </integer-array>
 
-    <!-- Effect ALL_POOF -->
+    <!-- Effect poof_1 -->
     <integer-array name="poof_2">
         <item>2</item>
         <item>0</item>
@@ -35,7 +35,7 @@
         <item>3</item>
     </integer-array>
 
-    <!-- Effect ALL_POOF -->
+    <!-- Effect poof_3 -->
     <integer-array name="poof_3">
         <item>3</item>
         <item>0</item>
@@ -43,12 +43,36 @@
         <item>3</item>
     </integer-array>
 
-    <!-- Command STOP_ALL -->
+    <!-- Effect CHASE -->
+    <integer-array name="chase">
+        <item>255</item>
+        <item>0</item>
+        <item>4</item>
+        <item>2</item>
+    </integer-array>
+
+    <!-- Command stop_all -->
     <integer-array name="stop_all">
         <item>255</item>
         <item>0</item>
         <item>1</item>
         <item>0</item>
+    </integer-array>
+
+    <!-- Heart FX 1 -->
+    <integer-array name="heart_fx_1">
+        <item>1</item>
+        <item>0</item>
+        <item>4</item>
+        <item>1</item>
+    </integer-array>
+
+    <!-- Heart FX 1 -->
+    <integer-array name="heart_fx_2">
+        <item>2</item>
+        <item>0</item>
+        <item>4</item>
+        <item>1</item>
     </integer-array>
 
     <array name="triggers">
@@ -57,6 +81,9 @@
         <item>@array/poof_1</item>
         <item>@array/poof_2</item>
         <item>@array/poof_3</item>
+        <item>@array/chase</item>
+        <item>@array/heart_fx_1</item>
+        <item>@array/heart_fx_2</item>
     </array>
 
     <string-array name="trigger_names">
@@ -65,6 +92,9 @@
         <item>poof_1</item>
         <item>poof_2</item>
         <item>poof_3</item>
+        <item>chase</item>
+        <item>heart_fx_1</item>
+        <item>heart_fx_2</item>
     </string-array>
 
     <!-- Parameter source -->

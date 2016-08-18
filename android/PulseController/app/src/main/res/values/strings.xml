@@ -35,11 +35,39 @@
 
     <!-- Button labels and tags -->
     <string name="button_1">Aorta Poofer 1</string>
-    <string name="button_3">Aorta Poofer 3</string>
     <string name="button_2">Aorta Poofer 2</string>
-    <string name="button_3_tag">poof_3</string>
-    <string name="button_2_tag">poof_2</string>
+    <string name="button_3">Aorta Poofer 3</string>
     <string name="button_1_tag">poof_1</string>
+    <string name="button_2_tag">poof_2</string>
+    <string name="button_3_tag">poof_3</string>
+
+
+    <string name="button_1b">Chase</string>
+    <string name="button_2b">All Poof</string>
+    <string name="button_3b">Heart FX 1</string>
+    <string name="button_4b">Heart FX 2</string>
+    <string name="button_1b_tag">chase</string>
+    <string name="button_2b_tag">all_poof</string>
+    <string name="button_3b_tag">heart_fx_1</string>
+    <string name="button_4b_tag">heart_fx_2</string>
+
+    <string name="play_sound_1">Play Sound 1</string>
+    <string name="play_sound_2">Play Sound 2</string>
+    <string name="play_sound_3">Play Sound 3</string>
+    <string name="play_sound_1_tag">sound_1</string>
+    <string name="play_sound_2_tag">sound_2</string>
+    <string name="play_sound_3_tag">sound_3</string>
+
+    <string name="led_fx_1">LED FX 1</string>
+    <string name="led_fx_2">LED FX 2</string>
+    <string name="led_fx_1_tag">led_fx_1</string>
+    <string name="led_fx_2_tag">led_fx_2</string>
+
+    <string name="fx_1">Special FX 1</string>
+    <string name="fx_2">Special FX 2</string>
+    <string name="fx_1_tag">fx_1</string>
+    <string name="fx_2_tag">fx_2</string>
+
     <string name="slider_1_tag">bpm</string>
     <string name="spinner_1_tag">source</string>
 
