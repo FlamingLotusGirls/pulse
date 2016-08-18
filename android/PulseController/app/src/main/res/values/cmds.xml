@@ -91,6 +91,86 @@
         <item>2</item>
     </integer-array>
 
+    <!-- Effect sound_1 pod 1 -->
+    <integer-array name="sound_1_p1">
+        <item>0</item>
+        <item>0</item>
+        <item>4</item>
+        <item>7</item>
+    </integer-array>
+
+    <!-- Effect sound_1 pod 2 -->
+    <integer-array name="sound_1_p2">
+        <item>1</item>
+        <item>0</item>
+        <item>4</item>
+        <item>7</item>
+    </integer-array>
+
+    <!-- Effect sound_2 pod 1 -->
+    <integer-array name="sound_2_p1">
+        <item>0</item>
+        <item>0</item>
+        <item>4</item>
+        <item>7</item>
+    </integer-array>
+
+    <!-- Effect sound_2 pod 2 -->
+    <integer-array name="sound_2_p2">
+        <item>1</item>
+        <item>0</item>
+        <item>4</item>
+        <item>7</item>
+    </integer-array>
+
+    <!-- Effect sound_3 pod 1 -->
+    <integer-array name="sound_3_p1">
+        <item>0</item>
+        <item>0</item>
+        <item>4</item>
+        <item>8</item>
+    </integer-array>
+
+    <!-- Effect sound_3 pod 2 -->
+    <integer-array name="sound_3_p2">
+        <item>1</item>
+        <item>0</item>
+        <item>4</item>
+        <item>8</item>
+    </integer-array>
+
+    <!-- Effect led_1 pod 1 -->
+    <integer-array name="led_fx_1_1">
+        <item>0</item>
+        <item>0</item>
+        <item>4</item>
+        <item>9</item>
+    </integer-array>
+
+    <!-- Effect led_1 pod 2 -->
+    <integer-array name="led_fx_1_2">
+        <item>1</item>
+        <item>0</item>
+        <item>4</item>
+        <item>9</item>
+    </integer-array>
+
+    <!-- Effect led_2 pod 1 -->
+    <integer-array name="led_fx_2_1">
+        <item>0</item>
+        <item>0</item>
+        <item>4</item>
+        <item>10</item>
+    </integer-array>
+
+    <!-- Effect led_2 pod 2 -->
+    <integer-array name="led_fx_2_2">
+        <item>1</item>
+        <item>0</item>
+        <item>4</item>
+        <item>10</item>
+    </integer-array>
+
     <array name="triggers">
         <item>@array/all_poof</item>
         <item>@array/stop_all</item>
@@ -98,6 +178,16 @@
         <item>@array/poof_2</item>
         <item>@array/poof_3</item>
         <item>@array/chase</item>
+        <item>@array/sound_1_p1</item>
+        <item>@array/sound_2_p1</item>
+        <item>@array/sound_3_p1</item>
+        <item>@array/sound_1_p2</item>
+        <item>@array/sound_2_p2</item>
+        <item>@array/sound_3_p2</item>
+        <item>@array/led_fx_1_1</item>
+        <item>@array/led_fx_2_1</item>
+        <item>@array/led_fx_1_2</item>
+        <item>@array/led_fx_2_2</item>
         <item>@array/heart_fx_1</item>
         <item>@array/heart_fx_2</item>
         <item>@array/fx_1</item>
@@ -111,11 +201,39 @@
         <item>poof_2</item>
         <item>poof_3</item>
         <item>chase</item>
+        <item>sound_1_1</item>
+        <item>sound_2_1</item>
+        <item>sound_3_1</item>
+        <item>sound_1_2</item>
+        <item>sound_2_2</item>
+        <item>sound_3_2</item>
+        <item>led_fx_1_1</item>
+        <item>led_fx_2_1</item>
+        <item>led_fx_1_2</item>
+        <item>led_fx_2_2</item>
         <item>heart_fx_1</item>
         <item>heart_fx_2</item>
         <item>fx_1</item>
         <item>fx_2</item>
     </string-array>
+
+    <!-- Parameter source pod 1 -->
+    <integer-array name="source_1">
+        <item>0</item>
+        <item>0</item>
+        <item>6</item>
+        <!-- Will be filled in -->
+    </integer-array>
+
+
+    <!-- Parameter source pod 2 -->
+    <integer-array name="source_2">
+        <item>1</item>
+        <item>0</item>
+        <item>6</item>
+        <!-- Will be filled in -->
+    </integer-array>
+
 
     <!-- Parameter source -->
     <integer-array name="source">
@@ -135,11 +253,15 @@
 
     <array name="params">
         <item>@array/source</item>
+        <item>@array/source_1</item>
+        <item>@array/source_2</item>
         <item>@array/bpm</item>
     </array>
 
     <string-array name="param_names">
         <item>source</item>
+        <item>source_1</item>
+        <item>source_2</item>
         <item>bpm</item>
     </string-array>
 
