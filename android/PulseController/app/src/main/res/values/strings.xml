@@ -61,12 +61,24 @@
     <string name="button_3b_tag">heart_fx_1</string>
     <string name="button_4b_tag">heart_fx_2</string>
 
-    <string name="play_sound_1">Play Sound 1</string>
-    <string name="play_sound_2">Play Sound 2</string>
-    <string name="play_sound_3">Play Sound 3</string>
-    <string name="play_sound_1_tag">sound_1</string>
-    <string name="play_sound_2_tag">sound_2</string>
-    <string name="play_sound_3_tag">sound_3</string>
+
+    <string name="button_1_pod">Sound 1</string>
+    <string name="button_2_pod">Sound 2</string>
+    <string name="button_3_pod">Sound 3</string>
+    <string name="button_1_p1_tag">sound_1_1</string>
+    <string name="button_2_p1_tag">sound_2_1</string>
+    <string name="button_3_p1_tag">sound_3_3</string>
+    <string name="button_1_p2_tag">sound_1_2</string>
+    <string name="button_2_p2_tag">sound_2_2</string>
+    <string name="button_3_p2_tag">sound_3_2</string>
+
+
+    <string name="button_1b_pod">LED FX 1</string>
+    <string name="button_2b_pod">LED FX 2</string>
+    <string name="button_1b_p1_tag">led_fx_1_1</string>
+    <string name="button_2b_p1_tag">led_fx_2_1</string>
+    <string name="button_1b_p2_tag">led_fx_1_2</string>
+    <string name="button_2b_p2_tag">led_fx_2_2</string>
 
     <string name="led_fx_1">LED FX 1</string>
     <string name="led_fx_2">LED FX 2</string>
@@ -80,6 +92,8 @@
 
     <string name="slider_1_tag">bpm</string>
     <string name="spinner_1_tag">source</string>
+    <string name="spinner_1_p1_tag">source_1</string>
+    <string name="spinner_1_p2_tag">source_2</string>
 
     <!-- Descrptions of the three beating hearts -->
     <string name="heartbeat_1">Heartbeat Left</string>
