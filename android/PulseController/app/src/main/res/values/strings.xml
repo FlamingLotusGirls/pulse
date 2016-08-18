@@ -44,9 +44,9 @@
     <string name="url_status_method">GET</string>
 
     <!-- Button labels and tags -->
-    <string name="button_1">Aorta Poofer 1</string>
-    <string name="button_2">Aorta Poofer 2</string>
-    <string name="button_3">Aorta Poofer 3</string>
+    <string name="button_1">Poofer 1</string>
+    <string name="button_2">Poofer 2</string>
+    <string name="button_3">Poofer 3</string>
     <string name="button_1_tag">poof_1</string>
     <string name="button_2_tag">poof_2</string>
     <string name="button_3_tag">poof_3</string>
