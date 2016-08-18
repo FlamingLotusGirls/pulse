@@ -40,6 +40,10 @@ public class MainActivity extends ActionBarActivity {
     //  connect to our background communication service.
     private ServiceConnection serviceConnection = new ServiceConnection() {
         private String getStatus(JSONObject status) {
+            if (status == null) {
+                // We get null status on connection failures.
+                return null;
+            }
             try {
                 return status.getString("status");
             } catch (JSONException e) {
@@ -89,7 +93,7 @@ public class MainActivity extends ActionBarActivity {
     private void onServiceError(String name, Throwable t) {
         String msg = t.getMessage();
         msg = t.getClass().getSimpleName() + (msg == null ? "" : ": " + msg);
-        Toast.makeText(this, "Error in REST service: " + msg, Toast.LENGTH_LONG).show();
+        // Toast.makeText(this, "Error in REST service: " + msg, Toast.LENGTH_LONG).show();
         text_view.setText("Error: " + msg);
     }
 

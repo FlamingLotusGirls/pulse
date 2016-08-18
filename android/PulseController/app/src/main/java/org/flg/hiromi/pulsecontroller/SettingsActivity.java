@@ -149,6 +149,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("base_url"));
+            bindPreferenceSummaryToValue(findPreference("udp_broadcast_addr"));
+            bindPreferenceSummaryToValue(findPreference("heartbeat_port"));
+            bindPreferenceSummaryToValue(findPreference("cmd_port"));
         }
 
         @Override

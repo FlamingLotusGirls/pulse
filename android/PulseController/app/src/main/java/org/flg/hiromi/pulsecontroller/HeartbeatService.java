@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -129,7 +130,9 @@ public class HeartbeatService extends Service {
 
     private void startThread() {
         if (!runOK) {
-            heartbeatSocket = openSocket(5000);
+            int port = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this)
+                                            .getString("heartbeat_port", "5000"));
+            heartbeatSocket = openSocket(port);
             runOK = true;
             heartbeatThread = new HeartbeatThread();
             heartbeatThread.start();
