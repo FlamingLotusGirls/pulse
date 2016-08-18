@@ -67,12 +67,28 @@
         <item>1</item>
     </integer-array>
 
-    <!-- Heart FX 1 -->
+    <!-- Heart FX 2 -->
     <integer-array name="heart_fx_2">
         <item>2</item>
         <item>0</item>
         <item>4</item>
         <item>1</item>
+    </integer-array>
+
+    <!-- FX 1 -->
+    <integer-array name="fx_1">
+        <item>2</item>
+        <item>0</item>
+        <item>4</item>
+        <item>1</item>
+    </integer-array>
+
+    <!-- FX 2 -->
+    <integer-array name="fx_2">
+        <item>2</item>
+        <item>0</item>
+        <item>4</item>
+        <item>2</item>
     </integer-array>
 
     <array name="triggers">
@@ -84,6 +100,8 @@
         <item>@array/chase</item>
         <item>@array/heart_fx_1</item>
         <item>@array/heart_fx_2</item>
+        <item>@array/fx_1</item>
+        <item>@array/fx_2</item>
     </array>
 
     <string-array name="trigger_names">
@@ -95,6 +113,8 @@
         <item>chase</item>
         <item>heart_fx_1</item>
         <item>heart_fx_2</item>
+        <item>fx_1</item>
+        <item>fx_2</item>
     </string-array>
 
     <!-- Parameter source -->
