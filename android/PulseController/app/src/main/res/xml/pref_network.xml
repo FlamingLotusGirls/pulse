@@ -43,5 +43,13 @@
         android:numeric="integer"
         android:key="cmd_port"
         android:title="Command UDP Port" />
-</PreferenceScreen>
 
+    <ListPreference
+        android:key="byteorder"
+        android:defaultValue="LE"
+        android:entries="@array/pref_byteorder_labels"
+        android:entryValues="@array/pref_byteorder"
+        android:title="@string/pref_title_byteorder"
+        android:summary="%s" />
+
+</PreferenceScreen>

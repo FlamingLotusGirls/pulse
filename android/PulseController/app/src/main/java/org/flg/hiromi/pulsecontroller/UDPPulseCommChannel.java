@@ -42,6 +42,19 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
         return null;
     }
 
+    private ByteOrder getByteOrder() {
+        String bo = PreferenceManager.getDefaultSharedPreferences(service)
+                .getString("byteorder", "LE");
+        switch (bo) {
+            case "LE": return ByteOrder.LITTLE_ENDIAN;
+            case "BE": return  ByteOrder.BIG_ENDIAN;
+            default: {
+                sendError(new Error("Illegal byte order preference value: " + bo));
+                return ByteOrder.LITTLE_ENDIAN;
+            }
+        }
+    }
+
     // Open the socket we will use
     private DatagramSocket openSocket() {
         try {
@@ -117,7 +130,7 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
             public Void call() throws Exception {
                 int[] ents = map.get(param);
                 ByteBuffer buffer = ByteBuffer.allocate(Math.max(8,ents.length));
-                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                buffer.order(getByteOrder());
                 if (ents != null) {
                     try {
                         buffer.put((byte) ents[0]);

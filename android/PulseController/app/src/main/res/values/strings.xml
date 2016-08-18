@@ -23,6 +23,16 @@
         <item>UDP</item>
     </string-array>
 
+    <string name="pref_title_byteorder">Byte Order</string>
+    <string-array name="pref_byteorder">
+        <item>LE</item>
+        <item>BE</item>
+    </string-array>
+    <string-array name="pref_byteorder_labels">
+        <item>Little-Endian</item>
+        <item>Big-Endian</item>
+    </string-array>
+
     <!-- URL formats -->
     <string name="url_trigger">/trigger?name=%s</string>
     <string name="url_trigger_method">PUT</string>
