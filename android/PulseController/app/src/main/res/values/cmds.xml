@@ -31,7 +31,7 @@
 
     <!-- Effect poof_1 -->
     <integer-array name="poof_1">
-        <item>1</item>
+        <item>3</item>
         <item>0</item>
         <item>4</item>
         <item>3</item>
@@ -39,7 +39,7 @@
 
     <!-- Effect poof_1 -->
     <integer-array name="poof_2">
-        <item>2</item>
+        <item>3</item>
         <item>0</item>
         <item>4</item>
         <item>3</item>
@@ -55,7 +55,7 @@
 
     <!-- Effect CHASE -->
     <integer-array name="chase">
-        <item>255</item>
+        <item>3</item>
         <item>0</item>
         <item>4</item>
         <item>2</item>
@@ -71,7 +71,7 @@
 
     <!-- Heart FX 1 -->
     <integer-array name="heart_fx_1">
-        <item>1</item>
+        <item>3</item>
         <item>0</item>
         <item>4</item>
         <item>1</item>
@@ -79,7 +79,7 @@
 
     <!-- Heart FX 2 -->
     <integer-array name="heart_fx_2">
-        <item>2</item>
+        <item>3</item>
         <item>0</item>
         <item>4</item>
         <item>1</item>
