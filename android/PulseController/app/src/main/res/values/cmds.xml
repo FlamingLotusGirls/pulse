@@ -2,6 +2,7 @@
 <resources>
     <!-- Data for UDP communications -->
 
+    <!-- For reference, not currently used -->
     <string-array name="pulse_cmds">
         <item></item>
         <item>STOP_ALL</item>
@@ -9,6 +10,15 @@
         <item>START_EFFECT</item>
         <item>STOP_EFFECT</item>
         <item>USE_HEARTBEAT_SOURCE</item>
+    </string-array>
+
+    <string-array name="module_ids">
+        <item>None</item>
+        <item>Pod 1</item>
+        <item>Pod 2</item>
+        <item>Heart</item>
+        <item>MUI Right</item>
+        <item>MUI Left</item>
     </string-array>
 
     <!-- Effect ALL_POOF -->
