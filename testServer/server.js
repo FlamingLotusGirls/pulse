@@ -128,7 +128,8 @@ var server = app.listen(8081, function () {
 
 });
 
-const udp_pulse = dgram.createSocket({type: 'udp4', reuseAddr: true});
+const udp_pulse = dgram.createSocket({type: 'udp4', reuseAddr: true})
+      .on('listening', () => udp_pulse.setBroadcast(true));
 var seq = 0;
 var hpos = 0;
 function newline() {
@@ -155,7 +156,7 @@ function sendPulse(id) {
         // Send to localhost port 5000; must set up emulator to forward
         // telnet to emulator, authorize, and enter
         // redir add udp:5000:5000
-        udp_pulse.send(message, 5000, "127.0.0.1");
+        udp_pulse.send(message, 5000, "192.168.88.255");
     } catch (e) {
         newline();
         console.error("Error: " + e);
@@ -194,6 +195,3 @@ udp_cmd
     .on('listening', () => console.log(`Listening on UDP interface ${udp_cmd.address().address} port ${udp_cmd.address().port}`))
     .on('message', show)
     .bind({port: 5001});
-
-
-
