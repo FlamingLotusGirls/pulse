@@ -129,9 +129,9 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
             @Override
             public Void call() throws Exception {
                 int[] ents = map.get(param);
-                ByteBuffer buffer = ByteBuffer.allocate(Math.max(8,ents.length));
-                buffer.order(getByteOrder());
                 if (ents != null) {
+                    ByteBuffer buffer = ByteBuffer.allocate(Math.max(8,ents.length));
+                    buffer.order(getByteOrder());
                     try {
                         buffer.put((byte) ents[0]);
                         buffer.put((byte) ents[1]);
