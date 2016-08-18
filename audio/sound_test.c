@@ -6,7 +6,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <stdlib.h>
 
 #include "pcm_sound.h"
 
@@ -20,10 +19,6 @@
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #endif // MAX
-#ifndef MIN
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif // MIN
-
 
 /*
 typedef unsigned char uint8_t;
@@ -31,26 +26,25 @@ typedef unsigned long uint32_t;
 typedef unsigned short uint16_t;
 */
 
+#if 1
+#include "../BPM/BPMPulse.h"
+#else
 struct __BPMPulseData_t {
     uint8_t  pod_id; // which pod. pass as param in startup file.
-
     uint8_t  rolling_sequence;
     // just repeat every 256 iterations. for tracking gaps in
     // UDP packets in case we have some situation where it happens.
-
     uint16_t beat_interval_ms;
     // min BPM 30 has ms interval of 2000
     // max BPM 200 has ms interval of 300
-
     uint32_t elapsed_ms; // how long before now did this happen?
     
     uint32_t timestamp;  // timestamp, normalized to the pod that sent this. Do not assume that the pods are in sync.
-
-    float est_BPM; // computed as 60*1000/beat_interval_ms by sender.
+    float est_BPM; // computed as 60*1000/beat_interval_ms  // XXX why do we have this? and why is it a float?
  
 }__attribute__((packed)); 
-
 typedef struct __BPMPulseData_t BPMPulseData_t;
+#endif
 
 typedef struct __attribute((packed)) {
     uint8_t  receiver_id;         // which unit is this command for. 255 means 'this is for everyone'
@@ -59,50 +53,19 @@ typedef struct __attribute((packed)) {
     uint32_t command_data;        // may or may not have anything in it, depending on the command
 } PulseCommand_t;
 
-static uint8_t myId = 0; // Now read from command line. Caller reads config.
-static uint8_t hbSource;
+static uint8_t myId = 0; // XXX need to read this from a config file somewhere
+static uint8_t hbSource;   
 static int hbSocket;
 static int cmdSocket; 
-static int verbose = 0; // verbosity level.
+    
 
 static int initBroadcastSocketListener(unsigned short port);
 static void pulseAudioListen();
 
-static void Help() {
- fprintf(stderr, "sound_test: -ipod_id\n");
-}
-static void Usage() {
- Help(); exit(1);
-}
-
-void
-GetOpts(int argc, char* argv[], uint8_t* pod_id)
-{
-	int i;
-	for (i = 1; i < argc; i++) {
-
-		if (argv[i][0]=='-') {
-			switch(argv[i][1]) {
-			case 'h': Help();
-			break;
-			case 'i': *pod_id = atoi(argv[i]+2);
-			break;
-			case 'v': verbose++;
-			break;
-			default: fprintf(stderr, "unknown option '%c'\n", argv[i][1]);
-				Usage();
-			}
-		} else {
-			fprintf(stderr, "what option ???\n");
-			Usage();
-		}
-	}
-}
-
 
 int main(int argc, char **argv)
 {
-    GetOpts(argc, argv, &myId);
+
 
     if (pcmPlaybackInit() < 0) {
         printf("Failure to initialize sound system, aborting\n");
@@ -186,8 +149,8 @@ static void pulseAudioListen()
     printf("Heartbeat socket is %d\n", hbSocket);
     printf("nfds is %d\n", nfds);
     pcmPlayBreathing(0,128);
-    pcmPlaySpecial(SOUND_KABOOM, 128);
-    pcmPlayHeartBeat(60, 128);
+    //pcmPlaySpecial(SOUND_KABOOM, 128);
+    pcmPlayHeartBeat(40, 128);
     while(1) {
         FD_ZERO(&read_fds);
         FD_ZERO(&except_fds);
@@ -252,15 +215,13 @@ static void pulseAudioListen()
                 // a real, live heartbeat!
                 printf("Received data on hb socket, id is %d\n", hbData.pod_id);
                 if (hbData.pod_id == hbSource) {
-                    uint32_t hbRate = hbData.est_BPM; // yes, I am rounding here.
+                    uint32_t hbRate = 60*1000/(hbData.beat_interval_ms); // yes, I am rounding here.
                     if (hbRate < 30 || hbRate > 200) { 
                         printf("Heartbeat rate %d is out of bounds\n", hbRate);
-			hbRate = MAX(hbRate,30);
-			hbRate = MIN(hbRate,200);
                     } else {
                         printf("received heart beat at %d\n", hbRate);
+                        pcmPlayHeartBeat(hbRate, 128);
                     }
-                    pcmPlayHeartBeat(hbRate, 128);
                 }
             }
         } 
