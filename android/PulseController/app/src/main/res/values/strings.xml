@@ -103,8 +103,10 @@
     <!-- Drop-down list of heartbeat sources. Ordered by ID -->
     <string-array name="spinner_1_entries">
         <item>None</item>
-        <item>Heartbeat Left</item>
-        <item>Heartbeat Right</item>
+        <item>Pod 1</item>
+        <item>Pod 2</item>
+        <item>MUI Left</item>
+        <item>MUI Right</item>
         <item>Heartbeat Synth</item>
     </string-array>
 
