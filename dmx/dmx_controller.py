@@ -39,10 +39,19 @@ HEARTBEAT = 1
 STROBE     = 2
    # = 3
 
+effects = [HEARTBEAT, STROBE]
 
+gCurrentHeartBeat  = None
+gNextHeartBeat     = None
+gNextNextHeartBeat = None
+gNextHeartBeatStartTime     = 0
+gNextNextHeartBeatStartTime = 0
 
-effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
-           STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
+gGlobalEffectId = 0
+
+# Heartbeat needs to be divided into different steps and added separately to eventQueue
+# effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
+        #    STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
 
 class Commands():
     STOP_ALL             = 1
@@ -85,19 +94,51 @@ def handleHeartBeatData(heartBeatData):
         print "beatOffsetMs", beatOffsetMs
         print "bpmApprox", bpmApprox
         print "timestamp", timestamp
-        if previousHeartBeatTime:
-            heartBeatStartTime = previousHeartBeatTime + daytime.timedelta(milliseconds = beatIntervalMs)
-        else:
-            heartBeatStartTime = datetime.datetime.now()
 
-        if heartBeatStartTime <= datetime.datetime.now():
-            print "1"
-            loadEffect(HEARTBEAT, datetime.datetime.now())
+
+        if beatOffsetMs < beatIntervalMs:
+            heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
         else:
-            print "2 ", heartBeatStartTime
-            loadEffect(HEARTBEAT, heartBeatStartTime)
+            heartBeatStartTime = datetime.dateTime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
+
+        instanceId = loadEffect(HEARTBEAT, heartBeatStartTime, beatIntervalMs)
+
+        loadNextHeartBeat(instanceId, heartBeatStartTime)
 
         sortEventQueue()
+
+
+        # if previousHeartBeatTime:
+        #     heartBeatStartTime = previousHeartBeatTime + daytime.timedelta(milliseconds = beatIntervalMs)
+        # else:
+        #     heartBeatStartTime = datetime.datetime.now()
+        #
+        # if heartBeatStartTime <= datetime.datetime.now():
+        #     print "1"
+        #     loadEffect(HEARTBEAT, datetime.datetime.now())
+        # else:
+        #     print "2 ", heartBeatStartTime
+        #     loadEffect(HEARTBEAT, heartBeatStartTime)
+
+def loadNextHeartBeat(instanceId, heartBeatStartTime):
+    global gNextHeartBeat
+    global gNextNextHeartBeat
+    global gNextHeartBeatStartTime
+    global gNextNextHeartBeatStartTime
+
+    if gNextHeartBeat == None or gNextHeartBeatStartTime > heartBeatStartTime:
+        removeEffectInstance(gNextHeartBeat)
+        gNextHeartBeat = instanceId
+        gNextHeartBeatStartTime = heartBeatStartTime
+
+        removeEffectInstance(gNextNextHeartBeat)
+        gNextNextHeartBeat = None
+
+    else:
+        if gNextNextHeartBeat:
+            removeEffectInstance(gNextNextHeartBeat)
+        gNextNextHeartBeat = instanceId
+        gNextNextHeartBeatStartTime = heartBeatStartTime
 
 
 def handleCommandData(commandData):
@@ -126,35 +167,76 @@ def stopHeartBeat():
     eventQueue[:] = [e for e in eventQueue if (e.get("effectId") != HEARBTEAT)]
     allowHeartBeats = False
 
+def removeEffect(effectId):
+    eventQueue[:] = [e for e in eventQueue if (e.get("effectId") == HEARTBEAT)]
+
+def removeEffectInstance(instanceId):
+    if not instanceId:
+        return
+
+    eventQueue[:] = [e for e in eventQueue if (e.get("globalId") != instanceId)]
+
+
 def removeAllEffects():
     eventQueue = []
 
-def loadEffect(effectId, startTime): # TODO: The information we need is heartbear duration
-    if effects[effectId] != None:
-        for event in effects[effectId]:
-            print "event"
-            canonicalEvent = {}
-            canonicalEvent["effectId"] = effectId
-            #print "add event" + str(event)
-            # canonicalEvent["controllerId"] = intToHex(event[0]//8)
-            # canonicalEvent["channel"]      = event[0] %8
-            # canonicalEvent["onOff"]        = event[1]
-            canonicalEvent["time"]         = startTime + datetime.timedelta(milliseconds = event[2])
-            #print "canonical event is " + str(canonicalEvent)
-            #print "timedelta is " + str(datetime.timedelta(milliseconds = event[2]))
-            eventQueue.append(canonicalEvent)
+def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need is heartbeat duration
+    global gGlobalEffectId
+
+    if repeatMs != 0 and effectId != HEARTBEAT:
+        removeEffect(effectId)
+
+
+
+    # if effects[effectId] != None:
+    if effectId in effects:
+        # for event in effects[effectId]:
+
+        print "event"
+        event = {}
+        event["effectId"] = effectId
+        event["globalId"] = gGlobalEffectId
+
+
+        #print "add event" + str(event)
+        # canonicalEvent["controllerId"] = intToHex(event[0]//8)
+        # canonicalEvent["channel"]      = event[0] %8
+        # canonicalEvent["onOff"]        = event[1]
+
+        if repeatMs != 0:
+            event["time"]     = startTime + datetime.timedelta(milliseconds = repeatMs)
+            event["repeatMs"] = repeatMs
+            event["nextStartTime"] = event["time"]
+        else:
+            # TODO: Still need to figure out times for each event
+            event["time"] = startTime + datetime.timedelta(milliseconds = 1000)
+        #print "canonical event is " + str(canonicalEvent)
+        #print "timedelta is " + str(datetime.timedelta(milliseconds = event[2]))
+        eventQueue.append(event)
+        gGlobalEffectId += 1
+
+    return gGlobalEffectId - 1
 
 
 
 def sortEventQueue():
-    eventQueue.sort(key=itemgetter("time"), reverse=True)
+    print "sorting"
+    # for event in eventQueue:
+    #     print event
+    # eventQueue.sort(key=itemgetter("time"), reverse=True)
 
 
 def renderEvents():
-    # print "eventqueue: ", eventQueue
     if len(eventQueue) == 0:
         return
     global dmx
+
+    global gCurrentHeartBeat
+    global gNextHeartBeat
+    global gNextHeartBeatStartTime
+    global gNextNextHeartBeat
+    global gNextNextHeartBeatStartTime
+
     currentEvents = []
     currentTime = datetime.datetime.now()
     timeWindow = currentTime + datetime.timedelta(milliseconds = 5)
@@ -173,19 +255,24 @@ def renderEvents():
         if not dmx:
             dmx = pysimpledmx.DMXConnection(DMX_ADDRESS)
         for event in currentEvents:
-
-            process_heartbeat(event)
+            if event["effectId"] == HEARTBEAT:
+                print "HEARTBEAT"
+                process_heartbeat(event)
 
 def process_heartbeat(event):
     # TODO: Still need to listen to port with select while playing
     # TODO: Also need to figure out timing
-    # TODO: Ask carolyn about heartbeat... they seem to discard information about frequency
+
+    global readfds
+    waitTime = event["repeatMs"]
+
+    # inputReady, outputReady, exceptReady = select(readfds, [], [])
 
     # heartbeat.heartbeat1(dmx)
-    heartbeat.heartbeat1_5(dmx)
+    # heartbeat.heartbeat1_5(dmx)
 
 
-    print "event ", event
+    print "\n\n\n\n=======\n ", event,"\n=======\n\n\n\n\n"
 
     # sys.exit()
 
@@ -196,14 +283,22 @@ if __name__ == '__main__':
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
     commandListener   = createBroadcastListener(COMMAND_PORT)
     eventQueue = []
+    heartBeatQueue = []
 
     try:
         while (running):
             readfds = [heartBeatListener, commandListener]
+            if heartBeatQueue:
+                for time in heartBeatQueue:
+                    inputReady, outputReady, exceptReady = select(readfds, [], [], time)
+                    heartBeatQueue.remove(time)
             if not eventQueue:
                 # TODO: Need way to turn this on and off
-                dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 255, autorender = True)
+                if gNextHeartBeat == None:
+                    dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 255, autorender = True)
+                print datetime.datetime.now()
                 inputReady, outputReady, exceptReady = select(readfds, [], [])
+                print datetime.datetime.now()
             else:
                 waitTime = (eventQueue[len(eventQueue)-1]["time"] - datetime.datetime.now()).total_seconds()
                 print "!!doing select, timeout is %f" % waitTime
@@ -211,13 +306,14 @@ if __name__ == '__main__':
                 inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime)
 
             if inputReady:
+                print "input is ready"
                 dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 0, autorender = True)
                 for fd in inputReady:
                     if fd is heartBeatListener:
                         heartBeatData = fd.recv(1024)
                         handleHeartBeatData(heartBeatData)
                     elif fd is commandListener:
-                        commandData = fd.ecv(2014)
+                        commandData = fd.recv(2014)
                         handleCommandData(commandData)
             renderEvents()
 
