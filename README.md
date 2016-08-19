@@ -59,7 +59,8 @@ the particular commands, ie:
 	} PulseCommand_t;
 
 Current commands include:
-    	STOP_ALL             = 1
+    	
+	STOP_ALL             = 1
     	STOP_HEARTBEAT       = 2
     	START_HEARTBEAT      = 3
     	START_EFFECT         = 4
