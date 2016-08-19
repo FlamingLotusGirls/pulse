@@ -7,6 +7,8 @@ var log = require('./log.js');
 var dgram = require('dgram');
 var util = require('util');
 
+var BROADCAST = "192.168.88.255";
+
 app.get('/', (req, res) => res.send("Hello, World"));
 
 function runCmd(cmd, ...args) {
@@ -121,11 +123,12 @@ app.use("/params", express.static("params", {}))
 
 var server = app.listen(8081, function () {
 
-  var host = server.address().address
-  var port = server.address().port
+    var host = server.address().address
+    var port = server.address().port
 
-  log.info("Example app listening at http://%s:%s", host, port)
-
+    log.info("Test app listening at http://%s:%d", host, port);
+    log.info("Broadcasting heartbeat to %s:%d", BROADCAST, port);
+    log.info("Sending heartbeat to emulator at 127.0.0.1:%d", port);
 });
 
 const udp_pulse = dgram.createSocket({type: 'udp4', reuseAddr: true})
@@ -156,7 +159,9 @@ function sendPulse(id) {
         // Send to localhost port 5000; must set up emulator to forward
         // telnet to emulator, authorize, and enter
         // redir add udp:5000:5000
-        udp_pulse.send(message, 5000, "192.168.88.255");
+        udp_pulse.send(message, 5000, "127.0.0.1");
+        // And broadcast. Should find netmask and construct the right broadcast address.
+        udp_pulse.send(message, 5000, BROADCAST);
     } catch (e) {
         newline();
         console.error("Error: " + e);
