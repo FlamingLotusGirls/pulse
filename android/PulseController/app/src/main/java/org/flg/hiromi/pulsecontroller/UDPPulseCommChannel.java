@@ -87,13 +87,13 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
         sendBack(param, 1, false);
     }
 
-    private Map<String,int[]> param_map = loadMap(R.array.param_names, R.array.params);
-    private Map<String,int[]> trigger_map = loadMap(R.array.trigger_names, R.array.triggers);
+    private Map<String,UDPMessage> param_map = loadMap(R.array.param_names, R.array.params);
+    private Map<String,UDPMessage> trigger_map = loadMap(R.array.trigger_names, R.array.triggers);
 
     // Load a map from trigger/parameter names to UDP packets
     // These are paired resource arrays, string-array and typed array of integer-array
-    private Map<String,int[]> loadMap(int namesId, int valsId) {
-        Map<String,int[]> map = new ArrayMap<>();
+    private Map<String,UDPMessage> loadMap(int namesId, int valsId) {
+        Map<String,UDPMessage> map = new ArrayMap<>();
         Resources rsrcs = service.getResources();
         TypedArray values = rsrcs.obtainTypedArray(valsId);
         String[] names = rsrcs.getStringArray(namesId);
@@ -105,7 +105,7 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
             int valId = values.getResourceId(i, 0);
             if (valId != 0) {
                 int[] data = rsrcs.getIntArray(valId);
-                map.put(name, data);
+                map.put(name, new UDPMessage(name, data));
             }
         }
         return map;
@@ -124,20 +124,14 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
      * @param param The name of the param or trigger
      * @param value The value to set, if not provided in the packet structure.
      */
-    private void sendCmd(final Map<String,int[]> map, final String type, final String param, final int value) {
+    private void sendCmd(final Map<String,UDPMessage> map, final String type, final String param, final int value) {
         run(param, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                int[] ents = map.get(param);
-                if (ents != null) {
-                    ByteBuffer buffer = ByteBuffer.allocate(Math.max(8,ents.length));
-                    buffer.order(getByteOrder());
+                UDPMessage msg = map.get(param);
+                if (msg != null) {
                     try {
-                        buffer.put((byte) ents[0]);
-                        buffer.put((byte) ents[1]);
-                        buffer.putShort((short) ents[2]);
-                        buffer.putInt(ents.length < 4 ? value : ents[3]);
-                        DatagramPacket pkt = new DatagramPacket(buffer.array(), 8);
+                        DatagramPacket pkt = new DatagramPacket(msg.toArray(getByteOrder(), value), 8);
                         pkt.setAddress(getBroadcast());
                         pkt.setPort(getPort());
                         cmdSocket.send(pkt);

@@ -21,10 +21,18 @@
         <item>MUI Left</item>
     </string-array>
 
+    <!--
+      - Default message specifications.
+      - Each message consists of 2 or 3 integers, corresponding to the fields of the UDP packet.
+      - The command_tracking_id is NOT included, as it is always calculated at runtime.
+      -  * receiver_id
+      -  * command_id
+      -  * data [optional, do not supply if it should be supplied as a parameter value]
+      -->
+
     <!-- Effect ALL_POOF -->
     <integer-array name="all_poof">
         <item>255</item>
-        <item>0</item>
         <item>4</item>
         <item>3</item>
     </integer-array>
@@ -32,7 +40,6 @@
     <!-- Effect poof_1 -->
     <integer-array name="poof_1">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>3</item>
     </integer-array>
@@ -40,7 +47,6 @@
     <!-- Effect poof_1 -->
     <integer-array name="poof_2">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>3</item>
     </integer-array>
@@ -48,7 +54,6 @@
     <!-- Effect poof_3 -->
     <integer-array name="poof_3">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>3</item>
     </integer-array>
@@ -56,7 +61,6 @@
     <!-- Effect CHASE -->
     <integer-array name="chase">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>2</item>
     </integer-array>
@@ -64,7 +68,6 @@
     <!-- Command stop_all -->
     <integer-array name="stop_all">
         <item>255</item>
-        <item>0</item>
         <item>1</item>
         <item>0</item>
     </integer-array>
@@ -72,7 +75,6 @@
     <!-- Heart FX 1 -->
     <integer-array name="heart_fx_1">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>1</item>
     </integer-array>
@@ -80,7 +82,6 @@
     <!-- Heart FX 2 -->
     <integer-array name="heart_fx_2">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>1</item>
     </integer-array>
@@ -88,7 +89,6 @@
     <!-- FX 1 -->
     <integer-array name="fx_1">
         <item>2</item>
-        <item>0</item>
         <item>4</item>
         <item>1</item>
     </integer-array>
@@ -96,14 +96,12 @@
     <!-- FX 2 -->
     <integer-array name="fx_2">
         <item>2</item>
-        <item>0</item>
         <item>4</item>
         <item>2</item>
     </integer-array>
 
     <!-- Effect sound_1 pod 1 -->
     <integer-array name="sound_1_p1">
-        <item>0</item>
         <item>0</item>
         <item>4</item>
         <item>7</item>
@@ -112,14 +110,12 @@
     <!-- Effect sound_1 pod 2 -->
     <integer-array name="sound_1_p2">
         <item>1</item>
-        <item>0</item>
         <item>4</item>
         <item>7</item>
     </integer-array>
 
     <!-- Effect sound_2 pod 1 -->
     <integer-array name="sound_2_p1">
-        <item>0</item>
         <item>0</item>
         <item>4</item>
         <item>7</item>
@@ -128,14 +124,12 @@
     <!-- Effect sound_2 pod 2 -->
     <integer-array name="sound_2_p2">
         <item>1</item>
-        <item>0</item>
         <item>4</item>
         <item>7</item>
     </integer-array>
 
     <!-- Effect sound_3 pod 1 -->
     <integer-array name="sound_3_p1">
-        <item>0</item>
         <item>0</item>
         <item>4</item>
         <item>8</item>
@@ -144,14 +138,12 @@
     <!-- Effect sound_3 pod 2 -->
     <integer-array name="sound_3_p2">
         <item>1</item>
-        <item>0</item>
         <item>4</item>
         <item>8</item>
     </integer-array>
 
     <!-- Effect led_1 pod 1 -->
     <integer-array name="led_fx_1_1">
-        <item>0</item>
         <item>0</item>
         <item>4</item>
         <item>9</item>
@@ -160,14 +152,12 @@
     <!-- Effect led_1 pod 2 -->
     <integer-array name="led_fx_1_2">
         <item>1</item>
-        <item>0</item>
         <item>4</item>
         <item>9</item>
     </integer-array>
 
     <!-- Effect led_2 pod 1 -->
     <integer-array name="led_fx_2_1">
-        <item>0</item>
         <item>0</item>
         <item>4</item>
         <item>10</item>
@@ -176,7 +166,6 @@
     <!-- Effect led_2 pod 2 -->
     <integer-array name="led_fx_2_2">
         <item>1</item>
-        <item>0</item>
         <item>4</item>
         <item>10</item>
     </integer-array>
@@ -230,7 +219,6 @@
     <!-- Parameter source pod 1 -->
     <integer-array name="source_1">
         <item>0</item>
-        <item>0</item>
         <item>6</item>
         <!-- Will be filled in -->
     </integer-array>
@@ -239,7 +227,6 @@
     <!-- Parameter source pod 2 -->
     <integer-array name="source_2">
         <item>1</item>
-        <item>0</item>
         <item>6</item>
         <!-- Will be filled in -->
     </integer-array>
@@ -248,7 +235,6 @@
     <!-- Parameter source -->
     <integer-array name="source">
         <item>2</item>
-        <item>0</item>
         <item>6</item>
         <!-- Will be filled in -->
     </integer-array>
@@ -256,7 +242,6 @@
     <!-- Parameter bpm -->
     <integer-array name="bpm">
         <item>2</item>
-        <item>0</item>
         <item>7</item> <!-- Dummy command: Not sure how this is set? -->
         <!-- Will be filled in -->
     </integer-array>
