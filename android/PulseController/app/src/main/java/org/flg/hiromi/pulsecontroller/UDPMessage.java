@@ -42,6 +42,13 @@ public class UDPMessage {
         commandId = vals[1];
     }
 
+    public UDPMessage(String tag, int receiverId, int commandId, int data, boolean needsData) {
+        this.receiverId = receiverId;
+        this.commandId = commandId;
+        this.data = data;
+        this.needsData = needsData;
+    }
+
     public int getReceiverId() {
         return receiverId;
     }
