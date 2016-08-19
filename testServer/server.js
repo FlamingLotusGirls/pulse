@@ -168,13 +168,11 @@ function getBroadcastAddresses() {
                 let broadcast = makeBroadcast(iface.address, iface.netmask);
                 // exclude link-local (unconfigured)
                 if ((broadcast[0] != 169) || (broadcast[1] != 254)) {
-                    console.log(ifaceName, broadcast);
                     result.push(unparseIP4(broadcast));
                 }
             }
         });
     }
-    console.log('lo', '127.0.0.1');
     result.push('127.0.0.1');
     return result;
 }
@@ -238,7 +236,7 @@ const udp_cmd = dgram.createSocket({type: 'udp4', reuseAddr: true});
 function show(msg, info) {
     try {
         newline();
-        log.info(`UDP port ${info.address}:${info.port} => ${decode_cmd(msg)}`);
+        log.info(`UDP port ${info.address}:${CMD_PORT} => ${decode_cmd(msg)} (${info.size} bytes)`);
     } catch (e) {
         newline();
         log.error("Log failure: %s", e.message);
