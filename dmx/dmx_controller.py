@@ -12,7 +12,7 @@ import socket
 import struct
 import sys
 import pysimpledmx
-import heartbeat
+# import heartbeat
 import time
 
 BROADCAST_ADDR = "192.168.1.255"
@@ -28,8 +28,11 @@ DMX_BLUE_CHANNEL = 4
 DMX_WHITE_CHANNEL = 5
 DMX_CHANNEL_COUNT = 6 # Can be 6/7/8/12
 
-ALL_RED_CHANNELS = [DMX_RED_CHANNEL, DMX_RED_CHANNEL + DMX_CHANNEL_COUNT]
-ALL_WHITE_CHANNELS = [DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT]
+ALL_RED_CHANNELS = [DMX_RED_CHANNEL, DMX_RED_CHANNEL + DMX_CHANNEL_COUNT,\
+                    DMX_RED_CHANNEL + 2 * DMX_CHANNEL_COUNT, \
+                    DMX_RED_CHANNEL + 3 * DMX_CHANNEL_COUNT]
+
+ALL_WHITE_CHANNELS = map(lambda x: x+(DMX_WHITE_CHANNEL-DMX_RED_CHANNEL), ALL_RED_CHANNELS)
 
 running = True
 allowHeartBeats = True
@@ -39,8 +42,7 @@ previousHeartBeatTime = None
 gReceiverId = 4
 
 HEARTBEAT = 1
-STROBE     = 2
-   # = 3
+STROBE    = 2
 
 gCurrentHeartBeat  = None
 gNextHeartBeat     = None
@@ -50,10 +52,15 @@ gNextNextHeartBeatStartTime = 0
 
 gGlobalEffectId = 0
 
-# Heartbeat needs to be divided into different steps and added separately to eventQueue
 # Effects format ---  EFFECT:[[channels], intensity, duration(ms)]
-effects = {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,0]],
-           STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
+effects = {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,350]],
+            STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
+
+# {HEARTBEAT:[[1,100,100], [2,250,200], [1,80,300], [2,180,400], [1,100,500]],
+
+# {HEARTBEAT:[[1,100,100], [2,250,150], [1,80,275], [2,180,400], [1,100,450]],
+
+            # {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,350]],
 
 class Commands():
     STOP_ALL             = 1
@@ -91,12 +98,6 @@ def handleHeartBeatData(heartBeatData):
     # print pod_id
     # print currentHeartBeatSource
     if pod_id is currentHeartBeatSource and allowHeartBeats:
-        print "sequenceID", sequenceId
-        print "beatIntervalMs", beatIntervalMs
-        print "beatOffsetMs", beatOffsetMs
-        print "bpmApprox", bpmApprox
-        print "timestamp", timestamp
-
 
         if beatOffsetMs < beatIntervalMs:
             heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
@@ -178,23 +179,15 @@ def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need
 
 
     firstEffectId = gGlobalEffectId
-    # if effects[effectId] != None:
+
     if effectId in effects:
         index = 0
         for eventSection in effects[effectId]:
-
-            print "event"
             event = {}
             event["effectId"] = effectId
             event["globalId"] = gGlobalEffectId
             event["sectionIndex"] = index
             index += 1
-
-
-            #print "add event" + str(event)
-            # canonicalEvent["controllerId"] = intToHex(event[0]//8)
-            # canonicalEvent["channel"]      = event[0] %8
-            # canonicalEvent["onOff"]        = event[1]
 
             if repeatMs != 0:
                 if eventSection[2] == 0: #If duration is zero, run until end
@@ -216,9 +209,6 @@ def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need
 
 
 def sortEventQueue():
-    # print "sorting"
-    # for event in eventQueue:
-    #     print event
     eventQueue.sort(key=itemgetter("time"), reverse=True)
 
 
@@ -245,14 +235,14 @@ def renderEvents():
         except IndexError:
             break
     if event["time"] >= timeWindow:
-        currentEvents.append(event)
+        eventQueue.append(event)
+        sortEventQueue()
 
     if currentEvents:
         if not dmx:
             dmx = pysimpledmx.DMXConnection(DMX_ADDRESS)
         for event in currentEvents:
             if event["effectId"] == HEARTBEAT:
-                print "HEARTBEAT"
                 process_heartbeat(event)
 
 def process_heartbeat(event):
@@ -260,25 +250,8 @@ def process_heartbeat(event):
         return
 
     heartbeatSection = effects[HEARTBEAT][event["sectionIndex"]]
-    print "section index = ", event["sectionIndex"]
-    print "time = ", event["time"]
-    # global readfds
-    waitTime = event["repeatMs"]
 
     dmx.setChannel(ALL_RED_CHANNELS, heartbeatSection[1], autorender=True)
-    # time.sleep(heartbeatSection[2])
-
-    # inputReady, outputReady, exceptReady = select(readfds, [], [])
-
-    # heartbeat.heartbeat1(dmx)
-    # heartbeat.heartbeat1_5(dmx)
-    # heartbeat.heartbeat_test1(dmx)
-
-    # heartbeat.heartbeat_test2(dmx)
-
-    print "\n\n\n\n=======\n ", event,"\n=======\n\n\n\n\n"
-
-    # sys.exit()
 
 
 if __name__ == '__main__':
@@ -287,39 +260,26 @@ if __name__ == '__main__':
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
     commandListener   = createBroadcastListener(COMMAND_PORT)
     eventQueue = []
-    heartBeatQueue = []
-
-    # heartbeat.heartbeat_test1(dmx)
-    # heartbeat.heartbeat_test1(dmx)
-    # heartbeat.heartbeat_test1(dmx)
 
     try:
         while (running):
             readfds = [heartBeatListener, commandListener]
-            if heartBeatQueue:
-                for time in heartBeatQueue:
-                    inputReady, outputReady, exceptReady = select(readfds, [], [], time)
-                    heartBeatQueue.remove(time)
+
             if not eventQueue:
                 # TODO: Need way to turn this on and off
                 if gNextHeartBeat == None:
                     print "====== no gNextHeartBeat"
                 dmx.setChannel(ALL_RED_CHANNELS, 0)
                 dmx.setChannel(ALL_WHITE_CHANNELS, 255, autorender = True)
-                # else:
-                #     dmx.setChannel(ALL_RED_CHANNELS, 255, autorender = True)
-                # print datetime.datetime.now()
-                print "about to wait for input"
+
                 inputReady, outputReady, exceptReady = select(readfds, [], [])
                 print datetime.datetime.now()
             else:
                 waitTime = (eventQueue[len(eventQueue)-1]["time"] - datetime.datetime.now()).total_seconds()
-                print "!!doing select, timeout is %f" % waitTime
                 waitTime = max(waitTime, 0)
                 inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime)
 
             if inputReady:
-                print "input is ready"
                 dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 0, autorender = True)
                 for fd in inputReady:
                     if fd is heartBeatListener:
