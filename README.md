@@ -23,6 +23,7 @@ General architecture: The system is a distributed network where information is s
 data - commands and heartbeat signals. The different types of data are sent over different ports - 5000 for heartbeats, and 5001 for commands.
 
 There are currently six distinct entities in the system, each with its own ID Each entity has an ID:
+
 	0 - auto generated heartbeat
 	1 - pod 1 (generates heartbeat, handles pod LED and audio commands)
 	2 - pod 2 (generates heartbeat, handles pid LED and audio commands)
@@ -32,6 +33,7 @@ There are currently six distinct entities in the system, each with its own ID Ea
 
 Heartbeat data contains the time at which the heartbeat happened (offset from current time), the heartbeat frequency,
 and the ID of the heartbeat source, ie:
+
 	struct __BPMPulseData_t {
     		uint8_t  pod_id; // which pod. pass as param in startup file.
     		uint8_t  rolling_sequence;
