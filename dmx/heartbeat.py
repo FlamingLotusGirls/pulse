@@ -95,6 +95,34 @@ def heartbeat2(dmx):
     dmx.render()
     time.sleep((seventh/3)*2)
 
+def heartbeat_test1(dmx):
+    print "hi"
+    now = datetime.datetime.now()
+    dmx.setChannel(ALL_RED_CHANNELS, 100, autorender=True)
+    time.sleep(0.100)
+    dmx.setChannel(ALL_RED_CHANNELS, 250, autorender=True)
+    time.sleep(0.050)
+    dmx.setChannel(ALL_RED_CHANNELS, 100, autorender=True)
+    time.sleep(0.075)
+    dmx.setChannel(ALL_RED_CHANNELS, 180, autorender=True)
+    time.sleep(0.050)
+    dmx.setChannel(ALL_RED_CHANNELS, 100, autorender=True)
+    time.sleep(1)
+    print "difference test1 = ", (datetime.datetime.now() - now)
+
+def heartbeat_test2(dmx):
+    print "hi"
+    now = datetime.datetime.now()
+    dmx.setChannel(ALL_RED_CHANNELS, 100, autorender=True)
+    time.sleep(0.1)
+    dmx.setChannel(ALL_RED_CHANNELS, 250, autorender=True)
+    time.sleep(0.075)
+    dmx.setChannel(ALL_RED_CHANNELS, 100, autorender=True)
+    time.sleep(0.1)
+    dmx.setChannel(ALL_RED_CHANNELS, 180, autorender=True)
+    time.sleep(0.750)
+    dmx.setChannel(ALL_RED_CHANNELS, 100, autorender=True)
+    print "difference test2 = ", (datetime.datetime.now() - now)
 
 def heartbeat1_split(dmx):
     print "heartbeat 1 split"
