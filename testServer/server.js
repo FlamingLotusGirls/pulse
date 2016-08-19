@@ -8,6 +8,8 @@ var dgram = require('dgram');
 var util = require('util');
 
 var BROADCAST = "192.168.88.255";
+var HEARTBEAT_PORT = 5000;
+var CMD_PORT = 5001;
 
 app.get('/', (req, res) => res.send("Hello, World"));
 
@@ -159,9 +161,9 @@ function sendPulse(id) {
         // Send to localhost port 5000; must set up emulator to forward
         // telnet to emulator, authorize, and enter
         // redir add udp:5000:5000
-        udp_pulse.send(message, 5000, "127.0.0.1");
+        udp_pulse.send(message, HEARTBEAT_PORT, "127.0.0.1");
         // And broadcast. Should find netmask and construct the right broadcast address.
-        udp_pulse.send(message, 5000, BROADCAST);
+        udp_pulse.send(message, HEARTBEAT_PORT, BROADCAST);
     } catch (e) {
         newline();
         console.error("Error: " + e);
@@ -199,4 +201,4 @@ udp_cmd
     .on('error', (err) => console.error("Binding Error", err))
     .on('listening', () => console.log(`Listening on UDP interface ${udp_cmd.address().address} port ${udp_cmd.address().port}`))
     .on('message', show)
-    .bind({port: 5001});
+    .bind({port: CMD_PORT});
