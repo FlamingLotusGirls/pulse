@@ -1,0 +1,6 @@
+Test server for prototyping Android client.
+
+To run, do
+node server.js
+
+Runs on port 8081

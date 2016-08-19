@@ -1,0 +1,113 @@
+<resources>
+    <string name="app_name">PulseController</string>
+    <string name="hello_world">Hi, Alien Overlords</string>
+    <string name="action_settings">Settings</string>
+    <string name="test">Large Text</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_slider1">Rate Control</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_network">Network</string>
+
+    <string name="pref_title_base_url">Server Base REST URL</string>
+    <string name="pref_default_base_url">http://10.0.2.2:8081</string>
+    <string name="pref_title_protocol">Communications Protocol</string>
+    <string-array name="pref_protocols">
+        <item>REST</item>
+        <item>UDP</item>
+    </string-array>
+    <string-array name="pref_protocol_labels">
+        <item>REST</item>
+        <item>UDP</item>
+    </string-array>
+
+    <string name="pref_title_byteorder">Byte Order</string>
+    <string-array name="pref_byteorder">
+        <item>LE</item>
+        <item>BE</item>
+    </string-array>
+    <string-array name="pref_byteorder_labels">
+        <item>Little-Endian</item>
+        <item>Big-Endian</item>
+    </string-array>
+
+    <!-- URL formats -->
+    <string name="url_trigger">/trigger?name=%s</string>
+    <string name="url_trigger_method">PUT</string>
+    <string name="url_param_get">/val?param=%s</string>
+    <string name="url_param_get_method">GET</string>
+    <string name="url_param_set">/val?param=%1$s&amp;value=%2$d</string>
+    <string name="url_param_set_method">PUT</string>
+    <string name="url_status">/status</string>
+    <string name="url_status_method">GET</string>
+
+    <!-- Button labels and tags -->
+    <string name="button_1">Poofer 1</string>
+    <string name="button_2">Poofer 2</string>
+    <string name="button_3">Poofer 3</string>
+    <string name="button_1_tag">poof_1</string>
+    <string name="button_2_tag">poof_2</string>
+    <string name="button_3_tag">poof_3</string>
+
+
+    <string name="button_1b">Chase</string>
+    <string name="button_2b">All Poof</string>
+    <string name="button_3b">Heart FX 1</string>
+    <string name="button_4b">Heart FX 2</string>
+    <string name="button_1b_tag">chase</string>
+    <string name="button_2b_tag">all_poof</string>
+    <string name="button_3b_tag">heart_fx_1</string>
+    <string name="button_4b_tag">heart_fx_2</string>
+
+
+    <string name="button_1_pod">Sound 1</string>
+    <string name="button_2_pod">Sound 2</string>
+    <string name="button_3_pod">Sound 3</string>
+    <string name="button_1_p1_tag">sound_1_1</string>
+    <string name="button_2_p1_tag">sound_2_1</string>
+    <string name="button_3_p1_tag">sound_3_3</string>
+    <string name="button_1_p2_tag">sound_1_2</string>
+    <string name="button_2_p2_tag">sound_2_2</string>
+    <string name="button_3_p2_tag">sound_3_2</string>
+
+
+    <string name="button_1b_pod">LED FX 1</string>
+    <string name="button_2b_pod">LED FX 2</string>
+    <string name="button_1b_p1_tag">led_fx_1_1</string>
+    <string name="button_2b_p1_tag">led_fx_2_1</string>
+    <string name="button_1b_p2_tag">led_fx_1_2</string>
+    <string name="button_2b_p2_tag">led_fx_2_2</string>
+
+    <string name="led_fx_1">LED FX 1</string>
+    <string name="led_fx_2">LED FX 2</string>
+    <string name="led_fx_1_tag">led_fx_1</string>
+    <string name="led_fx_2_tag">led_fx_2</string>
+
+    <string name="fx_1">Special FX 1</string>
+    <string name="fx_2">Special FX 2</string>
+    <string name="fx_1_tag">fx_1</string>
+    <string name="fx_2_tag">fx_2</string>
+
+    <string name="slider_1_tag">bpm</string>
+    <string name="spinner_1_tag">source</string>
+    <string name="spinner_1_p1_tag">source_1</string>
+    <string name="spinner_1_p2_tag">source_2</string>
+
+    <!-- Descrptions of the three beating hearts -->
+    <string name="heartbeat_1">Heartbeat Left</string>
+    <string name="heartbeat_2">Heartbeat Synth</string>
+    <string name="heartbeat_3">Heartbeat Right</string>
+
+    <!-- Drop-down list of heartbeat sources. Ordered by ID -->
+    <string-array name="spinner_1_entries">
+        <item>None</item>
+        <item>Pod 1</item>
+        <item>Pod 2</item>
+        <item>MUI Left</item>
+        <item>MUI Right</item>
+        <item>Heartbeat Synth</item>
+    </string-array>
+
+</resources>
