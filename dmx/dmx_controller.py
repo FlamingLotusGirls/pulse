@@ -28,6 +28,9 @@ DMX_BLUE_CHANNEL = 4
 DMX_WHITE_CHANNEL = 5
 DMX_CHANNEL_COUNT = 6 # Can be 6/7/8/12
 
+ALL_RED_CHANNELS = [DMX_RED_CHANNEL, DMX_RED_CHANNEL + DMX_CHANNEL_COUNT]
+ALL_WHITE_CHANNELS = [DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT]
+
 running = True
 allowHeartBeats = True
 currentHeartBeatSource = 0 # ???
@@ -39,8 +42,6 @@ HEARTBEAT = 1
 STROBE     = 2
    # = 3
 
-effects = [HEARTBEAT, STROBE]
-
 gCurrentHeartBeat  = None
 gNextHeartBeat     = None
 gNextNextHeartBeat = None
@@ -50,8 +51,9 @@ gNextNextHeartBeatStartTime = 0
 gGlobalEffectId = 0
 
 # Heartbeat needs to be divided into different steps and added separately to eventQueue
-# effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
-        #    STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
+# Effects format ---  EFFECT:[[channels], intensity, duration(ms)]
+effects = {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,0]],
+           STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
 
 class Commands():
     STOP_ALL             = 1
@@ -85,9 +87,9 @@ def createBroadcastListener(port, addr=BROADCAST_ADDR):
 
 def handleHeartBeatData(heartBeatData):
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
-    print "before if"
-    print pod_id
-    print currentHeartBeatSource
+    # print "before if"
+    # print pod_id
+    # print currentHeartBeatSource
     if pod_id is currentHeartBeatSource and allowHeartBeats:
         print "sequenceID", sequenceId
         print "beatIntervalMs", beatIntervalMs
@@ -103,24 +105,12 @@ def handleHeartBeatData(heartBeatData):
 
         instanceId = loadEffect(HEARTBEAT, heartBeatStartTime, beatIntervalMs)
 
-        loadNextHeartBeat(instanceId, heartBeatStartTime)
+        processNextHeartBeat(instanceId, heartBeatStartTime)
 
         sortEventQueue()
 
 
-        # if previousHeartBeatTime:
-        #     heartBeatStartTime = previousHeartBeatTime + daytime.timedelta(milliseconds = beatIntervalMs)
-        # else:
-        #     heartBeatStartTime = datetime.datetime.now()
-        #
-        # if heartBeatStartTime <= datetime.datetime.now():
-        #     print "1"
-        #     loadEffect(HEARTBEAT, datetime.datetime.now())
-        # else:
-        #     print "2 ", heartBeatStartTime
-        #     loadEffect(HEARTBEAT, heartBeatStartTime)
-
-def loadNextHeartBeat(instanceId, heartBeatStartTime):
+def processNextHeartBeat(instanceId, heartBeatStartTime):
     global gNextHeartBeat
     global gNextNextHeartBeat
     global gNextHeartBeatStartTime
@@ -187,43 +177,49 @@ def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need
         removeEffect(effectId)
 
 
-
+    firstEffectId = gGlobalEffectId
     # if effects[effectId] != None:
     if effectId in effects:
-        # for event in effects[effectId]:
+        index = 0
+        for eventSection in effects[effectId]:
 
-        print "event"
-        event = {}
-        event["effectId"] = effectId
-        event["globalId"] = gGlobalEffectId
+            print "event"
+            event = {}
+            event["effectId"] = effectId
+            event["globalId"] = gGlobalEffectId
+            event["sectionIndex"] = index
+            index += 1
 
 
-        #print "add event" + str(event)
-        # canonicalEvent["controllerId"] = intToHex(event[0]//8)
-        # canonicalEvent["channel"]      = event[0] %8
-        # canonicalEvent["onOff"]        = event[1]
+            #print "add event" + str(event)
+            # canonicalEvent["controllerId"] = intToHex(event[0]//8)
+            # canonicalEvent["channel"]      = event[0] %8
+            # canonicalEvent["onOff"]        = event[1]
 
-        if repeatMs != 0:
-            event["time"]     = startTime + datetime.timedelta(milliseconds = repeatMs)
-            event["repeatMs"] = repeatMs
-            event["nextStartTime"] = event["time"]
-        else:
-            # TODO: Still need to figure out times for each event
-            event["time"] = startTime + datetime.timedelta(milliseconds = 1000)
+            if repeatMs != 0:
+                if eventSection[2] == 0: #If duration is zero, run until end
+                    event["time"] = startTime + datetime.timedelta(milliseconds = repeatMs)
+                else:
+                    event["time"] = startTime + datetime.timedelta(milliseconds = eventSection[2])
+                event["repeatMs"] = repeatMs
+                event["nextStartTime"] = startTime + datetime.timedelta(milliseconds = repeatMs)
+            else:
+                # TODO: Still need to figure out times for each event
+                event["time"] = startTime + datetime.timedelta(milliseconds = 1000)
         #print "canonical event is " + str(canonicalEvent)
         #print "timedelta is " + str(datetime.timedelta(milliseconds = event[2]))
-        eventQueue.append(event)
-        gGlobalEffectId += 1
+            eventQueue.append(event)
+            gGlobalEffectId += 1
 
-    return gGlobalEffectId - 1
+    return firstEffectId
 
 
 
 def sortEventQueue():
-    print "sorting"
+    # print "sorting"
     # for event in eventQueue:
     #     print event
-    # eventQueue.sort(key=itemgetter("time"), reverse=True)
+    eventQueue.sort(key=itemgetter("time"), reverse=True)
 
 
 def renderEvents():
@@ -260,17 +256,25 @@ def renderEvents():
                 process_heartbeat(event)
 
 def process_heartbeat(event):
-    # TODO: Still need to listen to port with select while playing
-    # TODO: Also need to figure out timing
+    if not allowHeartBeats:
+        return
 
-    global readfds
+    heartbeatSection = effects[HEARTBEAT][event["sectionIndex"]]
+    print "section index = ", event["sectionIndex"]
+    print "time = ", event["time"]
+    # global readfds
     waitTime = event["repeatMs"]
+
+    dmx.setChannel(ALL_RED_CHANNELS, heartbeatSection[1], autorender=True)
+    # time.sleep(heartbeatSection[2])
 
     # inputReady, outputReady, exceptReady = select(readfds, [], [])
 
     # heartbeat.heartbeat1(dmx)
     # heartbeat.heartbeat1_5(dmx)
+    # heartbeat.heartbeat_test1(dmx)
 
+    # heartbeat.heartbeat_test2(dmx)
 
     print "\n\n\n\n=======\n ", event,"\n=======\n\n\n\n\n"
 
@@ -285,6 +289,10 @@ if __name__ == '__main__':
     eventQueue = []
     heartBeatQueue = []
 
+    # heartbeat.heartbeat_test1(dmx)
+    # heartbeat.heartbeat_test1(dmx)
+    # heartbeat.heartbeat_test1(dmx)
+
     try:
         while (running):
             readfds = [heartBeatListener, commandListener]
@@ -295,8 +303,13 @@ if __name__ == '__main__':
             if not eventQueue:
                 # TODO: Need way to turn this on and off
                 if gNextHeartBeat == None:
-                    dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 255, autorender = True)
-                print datetime.datetime.now()
+                    print "====== no gNextHeartBeat"
+                dmx.setChannel(ALL_RED_CHANNELS, 0)
+                dmx.setChannel(ALL_WHITE_CHANNELS, 255, autorender = True)
+                # else:
+                #     dmx.setChannel(ALL_RED_CHANNELS, 255, autorender = True)
+                # print datetime.datetime.now()
+                print "about to wait for input"
                 inputReady, outputReady, exceptReady = select(readfds, [], [])
                 print datetime.datetime.now()
             else:
