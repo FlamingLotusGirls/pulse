@@ -1,4 +1,4 @@
 .DS_Store
 *.sublime*
-lights/vendor
+pods/vendor
 design

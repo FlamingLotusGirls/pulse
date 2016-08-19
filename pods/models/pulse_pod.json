@@ -1,0 +1,21 @@
+[
+{"point": [-15, 80, 0], "color": [1.0, 0.0, 0.0], "region": "main region", "name": "L11"},
+{"point": [-22, 75, 0], "color": [1.0, 0.0, 0.0], "region": "main region", "name": "L12"},
+{"point": [-16, 70, 0], "color": [1.0, 0.0, 0.0], "region": "main region", "name": "L13"},
+{"point": [-20, 65, 0], "color": [1.0, 0.0, 0.0], "region": "main region", "name": "L14"},
+{"point": [-25, 60, 0], "color": [1.0, 0.0, 0.0], "region": "main region", "name": "L15"},
+{"point": [-5, 80, 0], "color": [0.0, 1.0, 0.0], "region": "main region", "name": "CL11"},
+{"point": [-10, 75, 0], "color": [0.0, 1.0, 0.0], "region": "main region", "name": "CL12"},
+{"point": [-6, 70, 0], "color": [0.0, 1.0, 0.0], "region": "main region", "name": "CL13"},
+{"point": [-7, 60, 0], "color": [0.0, 1.0, 0.0], "region": "main region", "name": "CL14"},
+{"point": [-10, 55, 0], "color": [0.0, 1.0, 0.0], "region": "main region", "name": "CL15"},
+{"point": [0, 85, 0], "color": [0.0, 0.0, 1.0], "region": "main region", "name": "C11"},
+{"point": [0, 78, 0], "color": [0.0, 0.0, 1.0], "region": "main region", "name": "C12"},
+{"point": [0, 70, 0], "color": [0.0, 0.0, 1.0], "region": "main region", "name": "C13"},
+{"point": [5, 69, 0], "color": [0.0, 0.0, 1.0], "region": "main region", "name": "C14"},
+{"point": [3, 64, 0], "color": [0.0, 0.0, 1.0], "region": "main region", "name": "C15"},
+{"point": [13, 80, 0], "color": [1.0, 1.0, 1.0], "region": "main region", "name": "R11"},
+{"point": [15, 70, 0], "color": [1.0, 1.0, 1.0], "region": "main region", "name": "R12"},
+{"point": [25, 70, 0], "color": [1.0, 1.0, 1.0], "region": "main region", "name": "R13"},
+{"point": [20, 60, 0], "color": [1.0, 1.0, 1.0], "region": "main region", "name": "R14"}
+]
