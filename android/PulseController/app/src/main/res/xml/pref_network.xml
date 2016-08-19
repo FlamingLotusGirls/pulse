@@ -3,6 +3,14 @@
 
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+    <ListPreference
+        android:key="protocol"
+        android:defaultValue="REST"
+        android:entries="@array/pref_protocol_labels"
+        android:entryValues="@array/pref_protocols"
+        android:title="@string/pref_title_protocol"
+        android:summary="%s" />
+
     <EditTextPreference
         android:capitalize="words"
         android:defaultValue="@string/pref_default_base_url"
@@ -13,12 +21,35 @@
         android:singleLine="true"
         android:title="@string/pref_title_base_url" />
 
+    <EditTextPreference
+        android:defaultValue="10.0.2.2"
+        android:inputType="phone"
+        android:digits="0123456789."
+        android:singleLine="true"
+        android:key="udp_broadcast_addr"
+        android:title="UDP Broadcast Address"
+        android:summary="UDP" />
+
+    <EditTextPreference
+        android:defaultValue="5000"
+        android:inputType="number"
+        android:numeric="integer"
+        android:key="heartbeat_port"
+        android:title="Heartbeat UDP Port" />
+
+    <EditTextPreference
+        android:defaultValue="5001"
+        android:inputType="number"
+        android:numeric="integer"
+        android:key="cmd_port"
+        android:title="Command UDP Port" />
+
     <ListPreference
-        android:key="protocol"
-        android:defaultValue="REST"
-        android:entries="@array/pref_protocol_labels"
-        android:entryValues="@array/pref_protocols"
-        android:title="@string/pref_title_protocol"
+        android:key="byteorder"
+        android:defaultValue="LE"
+        android:entries="@array/pref_byteorder_labels"
+        android:entryValues="@array/pref_byteorder"
+        android:title="@string/pref_title_byteorder"
         android:summary="%s" />
 
 </PreferenceScreen>

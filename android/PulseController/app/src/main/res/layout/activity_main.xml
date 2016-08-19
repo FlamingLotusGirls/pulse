@@ -103,9 +103,10 @@
     </android.support.v7.widget.GridLayout>
 
     <android.support.v7.widget.GridLayout
+        android:id="@+id/group_4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/group_1"
+        android:layout_below="@+id/group_3"
         app:columnCount="2"
         app:rowCount="3"
         app:useDefaultMargins="true"
@@ -151,6 +152,156 @@
             app:layout_columnWeight="1" />
     </android.support.v7.widget.GridLayout>
 
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/group_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/group_1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_row="1"
+        app:layout_column="0"
+        app:columnCount="3"
+        app:rowCount="4"
+        app:useDefaultMargins="true"
+        android:background="@android:drawable/picture_frame" >
+
+        <Button
+            android:text="@string/button_1_pod"
+            android:id="@+id/button_1_p1"
+            android:tag="@string/button_1_p1_tag"
+            android:textStyle="bold"
+            app:layout_row="0"
+            app:layout_column="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+
+        <Button
+            android:text="@string/button_2_pod"
+            android:id="@+id/button_2_p1"
+            android:tag="@string/button_2_p1_tag"
+            android:textStyle="bold"
+            app:layout_column="0"
+            app:layout_row="1"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+
+        <Button
+            android:text="@string/button_3_pod"
+            android:id="@+id/button_3_p1"
+            android:tag="@string/button_3_p1_tag"
+            android:textStyle="bold"
+            app:layout_row="2"
+            app:layout_column="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+
+        <Button
+            android:text="@string/button_2b_pod"
+            android:id="@+id/button_2b_p1"
+            android:tag="@string/button_2b_p1_tag"
+            android:textStyle="bold"
+            app:layout_column="1"
+            app:layout_row="1"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+        <Spinner
+            android:id="@+id/spinner_1_p1"
+            android:entries="@array/spinner_1_entries"
+            android:background="@android:drawable/btn_dropdown"
+            android:popupBackground="@android:drawable/btn_default_small"
+            android:tag="@string/spinner_1_p1_tag"
+            style="@android:style/Widget.Spinner.DropDown"
+            app:layout_row="0"
+            app:layout_column="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"
+            android:layout_width="75dp" />
+
+        <Button
+            android:text="@string/button_1b_pod"
+            android:id="@+id/button_1b_p1"
+            android:tag="@string/button_1b_p1_tag"
+            android:textStyle="bold"
+            app:layout_column="1"
+            app:layout_row="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1" />
+    </android.support.v7.widget.GridLayout>
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/group_3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/group_2"
+        app:columnCount="3"
+        app:rowCount="4"
+        app:useDefaultMargins="true"
+        android:background="@android:drawable/picture_frame" >
+
+        <Button
+            android:text="@string/button_1_pod"
+            android:id="@+id/button_1_p2"
+            android:tag="@string/button_1_p2_tag"
+            android:textStyle="bold"
+            app:layout_row="0"
+            app:layout_column="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+
+        <Button
+            android:text="@string/button_2_pod"
+            android:id="@+id/button_2_p2"
+            android:tag="@string/button_2_p2_tag"
+            android:textStyle="bold"
+            app:layout_column="0"
+            app:layout_row="1"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+
+        <Button
+            android:text="@string/button_3_pod"
+            android:id="@+id/button_3_p2"
+            android:tag="@string/button_3_p2_tag"
+            android:textStyle="bold"
+            app:layout_row="2"
+            app:layout_column="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+
+        <Button
+            android:text="@string/button_2b_pod"
+            android:id="@+id/button_2b_p2"
+            android:tag="@string/button_2b_p2_tag"
+            android:textStyle="bold"
+            app:layout_column="1"
+            app:layout_row="1"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"/>
+
+        <Spinner
+            android:id="@+id/spinner_1_p2_pod"
+            android:entries="@array/spinner_1_entries"
+            android:background="@android:drawable/btn_dropdown"
+            android:popupBackground="@android:drawable/btn_default_small"
+            android:tag="@string/spinner_1_p2_tag"
+            style="@android:style/Widget.Spinner.DropDown"
+            app:layout_row="0"
+            app:layout_column="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1"
+            android:layout_width="75dp" />
+
+        <Button
+            android:text="@string/button_1b_pod"
+            android:id="@+id/button_1b_p2"
+            android:tag="@string/button_1b_p2_tag"
+            android:textStyle="bold"
+            app:layout_column="1"
+            app:layout_row="0"
+            app:layout_gravity="fill_horizontal"
+            app:layout_columnWeight="1" />
+    </android.support.v7.widget.GridLayout>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

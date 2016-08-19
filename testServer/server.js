@@ -7,32 +7,39 @@ var log = require('./log.js');
 var dgram = require('dgram');
 var util = require('util');
 
+var BROADCAST = "192.168.88.255";
+var HEARTBEAT_PORT = 5000;
+var CMD_PORT = 5001;
+
 app.get('/', (req, res) => res.send("Hello, World"));
 
 function runCmd(cmd, ...args) {
     return new Promise((accept, reject) => {
-	log.info("Running %s, %j", cmd, args)
-	let proc = child_process.execFile(cmd, args);
-	proc.stdout.on('error', e => {
-	    log.error("IO Error: , %s", e.stack);
-	    reject(e);
-	});
-	let out = toString(proc.stdout);
-	proc
-	    .on('error', reject)
-	    .on('exit', (code, signal) => {
-		if (code === 0) {
-		    log.info("Status %s, %j = %d", cmd, args, code)
-		    accept(out);
-		} else if (signal) {
-		    log.error("Signal %s, %j = %s", cmd, args, signal)
-		    reject(new Error(signal));
-		} else {
-		    log.error("Signal %s, %j = %d", cmd, args, code)
-		    reject(new Error(cmd + " Exited with code " + code));
-		}
+        newline();
+	    log.info("Running %s, %j", cmd, args)
+	    let proc = child_process.execFile(cmd, args);
+	    proc.stdout.on('error', e => {
+            newline();
+	        log.error("IO Error: , %s", e.stack);
+	        reject(e);
 	    });
-    })
+	    let out = toString(proc.stdout);
+	    proc
+	        .on('error', reject)
+	        .on('exit', (code, signal) => {
+		        if (code === 0) {
+                    newline();
+		            log.info("Status %s, %j = %d", cmd, args, code)
+		            accept(out);
+		        } else if (signal) {
+		            log.error("Signal %s, %j = %s", cmd, args, signal)
+		            reject(new Error(signal));
+		        } else {
+		            log.error("Signal %s, %j = %d", cmd, args, code)
+		            reject(new Error(cmd + " Exited with code " + code));
+		        }
+	        });
+    });
 }
 
 function sendErr(res) {
@@ -63,8 +70,12 @@ app.get('/ls/json', (req, res) => {
 
 // Our test system state
 var PARAMS = {
-    source: 1,
-    bpm: 60,
+    source_1: 1,
+    bpm_1: 60,
+    source_2: 1,
+    bpm_2: 60,
+    source_3: 1,
+    bpm_3: 60
 };
 
 // Do a PUT request to:
@@ -74,6 +85,7 @@ app.put('/val', (req, res) => {
     // Get the supplied query parameters
     let param = req.query.param
     let value = Number(req.query.value);
+    newline();
     log.info("Set %s to %d", param, value);
     PARAMS[param] = value
     res.send({status: "OK", param: param, value: value});
@@ -89,12 +101,14 @@ app.get('/val', (req, res) => {
     if (value === undefined) {
 	return res.send({status: "ERROR", message: "Parameter " + param + " is not set.", param: param});
     }
+    newline();
     log.info("Set %s to %d", param, value);
     res.send({status: "OK", param: param, value: value});
 });
 
 app.put('/trigger', (req, res) => {
     let event = req.query.name;
+    newline();
     log.info("Trigger %s", event);
     // A delay before sending confirmation to allow the UI feedback to be visible.
     setTimeout(() => res.send({status: "OK", name: event}), 1500);
@@ -111,18 +125,30 @@ app.use("/params", express.static("params", {}))
 
 var server = app.listen(8081, function () {
 
-  var host = server.address().address
-  var port = server.address().port
+    var host = server.address().address
+    var port = server.address().port
 
-  log.info("Example app listening at http://%s:%s", host, port)
-
+    log.info("Test app listening at http://%s:%d", host, port);
+    log.info("Broadcasting heartbeat to %s:%d", BROADCAST, port);
+    log.info("Sending heartbeat to emulator at 127.0.0.1:%d", port);
 });
 
-const udp_pulse = dgram.createSocket({type: 'udp4', reuseAddr: true});
+const udp_pulse = dgram.createSocket({type: 'udp4', reuseAddr: true})
+      .on('listening', () => udp_pulse.setBroadcast(true));
 var seq = 0;
+var hpos = 0;
+function newline() {
+    if (hpos > 0) {
+        process.stdout.write("\n");
+        hpos = 0;
+    }
+}
+
 function sendPulse(id) {
     try {
-        console.log('hb' + id)
+        const c = '-+==!#$@%^&.,/?'[id];
+        process.stdout.write(c);
+        hpos++;
         const message = Buffer.alloc(16);
         message.fill(0);
         message.writeUInt8(id, 0); // pod_id
@@ -135,8 +161,11 @@ function sendPulse(id) {
         // Send to localhost port 5000; must set up emulator to forward
         // telnet to emulator, authorize, and enter
         // redir add udp:5000:5000
-        udp_pulse.send(message, 5000, "127.0.0.1");
+        udp_pulse.send(message, HEARTBEAT_PORT, "127.0.0.1");
+        // And broadcast. Should find netmask and construct the right broadcast address.
+        udp_pulse.send(message, HEARTBEAT_PORT, BROADCAST);
     } catch (e) {
+        newline();
         console.error("Error: " + e);
     }
 }
@@ -145,26 +174,31 @@ setInterval(() => sendPulse(0), 1000);
 setInterval(() => sendPulse(1), 823);
 
 function decode_cmd(msg) {
-    return util.inspect([
-        msg.readUInt8(0),
-        msg.readUInt8(1),
-        msg.readUInt16LE(2),
-        msg.readUInt32LE(2)
-    ]);
+    if (msg.length < 8) {
+        return msg;
+    }
+    return util.inspect({
+        rcv: msg.readUInt8(0),
+        trk: msg.readUInt8(1),
+        cmd: msg.readUInt16LE(2),
+        data: msg.readUInt32LE(4)
+    });
 }
 
 const udp_cmd = dgram.createSocket({type: 'udp4', reuseAddr: true});
 
-udp_cmd
-    .on('error', (err) => console.error("Binding Error", err))
-    .on('listening', () => console.log(`Listening on UDP port ${udp_cmd.address().port}`))
-    .on('message', (msg, info) => console.log(`UDP port ${info.address}:${info.port} => ${decode_cmd(msg)}`))
-    .bind({port: 5001});
-
-try {
-    udp_cmd.setBroadcast(true);
-} catch (e) {
-    console.error("Error: " + e.message);
+function show(msg, info) {
+    try {
+        newline();
+        console.log(`UDP port ${info.address}:${info.port} => ${decode_cmd(msg)}`);
+    } catch (e) {
+        newline();
+        console.error("Log failure: " + e.message);
+    }
 }
 
-
+udp_cmd
+    .on('error', (err) => console.error("Binding Error", err))
+    .on('listening', () => console.log(`Listening on UDP interface ${udp_cmd.address().address} port ${udp_cmd.address().port}`))
+    .on('message', show)
+    .bind({port: CMD_PORT});

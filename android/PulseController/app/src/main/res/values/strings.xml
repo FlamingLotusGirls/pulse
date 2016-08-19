@@ -23,6 +23,16 @@
         <item>UDP</item>
     </string-array>
 
+    <string name="pref_title_byteorder">Byte Order</string>
+    <string-array name="pref_byteorder">
+        <item>LE</item>
+        <item>BE</item>
+    </string-array>
+    <string-array name="pref_byteorder_labels">
+        <item>Little-Endian</item>
+        <item>Big-Endian</item>
+    </string-array>
+
     <!-- URL formats -->
     <string name="url_trigger">/trigger?name=%s</string>
     <string name="url_trigger_method">PUT</string>
@@ -34,9 +44,9 @@
     <string name="url_status_method">GET</string>
 
     <!-- Button labels and tags -->
-    <string name="button_1">Aorta Poofer 1</string>
-    <string name="button_2">Aorta Poofer 2</string>
-    <string name="button_3">Aorta Poofer 3</string>
+    <string name="button_1">Poofer 1</string>
+    <string name="button_2">Poofer 2</string>
+    <string name="button_3">Poofer 3</string>
     <string name="button_1_tag">poof_1</string>
     <string name="button_2_tag">poof_2</string>
     <string name="button_3_tag">poof_3</string>
@@ -51,12 +61,24 @@
     <string name="button_3b_tag">heart_fx_1</string>
     <string name="button_4b_tag">heart_fx_2</string>
 
-    <string name="play_sound_1">Play Sound 1</string>
-    <string name="play_sound_2">Play Sound 2</string>
-    <string name="play_sound_3">Play Sound 3</string>
-    <string name="play_sound_1_tag">sound_1</string>
-    <string name="play_sound_2_tag">sound_2</string>
-    <string name="play_sound_3_tag">sound_3</string>
+
+    <string name="button_1_pod">Sound 1</string>
+    <string name="button_2_pod">Sound 2</string>
+    <string name="button_3_pod">Sound 3</string>
+    <string name="button_1_p1_tag">sound_1_1</string>
+    <string name="button_2_p1_tag">sound_2_1</string>
+    <string name="button_3_p1_tag">sound_3_3</string>
+    <string name="button_1_p2_tag">sound_1_2</string>
+    <string name="button_2_p2_tag">sound_2_2</string>
+    <string name="button_3_p2_tag">sound_3_2</string>
+
+
+    <string name="button_1b_pod">LED FX 1</string>
+    <string name="button_2b_pod">LED FX 2</string>
+    <string name="button_1b_p1_tag">led_fx_1_1</string>
+    <string name="button_2b_p1_tag">led_fx_2_1</string>
+    <string name="button_1b_p2_tag">led_fx_1_2</string>
+    <string name="button_2b_p2_tag">led_fx_2_2</string>
 
     <string name="led_fx_1">LED FX 1</string>
     <string name="led_fx_2">LED FX 2</string>
@@ -70,6 +92,8 @@
 
     <string name="slider_1_tag">bpm</string>
     <string name="spinner_1_tag">source</string>
+    <string name="spinner_1_p1_tag">source_1</string>
+    <string name="spinner_1_p2_tag">source_2</string>
 
     <!-- Descrptions of the three beating hearts -->
     <string name="heartbeat_1">Heartbeat Left</string>
@@ -79,8 +103,10 @@
     <!-- Drop-down list of heartbeat sources. Ordered by ID -->
     <string-array name="spinner_1_entries">
         <item>None</item>
-        <item>Heartbeat Left</item>
-        <item>Heartbeat Right</item>
+        <item>Pod 1</item>
+        <item>Pod 2</item>
+        <item>MUI Left</item>
+        <item>MUI Right</item>
         <item>Heartbeat Synth</item>
     </string-array>
 
