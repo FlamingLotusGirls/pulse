@@ -44,8 +44,8 @@
     <!-- Effect ALL_POOF -->
     <integer-array name="all_poof">
         <item>255</item>
-        <item>4</item>
-        <item>3</item>
+        <item>10</item>
+        <item>0</item>
     </integer-array>
 
     <!-- Effect poof_1 -->
@@ -113,72 +113,72 @@
 
     <!-- Effect sound_1 pod 1 -->
     <integer-array name="sound_1_p1">
-        <item>0</item>
-        <item>4</item>
-        <item>7</item>
+        <item>1</item>
+        <item>11</item>
+        <item>1</item>
     </integer-array>
 
     <!-- Effect sound_1 pod 2 -->
     <integer-array name="sound_1_p2">
+        <item>2</item>
+        <item>11</item>
         <item>1</item>
-        <item>4</item>
-        <item>7</item>
     </integer-array>
 
     <!-- Effect sound_2 pod 1 -->
     <integer-array name="sound_2_p1">
-        <item>0</item>
-        <item>4</item>
-        <item>7</item>
+        <item>1</item>
+        <item>11</item>
+        <item>3</item>
     </integer-array>
 
     <!-- Effect sound_2 pod 2 -->
     <integer-array name="sound_2_p2">
-        <item>1</item>
-        <item>4</item>
-        <item>7</item>
+        <item>2</item>
+        <item>11</item>
+        <item>2</item>
     </integer-array>
 
     <!-- Effect sound_3 pod 1 -->
     <integer-array name="sound_3_p1">
-        <item>0</item>
-        <item>4</item>
-        <item>8</item>
+        <item>1</item>
+        <item>11</item>
+        <item>3</item>
     </integer-array>
 
     <!-- Effect sound_3 pod 2 -->
     <integer-array name="sound_3_p2">
-        <item>1</item>
-        <item>4</item>
-        <item>8</item>
+        <item>2</item>
+        <item>11</item>
+        <item>3</item>
     </integer-array>
 
     <!-- Effect led_1 pod 1 -->
     <integer-array name="led_fx_1_1">
-        <item>0</item>
-        <item>4</item>
-        <item>9</item>
+        <item>1</item>
+        <item>7</item>
+        <item>1</item>
     </integer-array>
 
     <!-- Effect led_1 pod 2 -->
     <integer-array name="led_fx_1_2">
+        <item>2</item>
+        <item>7</item>
         <item>1</item>
-        <item>4</item>
-        <item>9</item>
     </integer-array>
 
     <!-- Effect led_2 pod 1 -->
     <integer-array name="led_fx_2_1">
-        <item>0</item>
-        <item>4</item>
-        <item>10</item>
+        <item>1</item>
+        <item>8</item>
+        <item>1</item>
     </integer-array>
 
     <!-- Effect led_2 pod 2 -->
     <integer-array name="led_fx_2_2">
+        <item>2</item>
+        <item>8</item>
         <item>1</item>
-        <item>4</item>
-        <item>10</item>
     </integer-array>
 
     <array name="triggers">
