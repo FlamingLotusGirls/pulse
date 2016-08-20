@@ -11,6 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:layout_margin="0sp"
+        android:padding="0sp"
         app:columnCount="2"
         app:rowCount="2"
         app:useDefaultMargins="false" >
@@ -23,7 +25,7 @@
         app:columnCount="3"
         app:rowCount="4"
         app:useDefaultMargins="true"
-        android:background="@android:drawable/picture_frame" >
+        android:background="@drawable/border" >
 
         <Button
             android:text="@string/button_1"
@@ -119,7 +121,7 @@
             app:columnCount="3"
             app:rowCount="4"
             app:useDefaultMargins="true"
-            android:background="@android:drawable/picture_frame" >
+            android:background="@drawable/border" >
 
             <Button
                 android:text="@string/button_1_pod"
@@ -193,7 +195,7 @@
             app:columnCount="3"
             app:rowCount="4"
             app:useDefaultMargins="true"
-            android:background="@android:drawable/picture_frame" >
+            android:background="@drawable/border" >
 
             <Button
                 android:text="@string/button_1_pod"
@@ -269,7 +271,8 @@
         app:columnCount="2"
         app:rowCount="3"
         app:useDefaultMargins="true"
-        android:background="@android:drawable/picture_frame" >
+        android:background="@drawable/border" >
+
         <TextView android:text="@string/title_slider1" android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/textView"
@@ -311,59 +314,5 @@
             app:layout_columnWeight="1" />
     </android.support.v7.widget.GridLayout>
     </android.support.v7.widget.GridLayout>
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="@color/colorStatus">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text=""
-            android:id="@+id/textView_status"
-            android:layout_alignParentStart="true" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text=""
-            android:id="@+id/textView_connect"
-            android:layout_toStartOf="@+id/pulse_icon_3" />
-
-        <ImageView
-            android:maxHeight="20dp"
-            android:maxWidth="20dp"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            app:srcCompat="@drawable/pulse_icon"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:id="@+id/pulse_icon_1"
-            android:contentDescription="@string/heartbeat_1" />
-
-        <ImageView
-            android:maxHeight="20dp"
-            android:maxWidth="20dp"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            app:srcCompat="@drawable/pulse_icon"
-            android:layout_alignParentTop="true"
-            android:layout_toStartOf="@+id/pulse_icon_1"
-            android:id="@+id/pulse_icon_2"
-            android:contentDescription="@string/heartbeat_2" />
-
-        <ImageView
-            android:maxHeight="20dp"
-            android:maxWidth="20dp"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            app:srcCompat="@drawable/pulse_icon"
-            android:layout_alignParentTop="true"
-            android:layout_toStartOf="@+id/pulse_icon_2"
-            android:id="@+id/pulse_icon_3"
-            android:contentDescription="@string/heartbeat_3" />
-    </RelativeLayout>
+    <include layout="@layout/status_bar"/>
 </RelativeLayout>

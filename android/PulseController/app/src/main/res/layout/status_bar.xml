@@ -1,6 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_marginBottom="0sp"
+    android:background="@color/colorStatus">
 
-</LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=""
+        android:id="@+id/textView_status"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=""
+        android:id="@+id/textView_connect"
+        android:layout_toStartOf="@+id/pulse_icon_5" />
+
+    <ImageView
+        android:maxHeight="20dp"
+        android:maxWidth="20dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:srcCompat="@drawable/pulse_icon"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/pulse_icon_1"
+        android:contentDescription="@string/heartbeat_1" />
+
+    <ImageView
+        android:maxHeight="20dp"
+        android:maxWidth="20dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:srcCompat="@drawable/pulse_icon"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/pulse_icon_1"
+        android:id="@+id/pulse_icon_2"
+        android:contentDescription="@string/heartbeat_2" />
+
+    <ImageView
+        android:maxHeight="20dp"
+        android:maxWidth="20dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:srcCompat="@drawable/pulse_icon"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/pulse_icon_2"
+        android:id="@+id/pulse_icon_3"
+        android:contentDescription="@string/heartbeat_3" />
+
+    <ImageView
+        android:maxHeight="20dp"
+        android:maxWidth="20dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:srcCompat="@drawable/pulse_icon"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/pulse_icon_3"
+        android:id="@+id/pulse_icon_4"
+        android:contentDescription="@string/heartbeat_3" />
+
+    <ImageView
+        android:maxHeight="20dp"
+        android:maxWidth="20dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:srcCompat="@drawable/pulse_icon"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/pulse_icon_4"
+        android:id="@+id/pulse_icon_5"
+        android:contentDescription="@string/heartbeat_3" />
+</RelativeLayout>
