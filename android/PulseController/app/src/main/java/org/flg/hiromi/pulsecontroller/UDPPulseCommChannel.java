@@ -38,7 +38,7 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
 
     private ByteOrder getByteOrder() {
         String bo = PreferenceManager.getDefaultSharedPreferences(service)
-                .getString("byteorder", "LE");
+                .getString("byteorder", "BE");
         switch (bo) {
             case "LE": return ByteOrder.LITTLE_ENDIAN;
             case "BE": return  ByteOrder.BIG_ENDIAN;

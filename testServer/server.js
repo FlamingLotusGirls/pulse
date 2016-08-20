@@ -1,3 +1,6 @@
+// This is a quick-and-dirty server for testing the REST and UDP connectors
+// for the Android UI.
+
 const express = require('express');
 const app = express();
 const child_process = require('child_process');
@@ -9,6 +12,8 @@ const os = require('os');
 
 var HEARTBEAT_PORT = 5000;
 var CMD_PORT = 5001;
+// UDP Packet is in big-endian order.
+const BIGENDIAN = true;
 
 app.get('/', (req, res) => res.send("Hello, World"));
 
@@ -220,14 +225,28 @@ setInterval(() => sendPulse(0), 1000);
 setInterval(() => sendPulse(1), 823);
 
 function decode_cmd(msg) {
+    function readUInt16(msg, idx) {
+        if (BIGENDIAN) {
+            return msg.readUInt16BE(idx);
+        } else {
+            return msg.readUInt16LE(idx);
+        }
+    }
+    function readUInt32(msg, idx) {
+        if (BIGENDIAN) {
+            return msg.readUInt32BE(idx);
+        } else {
+            return msg.readUInt32LE(idx);
+        }
+    }
     if (msg.length < 8) {
         return msg;
     }
     return util.inspect({
         rcv: msg.readUInt8(0),
         trk: msg.readUInt8(1),
-        cmd: msg.readUInt16LE(2),
-        data: msg.readUInt32LE(4)
+        cmd: msg.readUInt16(2),
+        data: msg.readUInt32(4)
     });
 }
 
