@@ -60,10 +60,7 @@ public class UDPMessageListActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
-
-        Intent svcIntent = new Intent(this, UDPMessageDataService.class);
-        bindService(svcIntent, svcConn, BIND_AUTO_CREATE);
+        toolbar.setTitle(getTitle());;
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -78,6 +75,20 @@ public class UDPMessageListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Intent svcIntent = new Intent(this, UDPMessageDataService.class);
+        bindService(svcIntent, svcConn, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onPause() {
+        unbindService(svcConn);
+        super.onPause();
     }
 
     @Override
@@ -148,6 +159,14 @@ public class UDPMessageListActivity extends AppCompatActivity {
                     ovr.setText(getString(R.string.overriden));
                 } else {
                     ovr.setText("");
+                }
+            }
+            TextView lbl = (TextView)holder.mView.findViewById(R.id.label_override);
+            if (lbl != null) {
+                if (holder.mItem.getLabel() != null) {
+                    lbl.setText(holder.mItem.getLabel());
+                } else {
+                    lbl.setText("");
                 }
             }
             holder.mContentView.setText(content);

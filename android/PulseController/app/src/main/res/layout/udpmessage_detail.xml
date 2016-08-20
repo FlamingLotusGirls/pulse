@@ -124,6 +124,27 @@
             android:text="@string/data_supplied"
             android:textStyle="italic" />
 
+        <TextView
+            android:id="@+id/label_label"
+            android:text="@string/label_label"
+            app:layout_gravity="end|center_vertical"
+            app:layout_columnWeight="1"
+            android:gravity="end|center_vertical"
+            android:layout_marginEnd="15sp"
+            android:textSize="30sp"
+            app:layout_row="5"
+            app:layout_column="0" />
+
+        <EditText
+            android:id="@+id/edit_label"
+            app:layout_column="1"
+            app:layout_row="5"
+            app:layout_columnWeight="3"
+            android:maxLines="1"
+            android:inputType="textShortMessage|textCapWords"
+            android:contentDescription="@string/edit_label_description"
+            android:background="@android:drawable/edit_text" />
+
     </android.support.v7.widget.GridLayout>
 
 </LinearLayout>

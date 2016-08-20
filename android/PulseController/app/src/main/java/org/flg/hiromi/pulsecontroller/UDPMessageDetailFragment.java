@@ -194,6 +194,18 @@ public class UDPMessageDetailFragment extends Fragment {
             editData.setVisibility(View.GONE);
             viewData.setVisibility(View.VISIBLE);
         }
+        EditText editLabel = (EditText) itemView.findViewById(R.id.edit_label);
+        if (editLabel.getText().length() == 0) {
+            if (mItem.getLabel() != null) {
+                editLabel.setText(mItem.getLabel());
+            }
+        } else if (mItem.getLabel() == null) {
+            editLabel.setText("");
+        } else {
+            if (!editLabel.getText().toString().equals(mItem.getLabel())) {
+                editLabel.setText(mItem.getLabel());
+            }
+        }
         updateDirty();
     }
 
@@ -203,10 +215,21 @@ public class UDPMessageDetailFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.udpmessage_detail, container, false);
         initUI();
 
+        return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
         Intent svcIntent = new Intent(getContext(), UDPMessageDataService.class);
         getContext().bindService(svcIntent, msgContextServiceConn, Context.BIND_AUTO_CREATE);
+    }
 
-        return rootView;
+    @Override
+    public void onPause() {
+        getContext().unbindService(msgContextServiceConn);
+        super.onPause();
     }
 
     private void populateList(final View rootView) {
@@ -283,6 +306,29 @@ public class UDPMessageDetailFragment extends Fragment {
                             Snackbar.make(rootView, e.toString(), LENGTH_LONG).show();
                         }
                     }
+                }
+            });
+            EditText label = (EditText)getActivity().findViewById(R.id.edit_label);
+            label.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (s.length() > 0) {
+                        mItem.setLabel(s.toString());
+                    } else {
+                        mItem.setLabel(null);
+                    }
+                    m_dirty = true;
+                    setViews(rootView);
                 }
             });
             setViews(rootView);

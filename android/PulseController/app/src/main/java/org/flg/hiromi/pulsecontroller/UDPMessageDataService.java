@@ -14,6 +14,7 @@ import java.util.Map;
 
 import static org.flg.hiromi.pulsecontroller.UDPMessage.FIELD_COMMAND;
 import static org.flg.hiromi.pulsecontroller.UDPMessage.FIELD_DATA;
+import static org.flg.hiromi.pulsecontroller.UDPMessage.FIELD_LABEL;
 import static org.flg.hiromi.pulsecontroller.UDPMessage.FIELD_RECEIVER;
 import static org.flg.hiromi.pulsecontroller.UDPMessage.FIELD_TAG;
 import static org.flg.hiromi.pulsecontroller.UDPMessage.FIELD_TYPE;
@@ -84,6 +85,14 @@ public class UDPMessageDataService extends Service {
             return commandNames;
         }
 
+        public String getLabel(String tag) {
+            UDPMessage msg = getMessageMap().get(tag);
+            if (msg != null) {
+                return msg.getLabel();
+            }
+            return null;
+        }
+
         @Override
         public String getReceiverName(int id) {
             String[] names = getReceiverNames();
@@ -126,6 +135,9 @@ public class UDPMessageDataService extends Service {
                     values.put(FIELD_COMMAND, msg.getCommandId());
                     if (!msg.getNeedsData()) {
                         values.put(FIELD_DATA, msg.getData());
+                    }
+                    if (msg.getLabel() != null) {
+                        values.put(FIELD_LABEL, msg.getLabel());
                     }
                     db.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 }

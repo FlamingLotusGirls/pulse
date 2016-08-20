@@ -19,6 +19,8 @@ public interface IUDPMessageContext {
 
     String getCommandName(int id);
 
+    String getLabel(String tag);
+
     void save(UDPMessage msg);
 
     void revert(UDPMessage msg);

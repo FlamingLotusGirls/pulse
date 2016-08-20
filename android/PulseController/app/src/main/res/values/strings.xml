@@ -119,6 +119,8 @@
     <string name="edit_command_description">16-bit Command ID</string>
     <string name="edit_data_description">32-bit number</string>
     <string name="edit_receiver_description">8-bit Receiver ID</string>
+    <string name="label_label">Button Label</string>
+    <string name="edit_label_description">Button text to substitute.</string>
     <string name="data_supplied">Supplied on send</string>
     <string name="label_tracking_id">Tracking ID</string>
     <string name="view_tracking">Generated</string>

@@ -28,6 +28,7 @@ public class UDPMessage {
     public static final String FIELD_RECEIVER = "receiver";
     public static final String FIELD_COMMAND= "command";
     public static final String FIELD_DATA = "data";
+    public static final String FIELD_LABEL = "label";
 
     public static final String TYPE_TRIGGER = "trigger";
     public static final String TYPE_PARAM = "param";
@@ -35,7 +36,7 @@ public class UDPMessage {
     public static final int RECEIVER_BROADCAST = 255;
 
     private static final String[] COLUMNS = {
-            FIELD_TAG, FIELD_RECEIVER, FIELD_COMMAND, FIELD_DATA
+            FIELD_TAG, FIELD_RECEIVER, FIELD_COMMAND, FIELD_DATA, FIELD_LABEL
     };
     private final String tag;
     private final String type;
@@ -47,6 +48,8 @@ public class UDPMessage {
 
     // What was originally configured into the app
     private final UDPMessage original;
+
+    private String label;
     /*
      * Build a UDPMMessage from an int[] array of either:
      * [receiverId, commandId]
@@ -73,16 +76,18 @@ public class UDPMessage {
         receiverId = vals[0];
         commandId = vals[1];
         original = null;
+        label = null;
     }
 
     public UDPMessage(String tag, String type, int receiverId, int commandId, int data,
-                      boolean needsData, UDPMessage original) {
+                      boolean needsData, String label, UDPMessage original) {
         this.tag = tag;
         this.type = type;
         this.receiverId = receiverId;
         this.commandId = commandId;
         this.data = data;
         this.needsData = needsData;
+        this.label = label;
         this.original = original;
     }
 
@@ -95,8 +100,9 @@ public class UDPMessage {
             int receiver = c.getInt(1);
             int command = c.getInt(2);
             int data = c.isNull(3) ? 0 : c.getInt(3);
+            String label = c.getString(4);
             UDPMessage original = originals.get(tag);
-            UDPMessage msg = new UDPMessage(tag, type, receiver, command, data, c.isNull(3), original);
+            UDPMessage msg = new UDPMessage(tag, type, receiver, command, data, c.isNull(3), label, original);
             map.put(tag, msg);
         }
         return map;
@@ -182,8 +188,19 @@ public class UDPMessage {
         return buffer.array();
     }
 
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
     public String getContentString() {
         String msg = "rcv=" + receiverId + ", cmd=" + commandId;
+        if (label != null) {
+            msg += ", lbl=" + label;
+        }
         return msg + ", data=" + (needsData ? "*" : data);
     }
 
@@ -191,6 +208,9 @@ public class UDPMessage {
         String receiver = ctx.getReceiverName(receiverId);
         String cmd = ctx.getCommandName(commandId);
         String msg = "rcv=" + receiver + ", cmd=" + cmd;
+        if (label != null) {
+            msg += ", lbl=" + label;
+        }
         return msg + ", data=" + (needsData ? "*" : data);
     }
 
@@ -204,6 +224,7 @@ public class UDPMessage {
         commandId = o.getCommandId();
         data = o.getData();
         needsData = o.getNeedsData();
+        label = o.getLabel();
     }
 
     // Revert back to the original values;
@@ -214,6 +235,9 @@ public class UDPMessage {
     }
 
     public boolean isOverride() {
+        if (label != null) {
+            return true;
+        }
         if (original != null) {
             if (receiverId != original.receiverId) return true;
             if (commandId != original.commandId) return true;
@@ -226,7 +250,7 @@ public class UDPMessage {
     public UDPMessage clone() {
         // Allow reverting to the original configured value.
         UDPMessage nOriginal = (original == null) ? this : original;
-        return new UDPMessage(tag, type, receiverId, commandId, data, needsData, nOriginal);
+        return new UDPMessage(tag, type, receiverId, commandId, data, needsData, label, nOriginal);
     }
 
     @Override

@@ -17,6 +17,13 @@
             android:layout_marginLeft="10dp"
             android:textAppearance="?attr/textAppearanceListItem" />
         <TextView
+            android:id="@+id/label_override"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:textAppearance="?attr/textAppearanceListItem" />
+        <TextView
             android:id="@+id/overridden"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
