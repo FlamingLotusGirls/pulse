@@ -29,7 +29,7 @@
         <item>3 - Heart</item>
         <item>4 - MUI Right</item>
         <item>5 - MUI Left</item>
-        <item>6 - Broadcast</item>
+        <item>255 - Broadcast</item>
     </string-array>
 
     <!--
