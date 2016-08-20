@@ -27,7 +27,7 @@ public class UDPMessage {
     private static final String SELECT_TYPE = FIELD_TYPE + "=?";
     public static final String FIELD_TAG = "tag";
     public static final String FIELD_RECEIVER = "receiver";
-    public static final String FIELD_COMMAND= "commmand";
+    public static final String FIELD_COMMAND= "command";
     public static final String FIELD_DATA = "data";
 
     public static final String TYPE_TRIGGER = "trigger";
@@ -199,11 +199,28 @@ public class UDPMessage {
         return original;
     }
 
+    // Set the fields of this from the supplied value.
     public void set(UDPMessage o) {
         receiverId = o.getReceiverId();
         commandId = o.getCommandId();
         data = o.getData();
         needsData = o.getNeedsData();
+    }
+
+    // Revert back to the original values;
+    public void revert() {
+        if (original != null) {
+            set(original);
+        }
+    }
+
+    public boolean isOverride() {
+        if (original != null) {
+            if (receiverId != original.receiverId) return true;
+            if (commandId != original.commandId) return true;
+            if (data != original.data) return true;
+        }
+        return false;
     }
 
     @Override

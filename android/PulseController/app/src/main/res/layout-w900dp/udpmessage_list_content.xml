@@ -3,19 +3,34 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/divider">
+    android:background="@drawable/list_item">
 
-    <TextView
-        android:id="@+id/id"
-        android:layout_width="@dimen/udp_tag_width"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:textAppearance="?attr/textAppearanceListItem" />
+        android:layout_marginTop="5dp">
+        <TextView
+            android:id="@+id/id"
+            android:layout_width="@dimen/udp_tag_width"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:textAppearance="?attr/textAppearanceListItem" />
+        <TextView
+            android:id="@+id/overridden"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:gravity="end|center_vertical"
+            android:textAlignment="textEnd"
+            android:textAppearance="?attr/textAppearanceListItem" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="5dp"
         android:textAppearance="?attr/textAppearanceListItem" />
 </LinearLayout>

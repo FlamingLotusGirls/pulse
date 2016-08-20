@@ -125,5 +125,7 @@
     <string name="msg_type">Msg Type</string>
     <string name="confirm_reverted">Message data reverted</string>
     <string name="confirm_saved">Message data saved</string>
+    <string name="unsaved">(unsaved)</string>
+    <string name="overriden">(overridden)</string>
 
 </resources>

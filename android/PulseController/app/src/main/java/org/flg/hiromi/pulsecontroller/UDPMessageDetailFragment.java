@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,9 +35,21 @@ public class UDPMessageDetailFragment extends Fragment {
     public static final String ARG_ITEM_ID = "item_id";
 
     /**
-     * The dummy content this fragment is presenting.
+     * The fragment argument with the adaptor to update.
+     */
+
+    public static final String ARG_ITEM_POSITION = "item_position";
+
+    /**
+     * The content this fragment is presenting.
      */
     private UDPMessage mItem;
+
+    private int mPosition;
+    /**
+     * True if modified in this view.
+     */
+    private boolean m_dirty = false;
 
     private UDPMessageContext msgContext;
 
@@ -52,6 +67,7 @@ public class UDPMessageDetailFragment extends Fragment {
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             // Load the message from the tag, and make a copy for editing.
             mItem = UDPMessage.getMessage(getActivity(), getArguments().getString(ARG_ITEM_ID)).clone();
+            mPosition = getArguments().getInt(ARG_ITEM_POSITION);
             msgContext = new UDPMessageContext(getActivity());
 
             final Activity activity = getActivity();
@@ -67,9 +83,27 @@ public class UDPMessageDetailFragment extends Fragment {
                     public void onClick(View v) {
                         final View rootView = activity.findViewById(R.id.udpmessage_detail);
                         if (mItem != null) {
-                            mItem.set(mItem.getOriginal());
-                            setViews(rootView, mItem);
+                            msgContext.revert(mItem);
+                            m_dirty = false;
+                            updateCaller();
+                            setViews(rootView);
                             Snackbar.make(rootView, R.string.confirm_reverted, LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+            Button save = (Button)activity.findViewById(R.id.btn_save);
+            if (save != null) {
+                save.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final View rootView = activity.findViewById(R.id.udpmessage_detail);
+                        if (mItem != null) {
+                            msgContext.save(mItem);
+                            m_dirty = false;
+                            updateCaller();
+                            setViews(rootView);
+                            Snackbar.make(rootView, R.string.confirm_saved, LENGTH_LONG).show();
                         }
                     }
                 });
@@ -77,23 +111,58 @@ public class UDPMessageDetailFragment extends Fragment {
         }
     }
 
-    private void setViews(View rootView, UDPMessage msg) {
+    @Override
+    public void onDestroy() {
+        final Activity activity = getActivity();
+        Button revert = (Button) activity.findViewById(R.id.btn_revert);
+        if (revert != null) {
+            revert.setOnClickListener(null);
+        }
+        Button save = (Button)activity.findViewById(R.id.btn_save);
+        if (save != null) {
+            save.setOnClickListener(null);
+        }
+        super.onDestroy();
+    }
+
+    private void updateDirty() {
+        if (mItem != null) {
+            if (m_dirty) {
+                getActivity().setTitle(mItem.getTag() + " " + getString(R.string.unsaved));
+            } else if (mItem.isOverride()) {
+                getActivity().setTitle(mItem.getTag() + " " + getString(R.string.overriden));
+            } else {
+                getActivity().setTitle(mItem.getTag());
+            }
+        }
+    }
+
+    private void updateCaller() {
+        RecyclerView rv = (RecyclerView)getActivity().findViewById(R.id.udpmessage_list);
+        if (rv != null) {
+            UDPMessageListActivity.SimpleItemRecyclerViewAdapter adapter =
+                    (UDPMessageListActivity.SimpleItemRecyclerViewAdapter) rv.getAdapter();
+            adapter.update(mPosition, mItem);
+        }
+    }
+
+    private void setViews(View rootView) {
         View itemView = rootView.findViewById(R.id.udpmessage_detail);
         TextView typeView = (TextView)itemView.findViewById(R.id.view_type);
-        typeView.setText(msg.getType());
+        typeView.setText(mItem.getType());
         Spinner modules = (Spinner) itemView.findViewById(R.id.edit_receiver);
         final String[] receiverNames = msgContext.getReceiverNames();
-        int receiverID = msg.getReceiverId();
+        int receiverID = mItem.getReceiverId();
         if (receiverID == UDPMessage.RECEIVER_BROADCAST) {
             receiverID = receiverNames.length - 1;
         }
         modules.setSelection(receiverID);
         Spinner cmd = (Spinner) itemView.findViewById(R.id.edit_command);
-        cmd.setSelection(msg.getCommandId());
+        cmd.setSelection(mItem.getCommandId());
         EditText editData = (EditText) itemView.findViewById(R.id.edit_data);
         TextView viewData = (TextView) itemView.findViewById(R.id.view_data);
-        editData.setText(Integer.toString(msg.getData()));
-        if (!mItem.getNeedsData()) {
+        editData.setText(Integer.toString(mItem.getData()));
+        if (!this.mItem.getNeedsData()) {
             editData.setEnabled(true);
             editData.setVisibility(View.VISIBLE);
             viewData.setVisibility(View.GONE);
@@ -102,15 +171,17 @@ public class UDPMessageDetailFragment extends Fragment {
             editData.setVisibility(View.GONE);
             viewData.setVisibility(View.VISIBLE);
         }
+        updateDirty();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.udpmessage_detail, container, false);
+        final View rootView = inflater.inflate(R.layout.udpmessage_detail, container, false);
 
         if (mItem != null) {
             View itemView = rootView.findViewById(R.id.udpmessage_detail);
+            final EditText data = (EditText)itemView.findViewById(R.id.edit_data);
             Spinner modules = (Spinner) itemView.findViewById(R.id.edit_receiver);
             final String[] receiverNames = msgContext.getReceiverNames();
             final ArrayAdapter<String> rcvAdapter = new ArrayAdapter<>(getActivity(),
@@ -123,7 +194,12 @@ public class UDPMessageDetailFragment extends Fragment {
                     if (position == receiverNames.length - 1) {
                         position = UDPMessage.RECEIVER_BROADCAST;
                     }
-                    mItem.setReceiverId(position);
+                    if (mItem.getReceiverId() != position) {
+                        mItem.setReceiverId(position);
+                        m_dirty = true;
+                        setViews(rootView);
+                    }
+                    data.clearFocus();
                 }
 
                 @Override
@@ -139,14 +215,40 @@ public class UDPMessageDetailFragment extends Fragment {
             cmd.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    mItem.setCommandId(position);
+                    if (mItem.getCommandId() != position) {
+                        mItem.setCommandId(position);
+                        m_dirty = true;
+                        setViews(rootView);
+                    }
+                    data.clearFocus();
                 }
 
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
                 }
             });
-            setViews(rootView, mItem);
+            data.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    int data = Integer.parseInt(s.toString());
+                    if (data != mItem.getData()) {
+                        mItem.setData(data);
+                        m_dirty = true;
+                        setViews(rootView);
+                    }
+                }
+            });
+            setViews(rootView);
         }
 
         return rootView;

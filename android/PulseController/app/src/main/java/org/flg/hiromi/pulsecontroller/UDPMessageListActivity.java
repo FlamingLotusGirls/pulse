@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.flg.hiromi.pulsecontroller.UDPMessageDetailFragment.*;
+
 /**
  * An activity representing a list of UDPMessage. This activity
  * has different presentations for handset and tablet-size devices. On
@@ -85,7 +87,10 @@ public class UDPMessageListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        List<UDPMessage> entries = new ArrayList<>(UDPMessage.loadMessageMap(this).values());
+        List<UDPMessage> entries = new ArrayList<>();
+        for (UDPMessage ent : msgContext.getMessageList()) {
+            entries.add(ent.clone());
+        }
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(entries));
     }
 
@@ -93,9 +98,23 @@ public class UDPMessageListActivity extends AppCompatActivity {
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
         private final List<UDPMessage> mValues;
+        private int selected_position = -1;
+
+        public SimpleItemRecyclerViewAdapter dup() {
+            List<UDPMessage> entries = new ArrayList<>();
+            for (UDPMessage ent : mValues) {
+                entries.add(ent.clone());
+            };
+            return new SimpleItemRecyclerViewAdapter(entries);
+        }
 
         SimpleItemRecyclerViewAdapter(List<UDPMessage> items) {
             mValues = items;
+        }
+
+        public void update(int position, UDPMessage msg) {
+            mValues.set(position, msg);
+            notifyItemChanged(position);
         }
 
         @Override
@@ -106,18 +125,43 @@ public class UDPMessageListActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
+        public void onBindViewHolder(final ViewHolder holder, final int position) {
             holder.mItem = mValues.get(position);
             holder.mIdView.setText(mValues.get(position).getTag());
             String content = mValues.get(position).getContentString(msgContext);
+            TextView ovr = (TextView)holder.mView.findViewById(R.id.overridden);
+            if (ovr != null) {
+                if (holder.mItem.isOverride()) {
+                    ovr.setText(getString(R.string.overriden));
+                } else {
+                    ovr.setText("");
+                }
+            }
             holder.mContentView.setText(content);
-
+            if (position == selected_position) {
+                if (holder.mItem.isOverride()) {
+                    holder.mView.setBackgroundResource(R.drawable.list_item_selected_override);
+                } else {
+                    holder.mView.setBackgroundResource(R.drawable.list_item_selected);
+                }
+            } else if (holder.mItem.isOverride()) {
+                holder.mView.setBackgroundResource(R.drawable.list_item_override);
+            } else {
+                holder.mView.setBackgroundResource(R.drawable.list_item);
+            }
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
+                        int old_position = selected_position;
+                        selected_position = position;
+                        notifyItemChanged(position);
+                        if (selected_position >= 0) {
+                            notifyItemChanged(old_position);
+                        }
                         Bundle arguments = new Bundle();
-                        arguments.putString(UDPMessageDetailFragment.ARG_ITEM_ID, holder.mItem.getTag());
+                        arguments.putString(ARG_ITEM_ID, holder.mItem.getTag());
+                        arguments.putInt(ARG_ITEM_POSITION, position);
                         UDPMessageDetailFragment fragment = new UDPMessageDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()

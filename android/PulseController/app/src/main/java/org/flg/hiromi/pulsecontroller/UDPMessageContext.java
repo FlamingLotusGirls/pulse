@@ -1,10 +1,14 @@
 package org.flg.hiromi.pulsecontroller;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.flg.hiromi.pulsecontroller.UDPMessage.*;
 
 /**
  * Wraps a {@link Context} object and caches the UDPMessage data
@@ -21,6 +25,8 @@ public class UDPMessageContext {
 
     private String[] receiverNames;
     private String[] commandNames;
+
+    private UDPMessageDBHelper opener;
 
     public Map<String,UDPMessage> getMessageMap() {
         if (allMessages == null) {
@@ -73,5 +79,38 @@ public class UDPMessageContext {
             return names[id];
         }
         return "Unknwon-" + id;
+    }
+
+    private UDPMessageDBHelper getDBHelper() {
+        if (opener == null) {
+            opener = new UDPMessageDBHelper(context);
+        }
+        return opener;
+    }
+
+    public void save(UDPMessage msg) {
+        // If we're back to the original, just clean up, so we pick up future changes.
+        if (!msg.isOverride()) {
+            revert(msg);
+        } else {
+            try (SQLiteDatabase db = getDBHelper().getWritableDatabase()) {
+                ContentValues values = new ContentValues();
+                values.put(FIELD_TAG, msg.getTag());
+                values.put(FIELD_TYPE, msg.getType());
+                values.put(FIELD_RECEIVER, msg.getReceiverId());
+                values.put(FIELD_COMMAND, msg.getCommandId());
+                if (!msg.getNeedsData()) {
+                    values.put(FIELD_DATA, msg.getData());
+                }
+                db.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+            }
+        }
+    }
+
+    public void revert(UDPMessage msg) {
+        msg.revert();
+        try (SQLiteDatabase db = getDBHelper().getWritableDatabase()) {
+            db.delete(TABLE_NAME, "tag=?", new String[] { msg.getTag() });
+        }
     }
 }
