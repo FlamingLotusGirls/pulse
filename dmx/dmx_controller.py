@@ -21,7 +21,6 @@ COMMAND_PORT   = 5001
 MULTICAST_TTL  = 4
 BAUDRATE       = 19200
 
-DMX_ADDRESS = "/dev/tty.usbserial-EN195017"
 DMX_RED_CHANNEL = 2
 DMX_GREEN_CHANNEL = 3
 DMX_BLUE_CHANNEL = 4
@@ -36,13 +35,14 @@ ALL_WHITE_CHANNELS = map(lambda x: x+(DMX_WHITE_CHANNEL-DMX_RED_CHANNEL), ALL_RE
 
 running = True
 allowHeartBeats = True
+allowSingleColor = True
 currentHeartBeatSource = 0 # ???
 dmx = None
-previousHeartBeatTime = None
-gReceiverId = 4
+gReceiverId = 3
 
 HEARTBEAT = 1
 STROBE    = 2
+SINGLE    = 3
 
 gCurrentHeartBeat  = None
 gNextHeartBeat     = None
@@ -52,7 +52,7 @@ gNextNextHeartBeatStartTime = 0
 
 gGlobalEffectId = 0
 
-# Effects format ---  EFFECT:[[channels], intensity, duration(ms)]
+# Effects format ---  EFFECT:[[channels], intensity, duration from start of heartbeat(ms)]
 effects = {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,350]],
             STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
 
@@ -60,15 +60,20 @@ effects = {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100
 
 # {HEARTBEAT:[[1,100,100], [2,250,150], [1,80,275], [2,180,400], [1,100,450]],
 
-            # {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,350]],
+# {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,350]],
 
 class Commands():
     STOP_ALL             = 1
     STOP_HEARTBEAT       = 2
     START_HEARTBEAT      = 3
-    START_STROBE         = 4
-    STOP_STROBE          = 5
+    START_EFFECT         = 4
+    STOP_EFFECT          = 5
     USE_HEARTBEAT_SOURCE = 6
+    DMX_STROBE           = 7
+    DMX_SINGLE_COLOR     = 8
+    AORTA_CHASE          = 9
+    AORTA_ATTACK         = 10
+    PLAY_SOUND           = 11
 
 
 
@@ -94,9 +99,7 @@ def createBroadcastListener(port, addr=BROADCAST_ADDR):
 
 def handleHeartBeatData(heartBeatData):
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
-    # print "before if"
-    # print pod_id
-    # print currentHeartBeatSource
+
     if pod_id is currentHeartBeatSource and allowHeartBeats:
 
         if beatOffsetMs < beatIntervalMs:
@@ -131,35 +134,51 @@ def processNextHeartBeat(instanceId, heartBeatStartTime):
         gNextNextHeartBeat = instanceId
         gNextNextHeartBeatStartTime = heartBeatStartTime
 
+    dmx.setChannel(ALL_WHITE_CHANNELS, 0)
+
 
 def handleCommandData(commandData):
     global currentHeartBeatSource
     receiverId, commandTrackingId, commandId = struct.unpack("=BBH", commandData)
     if receiverId is gReceiverId:                  # it's for us!
         if command is Command.STOP_ALL:
+            allowHeartBeats = False
+            allowSingleColor = False
             removeAllEffects()
         elif command is STOP_HEARTBEAT:
             stopHeartBeat()
-        elif command is START_EFFECT:
-            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-            loadEffect(effectId, datetime.datetime.now())
-        elif command is STOP_EFFECT:
-            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-            removeEffect(effectId)
         elif command is START_HEARTBEAT:
             allowHeartBeats = True
+        elif command is DMX_SINGLE_COLOR:
+            dmxSingleColor()
+        elif command is DMX_STROBE:
+            dmxStrobe()
+
         elif command is USE_HEARTBEAT_SOURCE:
             dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
             currentHeartBeatSource = pod_id
 
         sortEventQueue()
 
+def dmxStrobe():
+    return
+
+def dmxSingleColor():
+    allowSingleColor =  not allowSingleColor
+
+    if allowSingleColor:
+        removeEffect(HEARTBEAT)
+        removeEffect(STROBE)
+        dmx.setChannel(ALL_WHITE_CHANNELS, 255, autorender=true)
+    else:
+        dmx.setChannel(ALL_WHITE_CHANNELS, 0, autorender=true)
+
 def stopHeartBeat():
     eventQueue[:] = [e for e in eventQueue if (e.get("effectId") != HEARBTEAT)]
     allowHeartBeats = False
 
 def removeEffect(effectId):
-    eventQueue[:] = [e for e in eventQueue if (e.get("effectId") == HEARTBEAT)]
+    eventQueue[:] = [e for e in eventQueue if (e.get("effectId") == effectId)]
 
 def removeEffectInstance(instanceId):
     if not instanceId:
@@ -199,8 +218,6 @@ def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need
             else:
                 # TODO: Still need to figure out times for each event
                 event["time"] = startTime + datetime.timedelta(milliseconds = 1000)
-        #print "canonical event is " + str(canonicalEvent)
-        #print "timedelta is " + str(datetime.timedelta(milliseconds = event[2]))
             eventQueue.append(event)
             gGlobalEffectId += 1
 
@@ -240,7 +257,7 @@ def renderEvents():
 
     if currentEvents:
         if not dmx:
-            dmx = pysimpledmx.DMXConnection(DMX_ADDRESS)
+            dmx = initDMX()
         for event in currentEvents:
             if event["effectId"] == HEARTBEAT:
                 process_heartbeat(event)
@@ -253,10 +270,18 @@ def process_heartbeat(event):
 
     dmx.setChannel(ALL_RED_CHANNELS, heartbeatSection[1], autorender=True)
 
+def initDMX():
+    for filename in os.listdir("/dev"):
+        if filename.startswith("tty.usbserial"):  # this is the ftdi usb cable on the Mac
+            return pysimpledmx.DMXConnection("/dev/" + filename)
+        elif filename.startswith("ttyUSB0"):      # this is the ftdi usb cable on the Pi (Linux Debian)
+            return pysimpledmx.DMXConnection("/dev/" + filename)
+    return None
+
 
 if __name__ == '__main__':
     running = True
-    dmx = pysimpledmx.DMXConnection(DMX_ADDRESS)
+    dmx = initDMX()
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
     commandListener   = createBroadcastListener(COMMAND_PORT)
     eventQueue = []
@@ -270,7 +295,8 @@ if __name__ == '__main__':
                 if gNextHeartBeat == None:
                     print "====== no gNextHeartBeat"
                 dmx.setChannel(ALL_RED_CHANNELS, 0)
-                dmx.setChannel(ALL_WHITE_CHANNELS, 255, autorender = True)
+                if allowSingleColor:
+                    dmx.setChannel(ALL_WHITE_CHANNELS, 255, autorender = True)
 
                 inputReady, outputReady, exceptReady = select(readfds, [], [])
                 print datetime.datetime.now()
@@ -280,7 +306,7 @@ if __name__ == '__main__':
                 inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime)
 
             if inputReady:
-                dmx.setChannel([DMX_WHITE_CHANNEL, DMX_WHITE_CHANNEL + DMX_CHANNEL_COUNT], 0, autorender = True)
+                # dmx.setChannel(ALL_WHITE_CHANNELS, 0, autorender = True)
                 for fd in inputReady:
                     if fd is heartBeatListener:
                         heartBeatData = fd.recv(1024)
