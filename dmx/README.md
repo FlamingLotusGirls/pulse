@@ -1,9 +1,9 @@
 Code for operating the Elation Professional Sixpar 200IP spotlights via a DMX
 controller.
 
-I will probably be running the spotlights on 8 channels, meaning the four
-spotlights will need addresses 1, 9, 17, 25. As of writing this I have only
-tested the code with two lights using 6 channels, but the logic is the same.
+I will probably be running the spotlights on 6 channels, meaning the four
+spotlights will need addresses 1, 7, 13, 19. As of writing this I have only
+tested the code with two lights, but the logic is the same.
 
 There are a couple of dependencies for this:
 

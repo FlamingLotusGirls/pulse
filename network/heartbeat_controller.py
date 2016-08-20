@@ -54,14 +54,18 @@ class Commands():
     START_EFFECT         = 4
     STOP_EFFECT          = 5
     USE_HEARTBEAT_SOURCE = 6
-
+    DMX_STROBE           = 7
+    DMX_SINGLE_COLOR     = 8
+    AORTA_CHASE          = 9
+    AORTA_ATTACK         = 10
+    PLAY_SOUND           = 11
 
 running = True
 allowHeartBeats = True
 currentHeartBeatSource = 0
 ser = None
 previousHeartBeatTime = None
-gReceiverId = 0  # XXX need to set the receiver Id, or more properly, the unit id, from a file or something
+gReceiverId = 0  # XXX FIXME Need to set the receiver Id, or more properly, the unit id, from a file or something
 
 gCurrentHeartBeat  = None
 gNextHeartBeat     = None
@@ -71,7 +75,6 @@ gNextNextHeartBeatStartTime = 0
 
 gGlobalEffectId    = 0
 
-    
 
 # XXX - since we're using a list, we probably want to be pulling off the end of the list
 # rather than the beginning. XXX TODO
@@ -186,24 +189,30 @@ def sortEventQueue():
 
 def handleCommandData(commandData):
     global currentHeartBeatSource
-    receiverId, commandTrackingId, commandId = struct.unpack("=BBH", commandData)
-    if receiverId is gReceiverId:                  # it's for us!
+    receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
+    if receiverId is gReceiverId or receiverId is ALL_LISTENERS:   # it's for us!
         if command is Command.STOP_ALL:
             removeAllEffects()
         elif command is STOP_HEARTBEAT:
             allowHeartBeats = False
             stopHeartBeat()
-        elif command is START_EFFECT:
-            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-            loadEffect(effectId, datetime.datetime.now())
-        elif command is STOP_EFFECT:
-            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-            removeEffect(effectId)
+        elif command is 
+        
+//        elif command is START_EFFECT:
+//            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
+//            loadEffect(effectId, datetime.datetime.now())
+//        elif command is STOP_EFFECT:
+//            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
+//            removeEffect(effectId)
+        elif command is AORTA_CHASE:
+            loadEffect(CHASE, datetime.datetime.now());
+        elif command is AORTA_ATTACK:
+            loadEffect(ALLPOOF, datetime.datetime.now():
         elif command is START_HEARTBEAT:
             allowHeartBeats = True
         elif command is USE_HEARTBEAT_SOURCE:
-            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
-            currentHeartBeatSource = pod_id
+            //dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
+            currentHeartBeatSource = data
     
         sortEventQueue()
         
