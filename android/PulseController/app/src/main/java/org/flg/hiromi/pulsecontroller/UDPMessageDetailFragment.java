@@ -288,4 +288,13 @@ public class UDPMessageDetailFragment extends Fragment {
             setViews(rootView);
         }
     }
+
+    @Override
+    public void onStop() {
+        if(m_dirty) {
+            String msg = getString(R.string.changes_discarded, mItem.getTag());
+            Snackbar.make(getView(), msg, LENGTH_LONG).show();
+        }
+        super.onStop();
+    }
 }

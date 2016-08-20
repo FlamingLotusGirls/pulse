@@ -127,5 +127,6 @@
     <string name="confirm_saved">Message data saved</string>
     <string name="unsaved">(unsaved)</string>
     <string name="overriden">(overridden)</string>
+    <string name="changes_discarded">Changes to %s discarded</string>
 
 </resources>
