@@ -109,8 +109,8 @@
         <item>MUI Right</item>
         <item>Heartbeat Synth</item>
     </string-array>
-    <string name="title_udpmessage_list">UDPMessage</string>
-    <string name="title_udpmessage_detail">UDPMessage Detail</string>
+    <string name="title_udpmessage_list">UDP Messages</string>
+    <string name="title_udpmessage_detail">UDP Message Detail</string>
     <string name="label_receiver">Receiver</string>
     <string name="label_command">Command</string>
     <string name="button_save">Save</string>
