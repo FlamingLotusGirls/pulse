@@ -1,15 +1,22 @@
 package org.flg.hiromi.pulsecontroller;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
-
-import org.flg.hiromi.pulsecontroller.dummy.DummyContent;
 
 /**
  * A fragment representing a single UDPMessage detail screen.
@@ -27,7 +34,7 @@ public class UDPMessageDetailFragment extends Fragment {
     /**
      * The dummy content this fragment is presenting.
      */
-    private DummyContent.DummyItem mItem;
+    private UDPMessage mItem;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -41,16 +48,51 @@ public class UDPMessageDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+            // Load the message from the tag, and make a copy for editing.
+            mItem = UDPMessage.getMessage(getActivity(), getArguments().getString(ARG_ITEM_ID)).clone();
 
             Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.content);
-            }
+            Toolbar tb = (Toolbar) activity.findViewById(R.id.detail_toolbar);
+            String type = (mItem.getType() == "param") ? "Parameter Message " : "Trigger Message ";
+            tb.setTitle(type + mItem.getTag());
+            Button revert = (Button) activity.findViewById(R.id.btn_revert);
+            final View rootView = getView();
+            revert.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(mItem != null) {
+                        mItem.set(mItem.getOriginal());
+                        setViews(rootView, mItem);
+                    }
+                }
+            });
+        }
+    }
+
+    private void setViews(View rootView, UDPMessage msg) {
+        View itemView = rootView.findViewById(R.id.udpmessage_detail);
+        TextView typeView = (TextView)itemView.findViewById(R.id.view_type);
+        typeView.setText(mItem.getType());
+        Spinner modules = (Spinner) itemView.findViewById(R.id.edit_receiver);
+        final String[] receiverNames = UDPMessage.getReceiverNames(this.getActivity());
+        int receiverID = mItem.getReceiverId();
+        if (receiverID == UDPMessage.RECEIVER_BROADCAST) {
+            receiverID = receiverNames.length - 1;
+        }
+        modules.setSelection(receiverID);
+        Spinner cmd = (Spinner) itemView.findViewById(R.id.edit_command);
+        cmd.setSelection(mItem.getCommandId());
+        EditText editData = (EditText) itemView.findViewById(R.id.edit_data);
+        TextView viewData = (TextView) itemView.findViewById(R.id.view_data);
+        editData.setText(Integer.toString(mItem.getData()));
+        if (!mItem.getNeedsData()) {
+            editData.setEnabled(true);
+            editData.setVisibility(View.VISIBLE);
+            viewData.setVisibility(View.GONE);
+        } else {
+            editData.setEnabled(false);
+            editData.setVisibility(View.GONE);
+            viewData.setVisibility(View.VISIBLE);
         }
     }
 
@@ -59,9 +101,44 @@ public class UDPMessageDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.udpmessage_detail, container, false);
 
-        // Show the dummy content as text in a TextView.
         if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.udpmessage_detail)).setText(mItem.details);
+            View itemView = rootView.findViewById(R.id.udpmessage_detail);
+            Spinner modules = (Spinner) itemView.findViewById(R.id.edit_receiver);
+            final String[] receiverNames = UDPMessage.getReceiverNames(getActivity());
+            final ArrayAdapter<String> rcvAdapter = new ArrayAdapter<>(getActivity(),
+                    android.R.layout.simple_spinner_dropdown_item,
+                    receiverNames);
+            modules.setAdapter(rcvAdapter);
+            modules.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (position == receiverNames.length - 1) {
+                        position = UDPMessage.RECEIVER_BROADCAST;
+                    }
+                    mItem.setReceiverId(position);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+            Spinner cmd = (Spinner) itemView.findViewById(R.id.edit_command);
+            final String[] cmdNames = getActivity().getResources().getStringArray(R.array.pulse_cmds);
+            final ArrayAdapter<String> cmdAdaptor = new ArrayAdapter<String>(getActivity(),
+                    android.R.layout.simple_spinner_dropdown_item,
+                    cmdNames);
+            cmd.setAdapter(cmdAdaptor);
+            cmd.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    mItem.setCommandId(position);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+            setViews(rootView, mItem);
         }
 
         return rootView;

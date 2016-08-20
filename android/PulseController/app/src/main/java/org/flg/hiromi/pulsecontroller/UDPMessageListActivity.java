@@ -17,8 +17,7 @@ import android.widget.TextView;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
-import org.flg.hiromi.pulsecontroller.dummy.DummyContent;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,14 +45,6 @@ public class UDPMessageListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -85,22 +76,23 @@ public class UDPMessageListActivity extends AppCompatActivity {
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
 
-            this.navigateUpTo(new Intent(this, SettingsActivity.class));
+            this.navigateUpTo(new Intent(this, MainActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(DummyContent.ITEMS));
+        List<UDPMessage> entries = new ArrayList<>(UDPMessage.loadMessageMap(this).values());
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(entries));
     }
 
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        private final List<DummyContent.DummyItem> mValues;
+        private final List<UDPMessage> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<DummyContent.DummyItem> items) {
+        public SimpleItemRecyclerViewAdapter(List<UDPMessage> items) {
             mValues = items;
         }
 
@@ -114,15 +106,15 @@ public class UDPMessageListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+            holder.mIdView.setText(mValues.get(position).getTag());
+            holder.mContentView.setText(mValues.get(position).getContentString());
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(UDPMessageDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        arguments.putString(UDPMessageDetailFragment.ARG_ITEM_ID, holder.mItem.getTag());
                         UDPMessageDetailFragment fragment = new UDPMessageDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -131,7 +123,7 @@ public class UDPMessageListActivity extends AppCompatActivity {
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, UDPMessageDetailActivity.class);
-                        intent.putExtra(UDPMessageDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        intent.putExtra(UDPMessageDetailFragment.ARG_ITEM_ID, holder.mItem.getTag());
 
                         context.startActivity(intent);
                     }
@@ -148,7 +140,7 @@ public class UDPMessageListActivity extends AppCompatActivity {
             public final View mView;
             public final TextView mIdView;
             public final TextView mContentView;
-            public DummyContent.DummyItem mItem;
+            public UDPMessage mItem;
 
             public ViewHolder(View view) {
                 super(view);

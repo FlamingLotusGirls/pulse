@@ -4,21 +4,32 @@
 
     <!-- For reference, not currently used -->
     <string-array name="pulse_cmds">
-        <item></item>
-        <item>STOP_ALL</item>
-        <item>STOP_HEARTBEAT</item>
-        <item>START_EFFECT</item>
-        <item>STOP_EFFECT</item>
-        <item>USE_HEARTBEAT_SOURCE</item>
+        <item>0</item>
+        <item>1 - STOP_ALL</item>
+        <item>2 - STOP_HEARTBEAT</item>
+        <item>3 - START_EFFECT</item>
+        <item>4 - STOP_EFFECT</item>
+        <item>5 - USE_HEARTBEAT_SOURCE</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
     </string-array>
 
     <string-array name="module_ids">
-        <item>None</item>
-        <item>Pod 1</item>
-        <item>Pod 2</item>
-        <item>Heart</item>
-        <item>MUI Right</item>
-        <item>MUI Left</item>
+        <item>0 - None</item>
+        <item>1 - Pod 1</item>
+        <item>2 - Pod 2</item>
+        <item>3 - Heart</item>
+        <item>4 - MUI Right</item>
+        <item>5 - MUI Left</item>
+        <item>6 - Broadcast</item>
     </string-array>
 
     <!--

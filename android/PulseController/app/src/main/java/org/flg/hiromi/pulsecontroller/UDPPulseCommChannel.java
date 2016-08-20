@@ -1,13 +1,7 @@
 package org.flg.hiromi.pulsecontroller;
 
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQuery;
 import android.preference.PreferenceManager;
-import android.util.ArrayMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,17 +9,11 @@ import org.json.JSONObject;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-
-import static org.flg.hiromi.pulsecontroller.UDPMessageDBHelper.*;
 
 /**
  * Created by rwk on 2016-08-15.
@@ -86,8 +74,8 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
         cmdSocket = openSocket();
         UDPMessageDBHelper dbHelper = new UDPMessageDBHelper(service);
         try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
-            param_map = loadMap(db, "param", R.array.param_names, R.array.params);
-            trigger_map = loadMap(db, "trigger", R.array.trigger_names, R.array.triggers);
+            param_map = loadMessageMap(db, "param", R.array.param_names, R.array.params);
+            trigger_map = loadMessageMap(db, "trigger", R.array.trigger_names, R.array.triggers);
         }
     }
 
@@ -103,39 +91,8 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
 
     // Load a map from trigger/parameter names to UDP packets
     // These are paired resource arrays, string-array and typed array of integer-array
-    private Map<String,UDPMessage> loadMap(SQLiteDatabase db, String type, int namesId, int valsId) {
-        Map<String,UDPMessage> map = new ArrayMap<>();
-        Resources rsrcs = service.getResources();
-        TypedArray values = rsrcs.obtainTypedArray(valsId);
-        String[] names = rsrcs.getStringArray(namesId);
-        if (values.length() != names.length) {
-            throw new Error("Inconsistent resources");
-        }
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i];
-            int valId = values.getResourceId(i, 0);
-            if (valId != 0) {
-                int[] data = rsrcs.getIntArray(valId);
-                map.put(name, new UDPMessage(name, data));
-            }
-        }
-        return loadOverrides(db, type, map);
-    }
-    private static final String SELECT_TYPE = FIELD_TYPE + "=?";
-    private static final String[] COLUMNS = {
-      FIELD_TAG, FIELD_RECEIVER, FIELD_COMMAND, FIELD_DATA
-    };
-    private Map<String,UDPMessage> loadOverrides(SQLiteDatabase db, String type, Map<String, UDPMessage> map) {
-        Cursor c = db.query(TABLE_NAME, COLUMNS, SELECT_TYPE, new String[] {type}, null, null, null);
-        while (c.moveToNext()) {
-            String tag = c.getString(0);
-            int receiver = c.getInt(1);
-            int command = c.getInt(2);
-            int data = c.isNull(3) ? 0 : c.getInt(3);
-            UDPMessage msg = new UDPMessage(tag, receiver, command, data, c.isNull(3));
-            map.put(tag, msg);
-        }
-        return map;
+    private Map<String,UDPMessage> loadMessageMap(SQLiteDatabase db, String type, int namesId, int valsId) {
+        return UDPMessage.loadMessageMap(service, db, type, namesId, valsId);
     }
 
     // Send a command to set an int value. This

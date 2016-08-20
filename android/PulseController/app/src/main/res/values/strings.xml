@@ -111,5 +111,17 @@
     </string-array>
     <string name="title_udpmessage_list">UDPMessage</string>
     <string name="title_udpmessage_detail">UDPMessage Detail</string>
+    <string name="label_receiver">Receiver</string>
+    <string name="label_command">Command</string>
+    <string name="button_save">Save</string>
+    <string name="button_revert">Revert</string>
+    <string name="label_data">Data</string>
+    <string name="edit_command_description">16-bit Command ID</string>
+    <string name="edit_data_description">32-bit number</string>
+    <string name="edit_receiver_description">8-bit Receiver ID</string>
+    <string name="data_supplied">Supplied on send</string>
+    <string name="label_tracking_id">Tracking ID</string>
+    <string name="view_tracking">Generated</string>
+    <string name="msg_type">Msg Type</string>
 
 </resources>
