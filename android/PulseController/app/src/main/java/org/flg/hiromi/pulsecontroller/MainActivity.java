@@ -105,21 +105,25 @@ public class MainActivity extends ActionBarActivity {
             ImageView pulse_icon_1 = (ImageView)findViewById(R.id.pulse_icon_1);
             ImageView pulse_icon_2 = (ImageView)findViewById(R.id.pulse_icon_2);
             ImageView pulse_icon_3 = (ImageView)findViewById(R.id.pulse_icon_3);
-            switch (podId % 3) {
-                case 0: return pulse_icon_3;
-                case 1: return pulse_icon_1;
-                case 2: return pulse_icon_2;
+            ImageView pulse_icon_4 = (ImageView)findViewById(R.id.pulse_icon_4);
+            ImageView pulse_icon_5 = (ImageView)findViewById(R.id.pulse_icon_5);
+            switch (podId % 5) {
+                case 0: return pulse_icon_5;
+                case 1: return pulse_icon_4;
+                case 2: return pulse_icon_3;
+                case 3: return pulse_icon_2;
+                case 4: return pulse_icon_1;
             }
             return null;
         }
         @Override
         public void onServiceConnected(final ComponentName name, IBinder service) {
             beatChannel = (HeartbeatService.Channel)service;
+            final float iy = chooseIcon(0).getY();
             ((HeartbeatService.Channel) service).registerListener(new HeartbeatService.HeartbeatListener() {
                 @Override
                 public void onBeat(Pulse pulse) {
                     final ImageView icon = chooseIcon(pulse.getPod());
-                    final float iy = icon.getY();
                     if (icon != null) {
                         try {
                             icon.animate()
