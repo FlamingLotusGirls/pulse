@@ -153,9 +153,9 @@ def handleCommandData(commandData):
     global allowSingleColor
     global isStrobing
     # TODO: There is a new command format
-    receiverId, commandTrackingId, commandId = struct.unpack("=BBH", commandData)
+    receiverId, commandTrackingId, commandId, commandData = struct.unpack("=BBHI", commandData)
     if receiverId is gReceiverId:                  # it's for us!
-        if command is Command.STOP_ALL:
+        if commandId is Command.STOP_ALL:
             allowHeartBeats = False
             allowSingleColor = False
             isStrobing = False
