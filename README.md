@@ -9,6 +9,7 @@ What we've got here:
 * testApp - Android and PC code for running the 8-output relay driver board. Can run on any android device, or web interface + python can run on Mac/Linux box. Requires standard FTDI USB to 485 cable to connect with board
 * audio - Sketches for ALSA audio drivers, incomplete<br>
 * network - multicast listener for heartbeats, controls relay board to send heartbeat and other patterns. Python, runs on RPi and Mac (intended for RPi in the sculpture)<br>
+* dmx - Code for operating the Elation Professional Sixpar 200IP spotlights via a DMX controller
 
 Still to do:<br>
 * LEDs. Lighting for pulse pods<br>
