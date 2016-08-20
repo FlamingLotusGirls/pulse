@@ -245,8 +245,8 @@ function decode_cmd(msg) {
     return util.inspect({
         rcv: msg.readUInt8(0),
         trk: msg.readUInt8(1),
-        cmd: msg.readUInt16(2),
-        data: msg.readUInt32(4)
+        cmd: readUInt16(msg, 2),
+        data: readUInt32(msg, 4)
     });
 }
 
