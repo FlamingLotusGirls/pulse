@@ -6,7 +6,7 @@
 # send out heartbeat poofs (and color poofs, and sparkle wtfs
 # do special effects - chase, all poof, alterna-poof, throbbing poof
 
-# XXX - TODO: Test serial connects, disconnects, reconnects... 
+# XXX - TODO: Test serial connects, disconnects, reconnects...
 # XXX - TODO: Better cleanup
 # XXX - TODO: Auto-start
 # XXX - TODO: Schedule next heartbeat when previous one clears (allows us to miss heartbeats)
@@ -41,10 +41,10 @@ ALLPOOF   = 3
 # could I specify the timing of these things in the command channel? I could specify a timing multiplier
 
 # Effect definitions
-effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]], 
+effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
            CHASE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]],
            ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]]}
-           
+
 
 # Commands
 class Commands():
@@ -54,18 +54,14 @@ class Commands():
     START_EFFECT         = 4
     STOP_EFFECT          = 5
     USE_HEARTBEAT_SOURCE = 6
-    DMX_STROBE           = 7
-    DMX_SINGLE_COLOR     = 8
-    AORTA_CHASE          = 9
-    AORTA_ATTACK         = 10
-    PLAY_SOUND           = 11
+
 
 running = True
 allowHeartBeats = True
 currentHeartBeatSource = 0
 ser = None
 previousHeartBeatTime = None
-gReceiverId = 0  # XXX FIXME Need to set the receiver Id, or more properly, the unit id, from a file or something
+gReceiverId = 0  # XXX need to set the receiver Id, or more properly, the unit id, from a file or something
 
 gCurrentHeartBeat  = None
 gNextHeartBeat     = None
@@ -76,13 +72,14 @@ gNextNextHeartBeatStartTime = 0
 gGlobalEffectId    = 0
 
 
+
 # XXX - since we're using a list, we probably want to be pulling off the end of the list
 # rather than the beginning. XXX TODO
 
-            
+
 def createBroadcastListener(port, addr=BROADCAST_ADDR):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
+
     # Set some options to make it multicast-friendly
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
@@ -105,32 +102,32 @@ def createBroadcastListener(port, addr=BROADCAST_ADDR):
 #    sock.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
     return sock
-    
-# And we need to generate another heart beat if I dont hear one... XXX 
-def handleHeartBeatData(heartBeatData):    
+
+# And we need to generate another heart beat if I dont hear one... XXX
+def handleHeartBeatData(heartBeatData):
 	### This structure has to match the one in BPMPulseData_t BPMPulse.h
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
-    print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox) 
+    print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox)
     if pod_id is currentHeartBeatSource and allowHeartBeats:
-#        stopHeartBeat() # XXX should allow the last bit of the heart beat to finish, if we're in the middle            
-        
+#        stopHeartBeat() # XXX should allow the last bit of the heart beat to finish, if we're in the middle
+
         if beatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...
             heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
         else:
             heartBeatStartTime = datetime.dateTime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
-            
+
         #if previousHeartBeatTime:
         #    heartBeatStartTime = previousHeartBeatTime + datetime.timedelta(milliseconds = beatIntervalMs)
         #else:
         #    heartBeatStartTime = datetime.datetime.now()
-        
+
         # schedule next heart beat
         instanceId = loadEffect(HEARTBEAT, heartBeatStartTime, beatIntervalMs)
-        
+
         # fix up additional heart beats already in the queue
         # if there's already a next heart beat, and the start time is *greater than* the incoming time, kill it
         helper_addHBReference(instanceId, heartBeatStartTime)
-        
+
 #        if (gNextHeartBeat != None && gNextHeartBeatStartTime > heartBeatStartTime):
 #            # replace gNextHeartBeat
 #            removeEffectInstance(gNextHeartBeat)
@@ -145,25 +142,25 @@ def handleHeartBeatData(heartBeatData):
 #                removeEffectInstance(gNextNextHeartBeat)
 #            gNextNextHeartBeat = instanceId
 #            gNextNextHeartBeatStartTime = heartBeatStartTime
-            
-        
+
+
       #  if heartBeatStartTime <= datetime.datetime.now():
       #      print "1"
       #      loadEffect(HEARTBEAT, datetime.datetime.now(), beatIntervalMs)
       #  else:
       #      print "2 ", heartBeatStartTime
       #      loadEffect(HEARTBEAT, heartBeatStartTime, beatIntervalMs)
-            
+
         sortEventQueue()
-            
+
 def helper_addHBReference(instanceId, heartBeatStartTime):
     global gNextHeartBeat
     global gNextHeartBeatStartTime
     global gNextNextHeartBeat
     global gNextNextHeartBeatStartTime
-    
+
     print "adding reference for ", instanceId
-    
+
     if (gNextHeartBeat == None or (gNextHeartBeat != None and gNextHeartBeatStartTime > heartBeatStartTime)):
         print "new heart beat replaces previous"
         # replace gNextHeartBeat
@@ -179,69 +176,63 @@ def helper_addHBReference(instanceId, heartBeatStartTime):
             removeEffectInstance(gNextNextHeartBeat)
         gNextNextHeartBeat = instanceId
         gNextNextHeartBeatStartTime = heartBeatStartTime
-        
+
     print "Next hbId is ", gNextHeartBeat
     print "NextNext hbId is ", gNextNextHeartBeat
 
-        
+
 def sortEventQueue():
     eventQueue.sort(key=itemgetter("time"), reverse=True)
 
 def handleCommandData(commandData):
     global currentHeartBeatSource
-    receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
-    if receiverId is gReceiverId or receiverId is ALL_LISTENERS:   # it's for us!
-        if command is Command.STOP_ALL:
+    receiverId, commandTrackingId, commandId = struct.unpack("=BBH", commandData)
+    if receiverId is gReceiverId:                  # it's for us!
+        if commandId is Command.STOP_ALL:
             removeAllEffects()
-        elif command is STOP_HEARTBEAT:
+        elif commandId is Command.STOP_HEARTBEAT:
             allowHeartBeats = False
             stopHeartBeat()
-        elif command is 
-        
-//        elif command is START_EFFECT:
-//            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-//            loadEffect(effectId, datetime.datetime.now())
-//        elif command is STOP_EFFECT:
-//            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-//            removeEffect(effectId)
-        elif command is AORTA_CHASE:
-            loadEffect(CHASE, datetime.datetime.now());
-        elif command is AORTA_ATTACK:
-            loadEffect(ALLPOOF, datetime.datetime.now():
-        elif command is START_HEARTBEAT:
+        elif commandId is Command.START_EFFECT:
+            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
+            loadEffect(effectId, datetime.datetime.now())
+        elif commandId is Command.STOP_EFFECT:
+            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
+            removeEffect(effectId)
+        elif commandId is Command.START_HEARTBEAT:
             allowHeartBeats = True
-        elif command is USE_HEARTBEAT_SOURCE:
-            //dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
-            currentHeartBeatSource = data
-    
+        elif commandId is Command.USE_HEARTBEAT_SOURCE:
+            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
+            currentHeartBeatSource = pod_id
+
         sortEventQueue()
-        
+
     # could have a define effect as well... XXX MAYBE
-    
+
 def removeEffect(effectId):
     print "removing effect ", effectId
     for event in eventQueue:
         if event["effectId"] is effectId:
-            eventQueue.remove(event) 
-            
+            eventQueue.remove(event)
+
 def removeEffectInstance(instanceId):
     print "removing instance", instanceId
     if instanceId == None:
         return
-        
+
     for event in eventQueue:
         print "  found event", event
         if event["globalId"] == instanceId:
             print "   removing an event", event
-            eventQueue.remove(event) 
-   
-hexStr = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]         
+            eventQueue.remove(event)
+
+hexStr = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
 def intToHex(myInt):
     if myInt < 0:
         return "0"
     modulus = myInt % 16
     div     = myInt // 16
-    
+
     div = min(15, div)
 
     return hexStr[div] + hexStr[modulus]
@@ -257,7 +248,7 @@ def loadEffect(effectId, starttime, repeatMs=0):
     # there is already one, delete it.
     if repeatMs != 0 and effectId != HEARTBEAT:
         removeEffect(effectId)
-        
+
     # Now set up the event queue with the events in this effect
     if effects[effectId] != None:
         globalId = gGlobalEffectId
@@ -272,26 +263,26 @@ def loadEffect(effectId, starttime, repeatMs=0):
             canonicalEvent["channel"]      = event[0] %8
             canonicalEvent["onOff"]        = event[1]
             canonicalEvent["time"]         = starttime + datetime.timedelta(milliseconds = event[2])
-            if eventIdx + 1 >= nEvents and repeatMs != 0:  
+            if eventIdx + 1 >= nEvents and repeatMs != 0:
                 canonicalEvent["nextStartTime"] = starttime + datetime.timedelta(milliseconds = repeatMs)
                 canonicalEvent["repeatMs"]      = repeatMs
             else:
                 canonicalEvent["repeatMs"] = 0
             #print "canonical event is " + str(canonicalEvent)
             #print "timedelta is " + str(datetime.timedelta(milliseconds = event[2]))
-            
+
             eventQueue.append(canonicalEvent)
             eventIdx += 1
         gGlobalEffectId += 1
-        
+
     return globalId
-        
+
 def removeAllEffects():
     eventQueue = []
-    
+
 def stopHeartBeat():
     removeEffect(HEARTBEAT)
-    
+
 def initSerial():
     ser = serial.Serial()
     ser.baudrate = BAUDRATE
@@ -305,26 +296,26 @@ def initSerial():
             port = "/dev/" + filename
             print "Found usb serial at ", port
             break;
-    
+
     if not port:
         print("No usb serial connected")
         return None
 
     ser.port = port
-    ser.timeout =0 
+    ser.timeout =0
     ser.stopbits = serial.STOPBITS_ONE
     ser.bytesize = 8
     ser.parity   = serial.PARITY_NONE
-    ser.rtscts   = 0 
+    ser.rtscts   = 0
     ser.open() # if serial open fails... XXX
     return ser
 
-    
-        
+
+
 def createEventString(events):
     if not events:
         return None
-    
+
     # for each controller, create event string
     # send event string
     eventString = ""
@@ -339,14 +330,14 @@ def createEventString(events):
             eventString = eventString + "!%s" % controllerId
         else:
             eventString = eventString + "~"
-        
+
         eventString = eventString + "%i%s" % (event["channel"], event["onOff"])
-        
+
     eventString = eventString + "."
-    
-    return eventString    
-                        
-                 
+
+    return eventString
+
+
 def sendEvents():
     if (len(eventQueue)==0):
         return
@@ -356,7 +347,7 @@ def sendEvents():
     global gNextHeartBeatStartTime
     global gNextNextHeartBeat
     global gNextNextHeartBeatStartTime
-    
+
     # getting all the events we want to get
     currentEvents = []
     currentTime = datetime.datetime.now()
@@ -371,7 +362,7 @@ def sendEvents():
             event = eventQueue.pop()
         except IndexError:
             break
-    if event["time"] >= timewindow: 
+    if event["time"] >= timewindow:
         eventQueue.append(event)  # XXX is this going to go on the correct side of the queue?
     if currentEvents:
         currentEvents.sort(key=itemgetter("controllerId"))
@@ -402,7 +393,7 @@ def sendEvents():
                 if (event["effectId"] == HEARTBEAT):
                     gCurrentHeartBeat = None
                     if (gNextHeartBeat == None):
-                        instanceId = loadEffect(event["effectId"], event["nextStartTime"], event["repeatMs"]) 
+                        instanceId = loadEffect(event["effectId"], event["nextStartTime"], event["repeatMs"])
                         helper_addHBReference(instanceId, event["nextStartTime"])
                 else:
                     instanceId = loadEffect(event["effectId"], event["nextStartTime"], event["repeatMs"]) # XXX what thread is this normally called from?
@@ -416,18 +407,18 @@ if __name__ == '__main__':
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
     commandListener   = createBroadcastListener(COMMAND_PORT)
     ser = initSerial() #XXX need to handle serial disconnect, restart
-    eventQueue = [] # NB - don't need a real queue here. Only one thread 
+    eventQueue = [] # NB - don't need a real queue here. Only one thread
     try:
         while (running):
             readfds = [heartBeatListener, commandListener]
             if not eventQueue:
                 print "doing select, no timeout"
-                inputReady, outputReady, exceptReady = select(readfds, [], []) 
+                inputReady, outputReady, exceptReady = select(readfds, [], [])
             else:
                 waitTime = (eventQueue[len(eventQueue)-1]["time"] - datetime.datetime.now()).total_seconds()
                 print "!!doing select, timeout is %f" % waitTime
                 waitTime = max(waitTime, 0)
-                inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime) 
+                inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime)
             if inputReady:
                 print "Have data to read"
                 for fd in inputReady:
@@ -440,21 +431,21 @@ if __name__ == '__main__':
                         commandData = fd.recv(1024)
                         handleCommandData(commandData)
             sendEvents()
-            
+
     except KeyboardInterrupt: # need something besides a keyboard interrupt to stop? or not?XXX
         print "Keyboard interrupt detected, terminating"
         running = False
         heartBeatListener.close()
         commandListener.close()
-        
-    
+
+
 # heart beat comes in... scheduled for .8 seconds in future... new heart beat comes in... removes
 # old heart beat... fail fail fail. Okay, so again, you're allowed to have two in the queue, provided
 # that the new one is older than the next one. Same issue that I had for audio.
 # So. New event
 # go through event queue. first event you find, check time. If time is *after* new event, remove event from queue
 # damn and I need an effect instance id for the event, since its now associated with an effect instance
-# continue through queue. 
+# continue through queue.
 # currentheartbeat - currently doing its thing. Never touch
 # nextheartbeat - next scheduled heartbeat. Pointer to.
 # nextnextheartbeat - heartbeat after the next one.

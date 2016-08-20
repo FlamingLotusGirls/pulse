@@ -160,15 +160,15 @@ def handleCommandData(commandData):
             allowSingleColor = False
             isStrobing = False
             removeAllEffects()
-        elif command is STOP_HEARTBEAT:
+        elif commandId is Command.STOP_HEARTBEAT:
             stopHeartBeat()
-        elif command is START_HEARTBEAT:
+        elif commandId is Command.START_HEARTBEAT:
             allowHeartBeats = True
-        elif command is DMX_SINGLE_COLOR:
+        elif commandId is Command.DMX_SINGLE_COLOR:
             dmxSingleColor()
-        elif command is DMX_STROBE:
+        elif commandId is Command.DMX_STROBE:
             dmxStrobe()
-        elif command is USE_HEARTBEAT_SOURCE:
+        elif commandId is Command.USE_HEARTBEAT_SOURCE:
             dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
             currentHeartBeatSource = pod_id
 
