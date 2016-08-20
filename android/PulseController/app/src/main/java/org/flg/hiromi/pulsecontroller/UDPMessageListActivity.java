@@ -36,6 +36,8 @@ public class UDPMessageListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
 
+    private UDPMessageContext msgContext;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +46,8 @@ public class UDPMessageListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+
+        msgContext = new UDPMessageContext(this);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();

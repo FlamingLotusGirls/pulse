@@ -188,6 +188,13 @@ public class UDPMessage {
         return msg + ", data=" + (needsData ? "*" : data);
     }
 
+    public String getContentString(UDPMessageContext ctx) {
+        String receiver = ctx.getReceiverName(receiverId);
+        String cmd = ctx.getCommandName(commandId);
+        String msg = "rcv=" + receiver + ", cmd=" + cmd;
+        return msg + ", data=" + (needsData ? "*" : data);
+    }
+
     public UDPMessage getOriginal() {
         return original;
     }
@@ -204,22 +211,6 @@ public class UDPMessage {
         // Allow reverting to the original configured value.
         UDPMessage nOriginal = (original == null) ? this : original;
         return new UDPMessage(tag, type, receiverId, commandId, data, needsData, nOriginal);
-    }
-
-    public static String[] getReceiverNames(Context ctx) {
-        String[] names = ctx.getResources().getStringArray(R.array.module_ids);
-        if (names == null) {
-            throw new Error("Missing redeiver ID resource");
-        }
-        return names;
-    }
-
-    public static String[] getCommandNames(Context ctx) {
-        String[] names = ctx.getResources().getStringArray(R.array.pulse_cmds);
-        if (names == null) {
-            throw new Error("Missing command ID resource");
-        }
-        return names;
     }
 
     @Override

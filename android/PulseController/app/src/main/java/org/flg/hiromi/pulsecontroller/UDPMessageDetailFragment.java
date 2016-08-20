@@ -36,6 +36,8 @@ public class UDPMessageDetailFragment extends Fragment {
      */
     private UDPMessage mItem;
 
+    private UDPMessageContext msgContext;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -50,41 +52,46 @@ public class UDPMessageDetailFragment extends Fragment {
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             // Load the message from the tag, and make a copy for editing.
             mItem = UDPMessage.getMessage(getActivity(), getArguments().getString(ARG_ITEM_ID)).clone();
+            msgContext = new UDPMessageContext(getActivity());
 
             Activity activity = this.getActivity();
             Toolbar tb = (Toolbar) activity.findViewById(R.id.detail_toolbar);
-            String type = (mItem.getType() == "param") ? "Parameter Message " : "Trigger Message ";
-            tb.setTitle(type + mItem.getTag());
+            if (tb != null) {
+                String type = (mItem.getType() == "param") ? "Parameter Message " : "Trigger Message ";
+                tb.setTitle(type + mItem.getTag());
+            }
             Button revert = (Button) activity.findViewById(R.id.btn_revert);
-            final View rootView = getView();
-            revert.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(mItem != null) {
-                        mItem.set(mItem.getOriginal());
-                        setViews(rootView, mItem);
+            if (revert != null) {
+                revert.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final View rootView = getView();
+                        if (mItem != null) {
+                            mItem.set(mItem.getOriginal());
+                            setViews(rootView, mItem);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
     private void setViews(View rootView, UDPMessage msg) {
         View itemView = rootView.findViewById(R.id.udpmessage_detail);
         TextView typeView = (TextView)itemView.findViewById(R.id.view_type);
-        typeView.setText(mItem.getType());
+        typeView.setText(msg.getType());
         Spinner modules = (Spinner) itemView.findViewById(R.id.edit_receiver);
-        final String[] receiverNames = UDPMessage.getReceiverNames(this.getActivity());
-        int receiverID = mItem.getReceiverId();
+        final String[] receiverNames = msgContext.getReceiverNames();
+        int receiverID = msg.getReceiverId();
         if (receiverID == UDPMessage.RECEIVER_BROADCAST) {
             receiverID = receiverNames.length - 1;
         }
         modules.setSelection(receiverID);
         Spinner cmd = (Spinner) itemView.findViewById(R.id.edit_command);
-        cmd.setSelection(mItem.getCommandId());
+        cmd.setSelection(msg.getCommandId());
         EditText editData = (EditText) itemView.findViewById(R.id.edit_data);
         TextView viewData = (TextView) itemView.findViewById(R.id.view_data);
-        editData.setText(Integer.toString(mItem.getData()));
+        editData.setText(Integer.toString(msg.getData()));
         if (!mItem.getNeedsData()) {
             editData.setEnabled(true);
             editData.setVisibility(View.VISIBLE);
@@ -104,7 +111,7 @@ public class UDPMessageDetailFragment extends Fragment {
         if (mItem != null) {
             View itemView = rootView.findViewById(R.id.udpmessage_detail);
             Spinner modules = (Spinner) itemView.findViewById(R.id.edit_receiver);
-            final String[] receiverNames = UDPMessage.getReceiverNames(getActivity());
+            final String[] receiverNames = msgContext.getReceiverNames();
             final ArrayAdapter<String> rcvAdapter = new ArrayAdapter<>(getActivity(),
                     android.R.layout.simple_spinner_dropdown_item,
                     receiverNames);
