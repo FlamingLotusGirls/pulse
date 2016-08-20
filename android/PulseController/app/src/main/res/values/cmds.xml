@@ -252,8 +252,8 @@
 
     <!-- Parameter bpm -->
     <integer-array name="bpm">
-        <item>2</item>
-        <item>7</item> <!-- Dummy command: Not sure how this is set? -->
+        <item>0</item>
+        <item>2</item> <!-- Dummy command: Not sure how this is set? -->
         <!-- Will be filled in -->
     </integer-array>
 

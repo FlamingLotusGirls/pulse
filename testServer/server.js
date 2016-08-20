@@ -79,7 +79,8 @@ var PARAMS = {
     source_2: 1,
     bpm_2: 60,
     source_3: 1,
-    bpm_3: 60
+    bpm_3: 60,
+    bpm: 60
 };
 
 // Do a PUT request to:
@@ -221,24 +222,32 @@ function sendPulse(id) {
     }
 }
 
-setInterval(() => sendPulse(0), 1000);
-setInterval(() => sendPulse(1), 823);
+function autobeat() {
+    sendPulse(0);
+    setTimeout(autobeat, (60*1000)/PARAMS.bpm);
+}
+autobeat();
+setInterval(() => sendPulse(1), 844);
+setInterval(() => sendPulse(2), 1000);
+setInterval(() => sendPulse(3), 823);
+setInterval(() => sendPulse(4), 1200);
+
+function readUInt16(msg, idx) {
+    if (BIGENDIAN) {
+        return msg.readUInt16BE(idx);
+    } else {
+        return msg.readUInt16LE(idx);
+    }
+}
+function readUInt32(msg, idx) {
+    if (BIGENDIAN) {
+        return msg.readUInt32BE(idx);
+    } else {
+        return msg.readUInt32LE(idx);
+    }
+}
 
 function decode_cmd(msg) {
-    function readUInt16(msg, idx) {
-        if (BIGENDIAN) {
-            return msg.readUInt16BE(idx);
-        } else {
-            return msg.readUInt16LE(idx);
-        }
-    }
-    function readUInt32(msg, idx) {
-        if (BIGENDIAN) {
-            return msg.readUInt32BE(idx);
-        } else {
-            return msg.readUInt32LE(idx);
-        }
-    }
     if (msg.length < 8) {
         return msg;
     }
@@ -262,8 +271,18 @@ function show(msg, info) {
     }
 }
 
+function setBPM(msg, info) {
+    let rcv = msg.readUInt8(0);
+    let cmd = readUInt16(msg, 2);
+    let data = readUInt32(msg, 4);
+    if ((rcv === 0) && (cmd === 2)) {
+        PARAMS.bpm = data;
+    }
+}
+
 udp_cmd
     .on('error', (err) => log.error("Binding Error", err))
     .on('listening', () => log.info(`Listening on UDP interface ${udp_cmd.address().address} port ${udp_cmd.address().port}`))
+    .on('message', setBPM)
     .on('message', show)
     .bind({port: CMD_PORT});
