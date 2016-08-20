@@ -193,6 +193,10 @@ public class MainActivity extends ActionBarActivity {
             for (int i = 0; i < p.getChildCount(); i++) {
                 initControls(p.getChildAt(i));
             }
+        } else if (v instanceof TextView) {
+            if (v.getTag() instanceof String) {
+                initLabel((TextView)v);
+            }
         }
     }
 
@@ -340,6 +344,14 @@ public class MainActivity extends ActionBarActivity {
 
             }
         });
+    }
+
+    private void initLabel(TextView v) {
+        String tag = (String)v.getTag();
+        String label = msgContext.getLabel(tag);
+        if (label != null) {
+            v.setText(label);
+        }
     }
 
     /**
