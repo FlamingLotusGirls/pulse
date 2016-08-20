@@ -7,15 +7,15 @@
         <item>0</item>
         <item>1 - STOP_ALL</item>
         <item>2 - STOP_HEARTBEAT</item>
-        <item>3 - START_EFFECT</item>
-        <item>4 - STOP_EFFECT</item>
-        <item>5 - USE_HEARTBEAT_SOURCE</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
-        <item>9</item>
-        <item>10</item>
-        <item>11</item>
+        <item>3 - STOP_HEARTBEAT</item>
+        <item>4 - START_EFFECT</item>
+        <item>5 - STOP_EFFECT</item>
+        <item>6 - USE_HEARTBEAT_SOURCE</item>
+        <item>7 - DMX_STROB</item>
+        <item>8 - DMX_SINGLE_COLOR</item>
+        <item>9 - AORTA_CHASE</item>
+        <item>10 - AORTA_ATTACK</item>
+        <item>11 - PLAY_SOUND</item>
         <item>12</item>
         <item>13</item>
         <item>14</item>
@@ -23,12 +23,12 @@
     </string-array>
 
     <string-array name="module_ids">
-        <item>0 - None</item>
+        <item>0 - AutoGen Heartbeat</item>
         <item>1 - Pod 1</item>
         <item>2 - Pod 2</item>
         <item>3 - Heart</item>
-        <item>4 - MUI Right</item>
-        <item>5 - MUI Left</item>
+        <item>4 - MUI Left</item>
+        <item>5 - MUI Right</item>
         <item>255 - Broadcast</item>
     </string-array>
 
