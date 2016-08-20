@@ -58,6 +58,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="org.flg.hiromi.pulsecontroller.UDPMessageListActivity" />
         </activity>
+
+        <service
+            android:name=".UDPMessageDataService"
+            android:enabled="true"
+            android:exported="false"></service>
     </application>
 
 </manifest>

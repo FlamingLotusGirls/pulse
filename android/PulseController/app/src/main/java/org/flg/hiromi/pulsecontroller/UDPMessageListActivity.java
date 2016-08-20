@@ -1,8 +1,11 @@
 package org.flg.hiromi.pulsecontroller;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -36,7 +39,19 @@ public class UDPMessageListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
 
-    private UDPMessageContext msgContext;
+    private IUDPMessageContext msgContext;
+    private ServiceConnection svcConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            msgContext = (IUDPMessageContext)service;
+            setupRecyclerView();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            msgContext = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,17 +62,14 @@ public class UDPMessageListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        msgContext = new UDPMessageContext(this);
+        Intent svcIntent = new Intent(this, UDPMessageDataService.class);
+        bindService(svcIntent, svcConn, BIND_AUTO_CREATE);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
-        View recyclerView = findViewById(R.id.udpmessage_list);
-        assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView);
 
         if (findViewById(R.id.udpmessage_detail_container) != null) {
             // The detail container view will be present only in the
@@ -86,7 +98,8 @@ public class UDPMessageListActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
+    private void setupRecyclerView() {
+        RecyclerView recyclerView = (RecyclerView)findViewById(R.id.udpmessage_list);
         List<UDPMessage> entries = new ArrayList<>();
         for (UDPMessage ent : msgContext.getMessageList()) {
             entries.add(ent.clone());

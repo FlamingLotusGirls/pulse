@@ -1,7 +1,12 @@
 package org.flg.hiromi.pulsecontroller;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
@@ -51,7 +56,21 @@ public class UDPMessageDetailFragment extends Fragment {
      */
     private boolean m_dirty = false;
 
-    private UDPMessageContext msgContext;
+    private IUDPMessageContext msgContext;
+
+    private final ServiceConnection msgContextServiceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            msgContext = (IUDPMessageContext)service;
+            View rootView = getView();
+            populateList(rootView);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            msgContext = null;
+        }
+    };
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -68,46 +87,47 @@ public class UDPMessageDetailFragment extends Fragment {
             // Load the message from the tag, and make a copy for editing.
             mItem = UDPMessage.getMessage(getActivity(), getArguments().getString(ARG_ITEM_ID)).clone();
             mPosition = getArguments().getInt(ARG_ITEM_POSITION);
-            msgContext = new UDPMessageContext(getActivity());
+        }
+    }
 
-            final Activity activity = getActivity();
-            Toolbar tb = (Toolbar) activity.findViewById(R.id.toolbar);
-            if (tb != null) {
-                String type = (mItem.getType() == "param") ? "Parameter Message " : "Trigger Message ";
-                tb.setSubtitle(type + mItem.getTag());
-            }
-            Button revert = (Button) activity.findViewById(R.id.btn_revert);
-            if (revert != null) {
-                revert.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        final View rootView = activity.findViewById(R.id.udpmessage_detail);
-                        if (mItem != null) {
-                            msgContext.revert(mItem);
-                            m_dirty = false;
-                            updateCaller();
-                            setViews(rootView);
-                            Snackbar.make(rootView, R.string.confirm_reverted, LENGTH_LONG).show();
-                        }
+    private void initUI() {
+        final Activity activity = getActivity();
+        Toolbar tb = (Toolbar) activity.findViewById(R.id.toolbar);
+        if (tb != null) {
+            String type = (mItem.getType() == "param") ? "Parameter Message " : "Trigger Message ";
+            tb.setSubtitle(type + mItem.getTag());
+        }
+        Button revert = (Button) activity.findViewById(R.id.btn_revert);
+        if (revert != null) {
+            revert.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final View rootView = activity.findViewById(R.id.udpmessage_detail);
+                    if (mItem != null) {
+                        msgContext.revert(mItem);
+                        m_dirty = false;
+                        updateCaller();
+                        setViews(rootView);
+                        Snackbar.make(rootView, R.string.confirm_reverted, LENGTH_LONG).show();
                     }
-                });
-            }
-            Button save = (Button)activity.findViewById(R.id.btn_save);
-            if (save != null) {
-                save.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        final View rootView = activity.findViewById(R.id.udpmessage_detail);
-                        if (mItem != null) {
-                            msgContext.save(mItem);
-                            m_dirty = false;
-                            updateCaller();
-                            setViews(rootView);
-                            Snackbar.make(rootView, R.string.confirm_saved, LENGTH_LONG).show();
-                        }
+                }
+            });
+        }
+        Button save = (Button)activity.findViewById(R.id.btn_save);
+        if (save != null) {
+            save.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final View rootView = activity.findViewById(R.id.udpmessage_detail);
+                    if (mItem != null) {
+                        msgContext.save(mItem);
+                        m_dirty = false;
+                        updateCaller();
+                        setViews(rootView);
+                        Snackbar.make(rootView, R.string.confirm_saved, LENGTH_LONG).show();
                     }
-                });
-            }
+                }
+            });
         }
     }
 
@@ -181,7 +201,15 @@ public class UDPMessageDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.udpmessage_detail, container, false);
+        initUI();
 
+        Intent svcIntent = new Intent(getContext(), UDPMessageDataService.class);
+        getContext().bindService(svcIntent, msgContextServiceConn, Context.BIND_AUTO_CREATE);
+
+        return rootView;
+    }
+
+    private void populateList(final View rootView) {
         if (mItem != null) {
             View itemView = rootView.findViewById(R.id.udpmessage_detail);
             final EditText data = (EditText)itemView.findViewById(R.id.edit_data);
@@ -259,7 +287,5 @@ public class UDPMessageDetailFragment extends Fragment {
             });
             setViews(rootView);
         }
-
-        return rootView;
     }
 }

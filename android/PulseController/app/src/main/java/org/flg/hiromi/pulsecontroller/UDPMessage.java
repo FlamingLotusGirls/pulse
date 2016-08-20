@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.ArrayMap;
 
-import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Map;
@@ -188,7 +187,7 @@ public class UDPMessage {
         return msg + ", data=" + (needsData ? "*" : data);
     }
 
-    public String getContentString(UDPMessageContext ctx) {
+    public String getContentString(IUDPMessageContext ctx) {
         String receiver = ctx.getReceiverName(receiverId);
         String cmd = ctx.getCommandName(commandId);
         String msg = "rcv=" + receiver + ", cmd=" + cmd;
