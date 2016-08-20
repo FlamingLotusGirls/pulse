@@ -243,11 +243,17 @@ public class UDPMessageDetailFragment extends Fragment {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    int data = Integer.parseInt(s.toString());
-                    if (data != mItem.getData()) {
-                        mItem.setData(data);
-                        m_dirty = true;
-                        setViews(rootView);
+                    if (s.length() > 0) {
+                        try {
+                            int data = Integer.parseInt(s.toString());
+                            if (data != mItem.getData()) {
+                                mItem.setData(data);
+                                m_dirty = true;
+                                setViews(rootView);
+                            }
+                        } catch (NumberFormatException e) {
+                            Snackbar.make(rootView, e.toString(), LENGTH_LONG).show();
+                        }
                     }
                 }
             });
