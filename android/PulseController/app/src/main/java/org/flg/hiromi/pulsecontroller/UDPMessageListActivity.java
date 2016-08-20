@@ -107,7 +107,7 @@ public class UDPMessageListActivity extends AppCompatActivity {
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
             holder.mIdView.setText(mValues.get(position).getTag());
-            holder.mContentView.setText(mValues.get(position).getContentString());
+            holder.mContentView.setText(mValues.get(position).getContentString(msgContext).replace(",", "\n"));
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
