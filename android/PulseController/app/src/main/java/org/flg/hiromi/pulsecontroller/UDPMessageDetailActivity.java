@@ -23,7 +23,7 @@ public class UDPMessageDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_udpmessage_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Show the Up button in the action bar.
@@ -53,7 +53,6 @@ public class UDPMessageDetailActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.udpmessage_detail_container, fragment)
                     .commit();
-
         }
     }
 

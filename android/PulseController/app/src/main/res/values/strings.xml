@@ -123,5 +123,7 @@
     <string name="label_tracking_id">Tracking ID</string>
     <string name="view_tracking">Generated</string>
     <string name="msg_type">Msg Type</string>
+    <string name="confirm_reverted">Message data reverted</string>
+    <string name="confirm_saved">Message data saved</string>
 
 </resources>

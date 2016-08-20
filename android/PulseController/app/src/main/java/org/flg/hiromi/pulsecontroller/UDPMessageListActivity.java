@@ -78,7 +78,7 @@ public class UDPMessageListActivity extends AppCompatActivity {
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
 
-            this.navigateUpTo(new Intent(this, MainActivity.class));
+            navigateUpTo(new Intent(this, MainActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -123,6 +123,8 @@ public class UDPMessageListActivity extends AppCompatActivity {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.udpmessage_detail_container, fragment)
                                 .commit();
+                        findViewById(R.id.btn_revert).setVisibility(View.VISIBLE);
+                        findViewById(R.id.btn_save).setVisibility(View.VISIBLE);
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, UDPMessageDetailActivity.class);

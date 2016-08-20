@@ -12,12 +12,47 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:layout_height="match_parent"
+            android:layout_gravity="start|center"
+            android:gravity="start|center_vertical"
+            android:layout_weight="1">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                android:layout_gravity="top" />
+
+            <Button
+                android:id="@+id/btn_revert"
+                android:layout_gravity="end"
+                android:layout_height="60dp"
+                android:layout_width="60dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical|end"
+                android:text="@string/button_revert"
+                android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Menu"
+                android:background="@color/colorPrimary"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_gravity="end"
+                android:layout_height="60dp"
+                android:layout_width="60dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="30dp"
+                android:gravity="center_vertical|end"
+                android:background="@color/colorPrimary"
+                android:text="@string/button_save"
+                android:visibility="gone"/>
+
+        </LinearLayout>
 
     </android.support.design.widget.AppBarLayout>
 

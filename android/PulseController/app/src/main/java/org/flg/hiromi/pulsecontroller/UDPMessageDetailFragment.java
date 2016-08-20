@@ -1,12 +1,9 @@
 package org.flg.hiromi.pulsecontroller;
 
 import android.app.Activity;
-import android.graphics.Color;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +14,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
+
+
+import static android.support.design.widget.Snackbar.*;
 
 /**
  * A fragment representing a single UDPMessage detail screen.
@@ -54,21 +54,22 @@ public class UDPMessageDetailFragment extends Fragment {
             mItem = UDPMessage.getMessage(getActivity(), getArguments().getString(ARG_ITEM_ID)).clone();
             msgContext = new UDPMessageContext(getActivity());
 
-            Activity activity = this.getActivity();
-            Toolbar tb = (Toolbar) activity.findViewById(R.id.detail_toolbar);
+            final Activity activity = getActivity();
+            Toolbar tb = (Toolbar) activity.findViewById(R.id.toolbar);
             if (tb != null) {
                 String type = (mItem.getType() == "param") ? "Parameter Message " : "Trigger Message ";
-                tb.setTitle(type + mItem.getTag());
+                tb.setSubtitle(type + mItem.getTag());
             }
             Button revert = (Button) activity.findViewById(R.id.btn_revert);
             if (revert != null) {
                 revert.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        final View rootView = getView();
+                        final View rootView = activity.findViewById(R.id.udpmessage_detail);
                         if (mItem != null) {
                             mItem.set(mItem.getOriginal());
                             setViews(rootView, mItem);
+                            Snackbar.make(rootView, R.string.confirm_reverted, LENGTH_LONG).show();
                         }
                     }
                 });
