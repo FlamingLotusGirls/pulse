@@ -6,7 +6,7 @@
     <string-array name="pulse_cmds">
         <item>0</item>
         <item>1 - STOP_ALL</item>
-        <item>2 - STOP_HEARTBEAT</item>
+        <item>2 - START_HEARTBEAT</item>
         <item>3 - STOP_HEARTBEAT</item>
         <item>4 - START_EFFECT</item>
         <item>5 - STOP_EFFECT</item>
