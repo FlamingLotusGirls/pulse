@@ -25,7 +25,7 @@ from pulse_model import *
 from renderer import Renderer
 from controller import AnimationController
 from effectlayer import *
-from effects.color_cycle import *
+from effects.color_cycle_heartbeat import *
 from effects.random_phase import *
 from effects.random_blink_cycle import *
 from effects.chase import AxonChaseLayer
@@ -159,7 +159,7 @@ class PodController(object):
         playlist = Playlist([
             [
                 RandomPhaseLayer(model),
-                ColorCycleLayer(0.0053, 0.0),#0.0011
+                ColorCycleHeartbeatLayer(0.0053, 0.0),#0.0011
                 # Lightning(),
                 # Repair(),
             ],

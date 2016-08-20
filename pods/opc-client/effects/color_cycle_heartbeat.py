@@ -3,7 +3,7 @@ import random
 import numpy
 from effectlayer import *
 
-class ColorCycleLayer(EffectLayer):
+class ColorCycleHeartbeatLayer(EffectLayer):
 
     def __init__(self, hueSpeed=0.00003, saturationSpeed=0.0005):
         self.hueSpeed = hueSpeed
@@ -13,7 +13,7 @@ class ColorCycleLayer(EffectLayer):
 
     def render(self, model, params, frame):
         self.hue = self.increment(self.hue, self.hueSpeed)
-        self.saturation = self.increment(self.saturation, self.saturationSpeed)
+        self.saturation = self.increment(self.saturation, params.beat)
         color = numpy.array(colorsys.hsv_to_rgb(self.hue, math.sin(math.pi*self.saturation)**2, 1))
         frame[:] *= color
 
