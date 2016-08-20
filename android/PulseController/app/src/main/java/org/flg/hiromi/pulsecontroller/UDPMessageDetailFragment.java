@@ -105,9 +105,9 @@ public class UDPMessageDetailFragment extends Fragment {
                     final View rootView = activity.findViewById(R.id.udpmessage_detail);
                     if (mItem != null) {
                         msgContext.revert(mItem);
-                        m_dirty = false;
                         updateCaller();
                         setViews(rootView);
+                        clearDirty();
                         Snackbar.make(rootView, R.string.confirm_reverted, LENGTH_LONG).show();
                     }
                 }
@@ -121,14 +121,19 @@ public class UDPMessageDetailFragment extends Fragment {
                     final View rootView = activity.findViewById(R.id.udpmessage_detail);
                     if (mItem != null) {
                         msgContext.save(mItem);
-                        m_dirty = false;
                         updateCaller();
                         setViews(rootView);
+                        clearDirty();
                         Snackbar.make(rootView, R.string.confirm_saved, LENGTH_LONG).show();
                     }
                 }
             });
         }
+    }
+
+    private void clearDirty() {
+        m_dirty = false;
+        updateDirty();
     }
 
     @Override
@@ -250,8 +255,7 @@ public class UDPMessageDetailFragment extends Fragment {
                     }
                     if (mItem.getReceiverId() != position) {
                         mItem.setReceiverId(position);
-                        m_dirty = true;
-                        setViews(rootView);
+                        markDirty(rootView);
                     }
                     data.clearFocus();
                 }
@@ -271,8 +275,7 @@ public class UDPMessageDetailFragment extends Fragment {
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     if (mItem.getCommandId() != position) {
                         mItem.setCommandId(position);
-                        m_dirty = true;
-                        setViews(rootView);
+                        markDirty(rootView);
                     }
                     data.clearFocus();
                 }
@@ -299,8 +302,7 @@ public class UDPMessageDetailFragment extends Fragment {
                             int data = Integer.parseInt(s.toString());
                             if (data != mItem.getData()) {
                                 mItem.setData(data);
-                                m_dirty = true;
-                                setViews(rootView);
+                                markDirty(rootView);
                             }
                         } catch (NumberFormatException e) {
                             Snackbar.make(rootView, e.toString(), LENGTH_LONG).show();
@@ -327,12 +329,17 @@ public class UDPMessageDetailFragment extends Fragment {
                     } else {
                         mItem.setLabel(null);
                     }
-                    m_dirty = true;
-                    setViews(rootView);
+                    markDirty(rootView);
                 }
             });
             setViews(rootView);
+            clearDirty();
         }
+    }
+
+    private void markDirty(View rootView) {
+        m_dirty = true;
+        setViews(rootView);
     }
 
     @Override
