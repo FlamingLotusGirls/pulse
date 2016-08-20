@@ -161,7 +161,10 @@ public class UDPMessageDetailFragment extends Fragment {
         cmd.setSelection(mItem.getCommandId());
         EditText editData = (EditText) itemView.findViewById(R.id.edit_data);
         TextView viewData = (TextView) itemView.findViewById(R.id.view_data);
-        editData.setText(Integer.toString(mItem.getData()));
+        String dataNum = Integer.toString(mItem.getData());
+        if (!editData.getText().toString().equals(dataNum)) {
+            editData.setText(dataNum);
+        }
         if (!this.mItem.getNeedsData()) {
             editData.setEnabled(true);
             editData.setVisibility(View.VISIBLE);
