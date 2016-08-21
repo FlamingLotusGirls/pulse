@@ -39,11 +39,11 @@ public class PulseCommService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.i(PULSE, "Bind PulseCommService");
-        switch (prefs.getString("protocol", "PULSE")) {
+        switch (prefs.getString("protocol", "UDP")) {
             case "REST":
                 channel = new RESTPulseCommChannel(this);
                 break;
-            case "PULSE":
+            case "UDP":
                 channel = new UDPPulseCommChannel(this);
                 break;
             default:
