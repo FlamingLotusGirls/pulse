@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by rwk on 2016-08-18.
- * Representation of and interface to PULSE messages for our various events.
+ * Representation of and interface to UDP messages for our various events.
  * The trackingId is supplied at the time of converting it to a byte array.
  * This does not include Heartbeat events, which have a different structure.
  */
