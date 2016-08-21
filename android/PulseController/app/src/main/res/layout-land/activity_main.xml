@@ -286,7 +286,7 @@
 
         <SeekBar
             android:id="@+id/slider1"
-            android:max="200"
+            android:max="255"
             android:indeterminate="false"
             android:progress="60"
             android:tag="@string/slider_1_tag"

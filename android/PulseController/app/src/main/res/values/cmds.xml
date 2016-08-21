@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Data for UDP communications -->
+    <!-- Data for PULSE communications -->
 
     <!-- For reference, not currently used -->
     <string-array name="pulse_cmds">
@@ -20,6 +20,22 @@
         <item>13</item>
         <item>14</item>
         <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
+        <item>20</item>
+        <item>21</item>
+        <item>22</item>
+        <item>23</item>
+        <item>24</item>
+        <item>25</item>
+        <item>26</item>
+        <item>27</item>
+        <item>28</item>
+        <item>29</item>
+        <item>30</item>
+        <item>31</item>
     </string-array>
 
     <string-array name="module_ids">
@@ -34,7 +50,7 @@
 
     <!--
       - Default message specifications.
-      - Each message consists of 2 or 3 integers, corresponding to the fields of the UDP packet.
+      - Each message consists of 2 or 3 integers, corresponding to the fields of the PULSE packet.
       - The command_tracking_id is NOT included, as it is always calculated at runtime.
       -  * receiver_id
       -  * command_id
@@ -181,6 +197,12 @@
         <item>1</item>
     </integer-array>
 
+    <integer-array name="x_dummy_trigger">
+        <item>255</item>
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+
     <array name="triggers">
         <item>@array/all_poof</item>
         <item>@array/stop_all</item>
@@ -202,6 +224,16 @@
         <item>@array/heart_fx_2</item>
         <item>@array/fx_1</item>
         <item>@array/fx_2</item>
+        <!-- Dummy buttons from the More Buttons screen -->
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
     </array>
 
     <string-array name="trigger_names">
@@ -225,6 +257,16 @@
         <item>heart_fx_2</item>
         <item>fx_1</item>
         <item>fx_2</item>
+        <!-- Dummy buttons from the More Buttons screen -->
+        <item>x_button_1a</item>
+        <item>x_button_1b</item>
+        <item>x_button_1c</item>
+        <item>x_button_2a</item>
+        <item>x_button_2b</item>
+        <item>x_button_2c</item>
+        <item>x_button_3a</item>
+        <item>x_button_3b</item>
+        <item>x_button_3c</item>
     </string-array>
 
     <!-- Parameter source pod 1 -->
@@ -257,11 +299,19 @@
         <!-- Will be filled in -->
     </integer-array>
 
+    <integer-array name="x_dummy">
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+
     <array name="params">
         <item>@array/source</item>
         <item>@array/source_1</item>
         <item>@array/source_2</item>
         <item>@array/bpm</item>
+        <item>@array/x_dummy</item>
+        <item>@array/x_dummy</item>
+        <item>@array/x_dummy</item>
     </array>
 
     <string-array name="param_names">
@@ -269,6 +319,9 @@
         <item>source_1</item>
         <item>source_2</item>
         <item>bpm</item>
+        <item>x_slider_1</item>
+        <item>x_slider_2</item>
+        <item>x_slider_3</item>
     </string-array>
 
 </resources>

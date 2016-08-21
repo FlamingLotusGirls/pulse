@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +21,28 @@ import static org.flg.hiromi.pulsecontroller.UDPMessage.FIELD_TAG;
 import static org.flg.hiromi.pulsecontroller.UDPMessage.FIELD_TYPE;
 import static org.flg.hiromi.pulsecontroller.UDPMessage.TABLE_NAME;
 
+import static org.flg.hiromi.pulsecontroller.Pulse.*;
+
 public class UDPMessageDataService extends Service {
     public UDPMessageDataService() {
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.i(PULSE, "Binding UDPMessage Service");
         return new UDPMessageContext(this);
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.i(PULSE, "Unbinding UDPMessage Service");
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(PULSE, "Destroying UDPMessage Service");
+        super.onDestroy();
     }
 
     /**
@@ -123,6 +139,7 @@ public class UDPMessageDataService extends Service {
 
         @Override
         public void save(UDPMessage msg) {
+            Log.i(PULSE, "Saving Msg " + msg.getTag());
             // If we're back to the original, just clean up, so we pick up future changes.
             if (!msg.isOverride()) {
                 revert(msg);
@@ -141,12 +158,25 @@ public class UDPMessageDataService extends Service {
                     }
                     db.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 }
+                update(msg);
+            }
+        }
+
+        // We need to update our in-memory copy after saving or reverting.
+        private void update(UDPMessage msg) {
+            UDPMessage local = getMessageMap().get(msg.getTag());
+            if (local != null) {
+                local.set(msg);
+            } else {
+                throw new Error("Missing message in map: " + msg.getTag());
             }
         }
 
         @Override
         public void revert(UDPMessage msg) {
+            Log.i(PULSE, "Reverting Msg " + msg.getTag());
             msg.revert();
+            update(msg);
             try (SQLiteDatabase db = getDBHelper().getWritableDatabase()) {
                 db.delete(TABLE_NAME, "tag=?", new String[] { msg.getTag() });
             }

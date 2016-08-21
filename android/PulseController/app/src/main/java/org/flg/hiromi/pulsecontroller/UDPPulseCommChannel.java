@@ -79,8 +79,8 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
         }
     }
 
-    // Does nothing on UDP.
-    // Might want to ask REST server, or watch UDP commands as they go by.
+    // Does nothing on PULSE.
+    // Might want to ask REST server, or watch PULSE commands as they go by.
     @Override
     public void getIntParam(String param) {
         sendBack(param, 1, false);
@@ -89,7 +89,7 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
     private final Map<String,UDPMessage> param_map;
     private final Map<String,UDPMessage> trigger_map;
 
-    // Load a map from trigger/parameter names to UDP packets
+    // Load a map from trigger/parameter names to PULSE packets
     // These are paired resource arrays, string-array and typed array of integer-array
     private Map<String,UDPMessage> loadMessageMap(SQLiteDatabase db, String type, int namesId, int valsId) {
         return UDPMessage.loadMessageMap(service, db, type, namesId, valsId);
@@ -140,7 +140,7 @@ public class UDPPulseCommChannel extends BasePulseCommChannel {
     public void readStatus() {
         try {
             final JSONObject status = new JSONObject();
-            status.put("status", "UDP");
+            status.put("status", "PULSE");
             main.post(new Runnable() {
                 @Override
                 public void run() {

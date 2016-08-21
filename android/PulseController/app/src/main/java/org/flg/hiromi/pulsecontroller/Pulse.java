@@ -5,6 +5,7 @@ package org.flg.hiromi.pulsecontroller;
  */
 
 public class Pulse {
+    public static final String PULSE = "PULSE";
     private final int pod;
     private final int seq;
     private final int interval;
