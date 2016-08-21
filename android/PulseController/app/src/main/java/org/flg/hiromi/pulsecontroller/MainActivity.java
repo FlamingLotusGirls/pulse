@@ -34,8 +34,24 @@ public class MainActivity extends ActionBarActivity {
     private TextView text_view;
 
     private IPulseCommChannel commChannel;
+    private IUDPMessageContext msgContext;
 
     private SharedPreferences prefs;
+
+    private ServiceConnection msgContextConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            msgContext = (IUDPMessageContext)service;
+            // Now that we have have our DB connected, fire up the UI, etc.
+            Intent intent = new Intent(MainActivity.this, PulseCommService.class);
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            msgContext = null;
+        }
+    };
 
     //  connect to our background communication service.
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -97,29 +113,32 @@ public class MainActivity extends ActionBarActivity {
         text_view.setText("Error: " + msg);
     }
 
+    private HeartbeatService.Channel beatChannel = null;
     private ServiceConnection pulseServiceConnection = new ServiceConnection() {
-        private HeartbeatService.Channel beatChannel = null;
-
         // Map the podID to the right icon.
         private ImageView chooseIcon(int podId) {
             ImageView pulse_icon_1 = (ImageView)findViewById(R.id.pulse_icon_1);
             ImageView pulse_icon_2 = (ImageView)findViewById(R.id.pulse_icon_2);
             ImageView pulse_icon_3 = (ImageView)findViewById(R.id.pulse_icon_3);
-            switch (podId % 3) {
-                case 0: return pulse_icon_3;
-                case 1: return pulse_icon_1;
-                case 2: return pulse_icon_2;
+            ImageView pulse_icon_4 = (ImageView)findViewById(R.id.pulse_icon_4);
+            ImageView pulse_icon_5 = (ImageView)findViewById(R.id.pulse_icon_5);
+            switch (podId % 5) {
+                case 0: return pulse_icon_5;
+                case 1: return pulse_icon_4;
+                case 2: return pulse_icon_3;
+                case 3: return pulse_icon_2;
+                case 4: return pulse_icon_1;
             }
             return null;
         }
         @Override
         public void onServiceConnected(final ComponentName name, IBinder service) {
             beatChannel = (HeartbeatService.Channel)service;
+            final float iy = chooseIcon(0).getY();
             ((HeartbeatService.Channel) service).registerListener(new HeartbeatService.HeartbeatListener() {
                 @Override
                 public void onBeat(Pulse pulse) {
                     final ImageView icon = chooseIcon(pulse.getPod());
-                    final float iy = icon.getY();
                     if (icon != null) {
                         try {
                             icon.animate()
@@ -174,7 +193,17 @@ public class MainActivity extends ActionBarActivity {
             for (int i = 0; i < p.getChildCount(); i++) {
                 initControls(p.getChildAt(i));
             }
+        } else if (v instanceof TextView) {
+            if (v.getTag() instanceof String) {
+                initLabel((TextView)v);
+            }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startServices();
     }
 
     @Override
@@ -187,12 +216,25 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
+    protected void onPause() {
+        stopServices();
+        super.onPause();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
-        Intent intent = new Intent(this, PulseCommService.class);
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-        intent = new Intent(this, HeartbeatService.class);
-        bindService(intent, pulseServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void startServices() {
+        if (msgContext == null) {
+            Intent intent = new Intent(this, UDPMessageDataService.class);
+            bindService(intent, msgContextConn, Context.BIND_AUTO_CREATE);
+        }
+        if (beatChannel == null) {
+            Intent intent = new Intent(this, HeartbeatService.class);
+            bindService(intent, pulseServiceConnection, Context.BIND_AUTO_CREATE);
+        }
     }
 
     @Override
@@ -206,9 +248,13 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onStop() {
+        super.onStop();
+    }
+
+    private void stopServices() {
         unbindService(serviceConnection);
         unbindService(pulseServiceConnection);
-        super.onStop();
+        unbindService(msgContextConn);
     }
 
     private void resetButton(Button btnA) {
@@ -219,17 +265,21 @@ public class MainActivity extends ActionBarActivity {
             btnA.setEnabled(true);
         }
     }
+
+
     /**
      * Initialize a button. The button must have a tag field with the name of the event to send.
      * @param btnA
      */
     public void initButton(final Button btnA)
     {
-        commChannel.watchEvent((String) btnA.getTag(), new IPulseCommChannel.IntWatcher() {
+        final Object tagv = (String)btnA.getTag();
+        final String tag = (tagv instanceof String) ? (String)tagv : null;
+        commChannel.watchEvent((String) tag, new IPulseCommChannel.IntWatcher() {
             @Override
             public void onChange(String name, int val, boolean update) {
                 String state = (val == 0) ? "Failed" : "OK";
-                text_view.setText(btnA.getTag() + ": " + state);
+                text_view.setText(tag + ": " + state);
                 resetButton(btnA);
             }
 
@@ -246,8 +296,8 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(View arg)
             {
                 if (commChannel != null) {
-                    text_view.setText(btnA.getTag() + ": ");
-                    commChannel.trigger((String) arg.getTag());
+                    text_view.setText(tag + ": ");
+                    commChannel.trigger(tag);
                     Drawable bg = btnA.getBackground();
                     btnA.setTag(R.id.button_background, bg);
                     // Set the button color to show it's currently being processed
@@ -257,6 +307,10 @@ public class MainActivity extends ActionBarActivity {
             }
 
         });
+        String label = msgContext.getLabel(tag);
+        if (label != null) {
+            btnA.setText(label);
+        }
     }
 
     public void initSpinner(final Spinner spinner) {
@@ -290,6 +344,14 @@ public class MainActivity extends ActionBarActivity {
 
             }
         });
+    }
+
+    private void initLabel(TextView v) {
+        String tag = (String)v.getTag();
+        String label = msgContext.getLabel(tag);
+        if (label != null) {
+            v.setText(label);
+        }
     }
 
     /**
@@ -347,10 +409,13 @@ public class MainActivity extends ActionBarActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            startActivity(new Intent().setClass(getApplicationContext(), SettingsActivity.class));
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                startActivity(new Intent().setClass(getApplicationContext(), SettingsActivity.class));
+                return true;
+            case R.id.udp_messages:
+                startActivity(new Intent().setClass(getApplicationContext(), UDPMessageListActivity.class));
+                return true;
         }
 
         return super.onOptionsItemSelected(item);

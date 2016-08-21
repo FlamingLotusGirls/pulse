@@ -1,15 +1,19 @@
+// This is a quick-and-dirty server for testing the REST and UDP connectors
+// for the Android UI.
 
-var express = require('express');
-var app = express();
-var child_process = require('child_process');
-var toString = require('stream-to-string');
-var log = require('./log.js');
-var dgram = require('dgram');
-var util = require('util');
+const express = require('express');
+const app = express();
+const child_process = require('child_process');
+const toString = require('stream-to-string');
+const log = require('./log.js');
+const dgram = require('dgram');
+const util = require('util');
+const os = require('os');
 
-var BROADCAST = "192.168.88.255";
 var HEARTBEAT_PORT = 5000;
 var CMD_PORT = 5001;
+// UDP Packet is in big-endian order.
+const BIGENDIAN = true;
 
 app.get('/', (req, res) => res.send("Hello, World"));
 
@@ -75,7 +79,8 @@ var PARAMS = {
     source_2: 1,
     bpm_2: 60,
     source_3: 1,
-    bpm_3: 60
+    bpm_3: 60,
+    bpm: 60
 };
 
 // Do a PUT request to:
@@ -122,19 +127,65 @@ app.get('/status', (req, res) => {
 // http://localhost:8081/params/fuel.json
 app.use("/params", express.static("params", {}))
 
-
-var server = app.listen(8081, function () {
-
+var server = app.listen(8081, () => {
     var host = server.address().address
     var port = server.address().port
 
     log.info("Test app listening at http://%s:%d", host, port);
-    log.info("Broadcasting heartbeat to %s:%d", BROADCAST, port);
-    log.info("Sending heartbeat to emulator at 127.0.0.1:%d", port);
 });
+
+// UDP handling code.
+
+const RE_IP = /^(25[0-5]|2[0-4]\d|[01]?\d\d|\d)\.(25[0-5]|2[0-4]\d|[01]?\d\d|\d)\.(25[0-5]|2[0-4]\d|[01]?\d\d|\d)\.(25[0-5]|2[0-4]\d|[01]?\d\d|\d)$/;
+
+// Parse an IP address
+function parseIP4(addr) {
+    let parse = addr.match(RE_IP);
+    if (parse) {
+        let [ip, b0, b1, b2, b3] = parse;
+        return [b0, b1, b2, b3].map((n) => parseInt(n));
+    }
+}
+
+function makeBroadcast(ip, netmask) {
+    ip = parseIP4(ip);
+    netmask = parseIP4(netmask);
+    let reverse =  [
+        255 ^ netmask[0],
+        255 ^ netmask[1],
+        255 ^ netmask[2],
+        255 ^ netmask[3]
+    ];
+    return ip.map((b, i) => (b & netmask[i]) | reverse[i]);
+}
+
+function unparseIP4(addr) {
+    return addr.join(".");
+}
+
+// Get all the broadcast addresses to send to, plus localhost
+function getBroadcastAddresses() {
+    const result = [];
+    const interfaces = os.networkInterfaces();
+    for (let ifaceName in interfaces) {
+        let ifaces = interfaces[ifaceName];
+        ifaces.forEach(iface => {
+            if (!iface.internal && (iface.family == 'IPv4')) {
+                let broadcast = makeBroadcast(iface.address, iface.netmask);
+                // exclude link-local (unconfigured)
+                if ((broadcast[0] != 169) || (broadcast[1] != 254)) {
+                    result.push(unparseIP4(broadcast));
+                }
+            }
+        });
+    }
+    result.push('127.0.0.1');
+    return result;
+}
 
 const udp_pulse = dgram.createSocket({type: 'udp4', reuseAddr: true})
       .on('listening', () => udp_pulse.setBroadcast(true));
+
 var seq = 0;
 var hpos = 0;
 function newline() {
@@ -143,6 +194,8 @@ function newline() {
         hpos = 0;
     }
 }
+const BROADCAST = getBroadcastAddresses();
+BROADCAST.forEach(addr => log.info("Broadcasting heartbeat to %s:%d", addr, HEARTBEAT_PORT));
 
 function sendPulse(id) {
     try {
@@ -158,20 +211,41 @@ function sendPulse(id) {
         message.writeUInt32LE(0, 4);    // elapsed_ms
         message.writeFloatLE(60.0, 8);  // est_BPM
         message.writeUInt32LE(Date.now() & 0xfffffff, 12); // time
-        // Send to localhost port 5000; must set up emulator to forward
-        // telnet to emulator, authorize, and enter
-        // redir add udp:5000:5000
-        udp_pulse.send(message, HEARTBEAT_PORT, "127.0.0.1");
-        // And broadcast. Should find netmask and construct the right broadcast address.
-        udp_pulse.send(message, HEARTBEAT_PORT, BROADCAST);
+        // Send to network and localhost port 5000;
+        // Must set up emulator to forward:
+        //   telnet to emulator, authorize, and enter
+        //   redir add udp:5000:5000
+        BROADCAST.forEach((addr) => udp_pulse.send(message, HEARTBEAT_PORT, addr));
     } catch (e) {
         newline();
-        console.error("Error: " + e);
+        error.log("Error: " + e);
     }
 }
 
-setInterval(() => sendPulse(0), 1000);
-setInterval(() => sendPulse(1), 823);
+function autobeat() {
+    sendPulse(0);
+    setTimeout(autobeat, (60*1000)/PARAMS.bpm);
+}
+autobeat();
+setInterval(() => sendPulse(1), 844);
+setInterval(() => sendPulse(2), 1000);
+setInterval(() => sendPulse(3), 823);
+setInterval(() => sendPulse(4), 1200);
+
+function readUInt16(msg, idx) {
+    if (BIGENDIAN) {
+        return msg.readUInt16BE(idx);
+    } else {
+        return msg.readUInt16LE(idx);
+    }
+}
+function readUInt32(msg, idx) {
+    if (BIGENDIAN) {
+        return msg.readUInt32BE(idx);
+    } else {
+        return msg.readUInt32LE(idx);
+    }
+}
 
 function decode_cmd(msg) {
     if (msg.length < 8) {
@@ -180,8 +254,8 @@ function decode_cmd(msg) {
     return util.inspect({
         rcv: msg.readUInt8(0),
         trk: msg.readUInt8(1),
-        cmd: msg.readUInt16LE(2),
-        data: msg.readUInt32LE(4)
+        cmd: readUInt16(msg, 2),
+        data: readUInt32(msg, 4)
     });
 }
 
@@ -190,15 +264,25 @@ const udp_cmd = dgram.createSocket({type: 'udp4', reuseAddr: true});
 function show(msg, info) {
     try {
         newline();
-        console.log(`UDP port ${info.address}:${info.port} => ${decode_cmd(msg)}`);
+        log.info(`UDP port ${info.address}:${CMD_PORT} => ${decode_cmd(msg)} (${info.size} bytes)`);
     } catch (e) {
         newline();
-        console.error("Log failure: " + e.message);
+        log.error("Log failure: %s", e.message);
+    }
+}
+
+function setBPM(msg, info) {
+    let rcv = msg.readUInt8(0);
+    let cmd = readUInt16(msg, 2);
+    let data = readUInt32(msg, 4);
+    if ((rcv === 0) && (cmd === 2)) {
+        PARAMS.bpm = data;
     }
 }
 
 udp_cmd
-    .on('error', (err) => console.error("Binding Error", err))
-    .on('listening', () => console.log(`Listening on UDP interface ${udp_cmd.address().address} port ${udp_cmd.address().port}`))
+    .on('error', (err) => log.error("Binding Error", err))
+    .on('listening', () => log.info(`Listening on UDP interface ${udp_cmd.address().address} port ${udp_cmd.address().port}`))
+    .on('message', setBPM)
     .on('message', show)
     .bind({port: CMD_PORT});

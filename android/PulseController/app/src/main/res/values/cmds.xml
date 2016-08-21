@@ -4,35 +4,53 @@
 
     <!-- For reference, not currently used -->
     <string-array name="pulse_cmds">
-        <item></item>
-        <item>STOP_ALL</item>
-        <item>STOP_HEARTBEAT</item>
-        <item>START_EFFECT</item>
-        <item>STOP_EFFECT</item>
-        <item>USE_HEARTBEAT_SOURCE</item>
+        <item>0</item>
+        <item>1 - STOP_ALL</item>
+        <item>2 - START_HEARTBEAT</item>
+        <item>3 - STOP_HEARTBEAT</item>
+        <item>4 - START_EFFECT</item>
+        <item>5 - STOP_EFFECT</item>
+        <item>6 - HEARTBEAT_SRC</item>
+        <item>7 - DMX_STROB</item>
+        <item>8 - DMX_SINGLE_COLOR</item>
+        <item>9 - AORTA_CHASE</item>
+        <item>10 - AORTA_ATTACK</item>
+        <item>11 - PLAY_SOUND</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
     </string-array>
 
     <string-array name="module_ids">
-        <item>None</item>
-        <item>Pod 1</item>
-        <item>Pod 2</item>
-        <item>Heart</item>
-        <item>MUI Right</item>
-        <item>MUI Left</item>
+        <item>0 - AutoGen Beat</item>
+        <item>1 - Pod 1</item>
+        <item>2 - Pod 2</item>
+        <item>3 - Heart</item>
+        <item>4 - MUI Left</item>
+        <item>5 - MUI Right</item>
+        <item>255 - Broadcast</item>
     </string-array>
+
+    <!--
+      - Default message specifications.
+      - Each message consists of 2 or 3 integers, corresponding to the fields of the UDP packet.
+      - The command_tracking_id is NOT included, as it is always calculated at runtime.
+      -  * receiver_id
+      -  * command_id
+      -  * data [optional, do not supply if it should be supplied as a parameter value]
+      -->
 
     <!-- Effect ALL_POOF -->
     <integer-array name="all_poof">
         <item>255</item>
+        <item>10</item>
         <item>0</item>
-        <item>4</item>
-        <item>3</item>
     </integer-array>
 
     <!-- Effect poof_1 -->
     <integer-array name="poof_1">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>3</item>
     </integer-array>
@@ -40,7 +58,6 @@
     <!-- Effect poof_1 -->
     <integer-array name="poof_2">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>3</item>
     </integer-array>
@@ -48,7 +65,6 @@
     <!-- Effect poof_3 -->
     <integer-array name="poof_3">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>3</item>
     </integer-array>
@@ -56,7 +72,6 @@
     <!-- Effect CHASE -->
     <integer-array name="chase">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>2</item>
     </integer-array>
@@ -64,7 +79,6 @@
     <!-- Command stop_all -->
     <integer-array name="stop_all">
         <item>255</item>
-        <item>0</item>
         <item>1</item>
         <item>0</item>
     </integer-array>
@@ -72,7 +86,6 @@
     <!-- Heart FX 1 -->
     <integer-array name="heart_fx_1">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>1</item>
     </integer-array>
@@ -80,7 +93,6 @@
     <!-- Heart FX 2 -->
     <integer-array name="heart_fx_2">
         <item>3</item>
-        <item>0</item>
         <item>4</item>
         <item>1</item>
     </integer-array>
@@ -88,7 +100,6 @@
     <!-- FX 1 -->
     <integer-array name="fx_1">
         <item>2</item>
-        <item>0</item>
         <item>4</item>
         <item>1</item>
     </integer-array>
@@ -96,89 +107,78 @@
     <!-- FX 2 -->
     <integer-array name="fx_2">
         <item>2</item>
-        <item>0</item>
         <item>4</item>
         <item>2</item>
     </integer-array>
 
     <!-- Effect sound_1 pod 1 -->
     <integer-array name="sound_1_p1">
-        <item>0</item>
-        <item>0</item>
-        <item>4</item>
-        <item>7</item>
+        <item>1</item>
+        <item>11</item>
+        <item>1</item>
     </integer-array>
 
     <!-- Effect sound_1 pod 2 -->
     <integer-array name="sound_1_p2">
+        <item>2</item>
+        <item>11</item>
         <item>1</item>
-        <item>0</item>
-        <item>4</item>
-        <item>7</item>
     </integer-array>
 
     <!-- Effect sound_2 pod 1 -->
     <integer-array name="sound_2_p1">
-        <item>0</item>
-        <item>0</item>
-        <item>4</item>
-        <item>7</item>
+        <item>1</item>
+        <item>11</item>
+        <item>3</item>
     </integer-array>
 
     <!-- Effect sound_2 pod 2 -->
     <integer-array name="sound_2_p2">
-        <item>1</item>
-        <item>0</item>
-        <item>4</item>
-        <item>7</item>
+        <item>2</item>
+        <item>11</item>
+        <item>2</item>
     </integer-array>
 
     <!-- Effect sound_3 pod 1 -->
     <integer-array name="sound_3_p1">
-        <item>0</item>
-        <item>0</item>
-        <item>4</item>
-        <item>8</item>
+        <item>1</item>
+        <item>11</item>
+        <item>3</item>
     </integer-array>
 
     <!-- Effect sound_3 pod 2 -->
     <integer-array name="sound_3_p2">
-        <item>1</item>
-        <item>0</item>
-        <item>4</item>
-        <item>8</item>
+        <item>2</item>
+        <item>11</item>
+        <item>3</item>
     </integer-array>
 
     <!-- Effect led_1 pod 1 -->
     <integer-array name="led_fx_1_1">
-        <item>0</item>
-        <item>0</item>
-        <item>4</item>
-        <item>9</item>
+        <item>1</item>
+        <item>7</item>
+        <item>1</item>
     </integer-array>
 
     <!-- Effect led_1 pod 2 -->
     <integer-array name="led_fx_1_2">
+        <item>2</item>
+        <item>7</item>
         <item>1</item>
-        <item>0</item>
-        <item>4</item>
-        <item>9</item>
     </integer-array>
 
     <!-- Effect led_2 pod 1 -->
     <integer-array name="led_fx_2_1">
-        <item>0</item>
-        <item>0</item>
-        <item>4</item>
-        <item>10</item>
+        <item>1</item>
+        <item>8</item>
+        <item>1</item>
     </integer-array>
 
     <!-- Effect led_2 pod 2 -->
     <integer-array name="led_fx_2_2">
+        <item>2</item>
+        <item>8</item>
         <item>1</item>
-        <item>0</item>
-        <item>4</item>
-        <item>10</item>
     </integer-array>
 
     <array name="triggers">
@@ -230,7 +230,6 @@
     <!-- Parameter source pod 1 -->
     <integer-array name="source_1">
         <item>0</item>
-        <item>0</item>
         <item>6</item>
         <!-- Will be filled in -->
     </integer-array>
@@ -239,7 +238,6 @@
     <!-- Parameter source pod 2 -->
     <integer-array name="source_2">
         <item>1</item>
-        <item>0</item>
         <item>6</item>
         <!-- Will be filled in -->
     </integer-array>
@@ -248,16 +246,14 @@
     <!-- Parameter source -->
     <integer-array name="source">
         <item>2</item>
-        <item>0</item>
         <item>6</item>
         <!-- Will be filled in -->
     </integer-array>
 
     <!-- Parameter bpm -->
     <integer-array name="bpm">
-        <item>2</item>
         <item>0</item>
-        <item>7</item> <!-- Dummy command: Not sure how this is set? -->
+        <item>2</item> <!-- Dummy command: Not sure how this is set? -->
         <!-- Will be filled in -->
     </integer-array>
 

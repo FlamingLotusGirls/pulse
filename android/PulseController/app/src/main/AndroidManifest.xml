@@ -11,9 +11,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
             android:configChanges="orientation|screenSize|screenLayout"
-            >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,7 +23,7 @@
         <service
             android:name=".PulseCommService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <activity
             android:name=".SettingsActivity"
@@ -33,7 +32,37 @@
         <service
             android:name=".HeartbeatService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="false" />
+
+        <activity
+            android:name=".UDPMessageListActivity"
+            android:label="@string/title_udpmessage_list"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.flg.hiromi.pulsecontroller.MainActivity" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".UDPMessageDetailActivity"
+            android:label="@string/title_udpmessage_detail"
+            android:parentActivityName=".UDPMessageListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.flg.hiromi.pulsecontroller.UDPMessageListActivity" />
+        </activity>
+
+        <service
+            android:name=".UDPMessageDataService"
+            android:enabled="true"
+            android:exported="false"></service>
     </application>
 
 </manifest>

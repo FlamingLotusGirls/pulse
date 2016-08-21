@@ -1,0 +1,150 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/udpmessage_detail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/heart_image_fx"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/label_type"
+            android:text="@string/msg_type"
+            app:layout_column="0"
+            app:layout_row="0"
+            app:layout_gravity="end|center_vertical"
+            app:layout_columnWeight="1"
+            android:layout_marginEnd="15sp"
+            android:textAlignment="viewEnd"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/view_type"
+            app:layout_column="1"
+            app:layout_row="0"
+            android:gravity="start|center_vertical"
+            app:layout_columnWeight="3"
+            android:textSize="30sp"
+            android:textStyle="italic" />
+
+        <TextView
+            android:id="@+id/label_receiver"
+            android:text="@string/label_receiver"
+            app:layout_column="0"
+            app:layout_row="1"
+            app:layout_gravity="end|center_vertical"
+            app:layout_columnWeight="1"
+            android:layout_marginEnd="15sp"
+            android:textAlignment="viewEnd"
+            android:textSize="30sp" />
+
+        <Spinner
+            android:minWidth="250dp"
+            android:background="@android:drawable/btn_dropdown"
+            android:id="@+id/edit_receiver"
+            app:layout_column="1"
+            app:layout_row="1"
+            app:layout_columnWeight="3"
+            android:contentDescription="@string/edit_receiver_description"/>
+
+        <TextView
+            android:id="@+id/label_tracking"
+            android:text="@string/label_tracking_id"
+            app:layout_gravity="end|center_vertical"
+            app:layout_columnWeight="1"
+            android:layout_marginEnd="15sp"
+            android:textAlignment="viewEnd"
+            android:textSize="30sp"
+            app:layout_row="2"
+            app:layout_column="0" />
+
+        <TextView
+            android:id="@+id/view_tracking"
+            app:layout_column="1"
+            app:layout_row="2"
+            android:gravity="start|center_vertical"
+            app:layout_columnWeight="3"
+            android:textSize="30sp"
+            android:text="@string/view_tracking"
+            android:textStyle="italic" />
+
+        <TextView
+            android:id="@+id/label_command"
+            android:text="@string/label_command"
+            app:layout_gravity="end|center_vertical"
+            app:layout_columnWeight="1"
+            android:layout_marginEnd="15sp"
+            android:textAlignment="viewEnd"
+            android:textSize="30sp"
+            app:layout_row="3"
+            app:layout_column="0" />
+
+        <Spinner
+            android:id="@+id/edit_command"
+            app:layout_column="1"
+            app:layout_row="3"
+            app:layout_columnWeight="3"
+            android:minWidth="250dp"
+            android:background="@android:drawable/btn_dropdown"
+            android:contentDescription="@string/edit_command_description" />
+
+
+        <TextView
+            android:id="@+id/label_data"
+            android:text="@string/label_data"
+            app:layout_gravity="end|center_vertical"
+            app:layout_columnWeight="1"
+            android:gravity="end|center_vertical"
+            android:layout_marginEnd="15sp"
+            android:textSize="30sp"
+            app:layout_row="4"
+            app:layout_column="0" />
+
+        <EditText
+            android:id="@+id/edit_data"
+            app:layout_column="1"
+            app:layout_row="4"
+            app:layout_columnWeight="3"
+            android:inputType="number"
+            android:ems="10"
+            android:contentDescription="@string/edit_data_description"
+            android:background="@android:drawable/edit_text" />
+
+        <TextView
+            android:id="@+id/view_data"
+            app:layout_column="1"
+            app:layout_row="4"
+            app:layout_columnWeight="3"
+            android:gravity="start|center_vertical"
+            android:textSize="30sp"
+            android:text="@string/data_supplied"
+            android:textStyle="italic" />
+
+        <TextView
+            android:id="@+id/label_label"
+            android:text="@string/label_label"
+            app:layout_gravity="end|center_vertical"
+            app:layout_columnWeight="1"
+            android:gravity="end|center_vertical"
+            android:layout_marginEnd="15sp"
+            android:textSize="30sp"
+            app:layout_row="5"
+            app:layout_column="0" />
+
+        <EditText
+            android:id="@+id/edit_label"
+            app:layout_column="1"
+            app:layout_row="5"
+            app:layout_columnWeight="3"
+            android:maxLines="1"
+            android:inputType="textShortMessage|textCapWords"
+            android:contentDescription="@string/edit_label_description"
+            android:background="@android:drawable/edit_text" />
+
+    </android.support.v7.widget.GridLayout>
+
+</LinearLayout>
