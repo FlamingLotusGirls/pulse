@@ -4,3 +4,5 @@ PI roles. The paths for the executables are configured at
 the top of each script which is actually ok for now because
 we have our paths standardized across pi's.
 
+Startup scripts are placed in /etc/rc.local
+
