@@ -36,6 +36,16 @@
         app:layout_columnWeight="1"/>
 
     <Button
+        android:text="@string/button_1b"
+        android:id="@+id/button_1b"
+        android:tag="@string/button_1b_tag"
+        android:textStyle="bold"
+        app:layout_column="1"
+        app:layout_row="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1" />
+
+    <Button
         android:text="@string/button_2b"
         android:id="@+id/button_2b"
         android:tag="@string/button_2b_tag"
@@ -78,15 +88,5 @@
         app:layout_gravity="fill_horizontal"
         app:layout_columnWeight="4"
         android:layout_width="75dp" />
-
-    <Button
-        android:text="@string/button_1b"
-        android:id="@+id/button_1b"
-        android:tag="@string/button_1b_tag"
-        android:textStyle="bold"
-        app:layout_column="1"
-        app:layout_row="0"
-        app:layout_gravity="fill_horizontal"
-        app:layout_columnWeight="1" />
 
 </merge>
