@@ -1,4 +1,4 @@
-Soma's OPC Client
+Soma/Pulse OPC Client
 =================
 
 A simple Python framework for rendering LED patterns and sending them to
@@ -11,7 +11,7 @@ extension and re-use in future projects.
 Simulator
 =========
 
-To develop patterns for Soma, you can first run them in an OpenGL simulator on
+To develop patterns for Soma (or Pulse), you can first run them in an OpenGL simulator on
 a Linux or OSX desktop:
 
 * Clone this repository
@@ -25,7 +25,7 @@ a Linux or OSX desktop:
 
     * Linux also requires: mesa-common-dev, freeglut3-dev
 
-* cd soma/pier14/opc-client
+* cd pulse/pods/opc-client
 
 * In one window, launch the visualizer:
 
@@ -33,7 +33,7 @@ a Linux or OSX desktop:
 
 * In another window, launch the client:
 
-    * ./soma_client.py
+    * ./pod_client.py
 
 In the visualizer, **click-and-drag** will spin the model around.
 **Shift+click-and-drag** zooms in and out.  The **arrow keys** pan the

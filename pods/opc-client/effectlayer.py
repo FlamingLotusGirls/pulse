@@ -12,15 +12,14 @@ class EffectParameters(object):
        """
 
     time = 0
-    targetFrameRate = 40.0 
-    
-    buttonCnt = 2
-    buttonState = [False]*buttonCnt # true if button is pressed or false if it is not pressed
-    buttonTimeSinceStateChange = [0]*buttonCnt #how long since the button last changed state
+    targetFrameRate = 15.0 
+    lastHeartBeatStartTime = 0
+    nextHeartBeatStartTime = 0
     beat = 0.0
+    buttonState = [0,0]  # There aren't actually any buttons in Pulse, so this is sorta boring.
 
     def __str__(self):
-        return "Time: %d, buttonState: %s buttonTimeSinceChange: %s beat: %s" % (self.time, self.buttonState, self.buttonTimeSinceStateChange, self.beat)
+        return "Time: %d, lastHeartBeatTime %s, nextHeartBeatTime %s beat: %s" % (self.time, self.lastHeartBeatStartTime, self.nextHeartBeatStartTime, self.beat)
 
 
 class EffectLayer(object):
@@ -183,49 +182,15 @@ class TestPatternLayer(EffectLayer):
 
         frame[:] = cosine * numpy.array([1,0,0])
 
-# step through LEDs in order of frame index in response to a button push
-class ControlledAddressTestLayer(EffectLayer):
-    def __init__(self):
-        self.index = 0   # relative index, between first and last
-        self.first = 0
-        self.last  = 200  # out of range, intentionally
-        self.color = numpy.array([1,0,0])
-        self.buttonState = False
-
-    def render(self, model, params, frame):
-        if not self.last or self.last >= model.numLEDs:
-            self.last = model.numLEDs-1
-
-        curButtonState = params.buttonState[1]
-        buttonPressed = False
-        if curButtonState == True and self.buttonState == False:
-           # Button pressed. Increment
-           self.index += 1
-           if self.index > self.last - self.first:
-               self.index %= self.last - self.first
-           self.buttonState = True
-           buttonPressed = True
-           print("button pressed")
-
-        elif curButtonState == False:
-           self.buttonState = False
         
-        curIdx = self.first + self.index   # absolute index in the frame
-       
-        if buttonPressed:
-           if model.addresses != None and len(model.addresses) > curIdx:
-              address = model.addresses[curIdx]
-           else:
-              if model.addresses == None:
-                 pass
-                 #print "No addresses"
-              elif len(model.addresses) <= curIdx:
-                 print("Len too short")
-                 print("Len is %d" %(len(model.addresses)))
-              address = "Not set"
-           print("Button Pressed. LED index %s, name %s, address %s" %(curIdx, model.pointNames[curIdx], address))
-   
-        frame[curIdx] = self.color 
+class SpecialEffectsLayer(EffectLayer):
+    """ Should be the base class of all special effects layers. These layers
+    are temporarily added into the playlist, and are expected to return True to is_done
+    when they are finished. Special effects layers should be limited in duration."""
+    def __init__(self):
+        self.finished = True
+    def is_done(self):
+        return self.finished
 
 
 
@@ -236,8 +201,8 @@ class AddressTestLayer(EffectLayer):
         self.switchInterval = 0.5
         self.lastSwitchTime = None
         self.color = numpy.array([1,0,0])
-        self.first = 50
-        self.last = 60
+        self.first = 0
+        self.last  = 0
 
     def render(self, model, params, frame):
         if not self.last:
