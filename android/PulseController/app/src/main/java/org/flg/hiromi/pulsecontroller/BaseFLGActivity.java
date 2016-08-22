@@ -18,10 +18,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -183,9 +186,9 @@ public class BaseFLGActivity extends ActionBarActivity {
     }
 
     private void initControls(View v) {
-        if (v instanceof Button) {
+        if (v instanceof CompoundButton) {
             if (v.getTag() instanceof String) {
-                initButton((Button)v);
+                initToggle((CompoundButton)v);
             }
         } else if (v instanceof SeekBar) {
             if (v.getTag() instanceof String) {
@@ -199,6 +202,10 @@ public class BaseFLGActivity extends ActionBarActivity {
             ViewGroup p = (ViewGroup)v;
             for (int i = 0; i < p.getChildCount(); i++) {
                 initControls(p.getChildAt(i));
+            }
+        } else if (v instanceof Button) {
+            if (v.getTag() instanceof String) {
+                initButton((Button) v);
             }
         } else if (v instanceof TextView) {
             if (v.getTag() instanceof String) {
@@ -320,6 +327,52 @@ public class BaseFLGActivity extends ActionBarActivity {
         String label = msgContext.getLabel(tag);
         if (label != null) {
             btnA.setText(label);
+        }
+    }
+
+    public void initToggle(final CompoundButton btnA)
+    {
+        final Object tagv = (String)btnA.getTag();
+        final String tag = (tagv instanceof String) ? (String)tagv : null;
+        if (tag != null) {
+            final String tag_on = tag + "_on";
+            final String tag_off = tag + "_off";
+            IPulseCommChannel.IntWatcher watcher = new IPulseCommChannel.IntWatcher() {
+                @Override
+                public void onChange(String name, int val, boolean update) {
+                    String state = (val == 0) ? "Failed" : "OK";
+                    text_view.setText(name + ": " + state);
+                }
+
+                @Override
+                public void onError(String name, Throwable t) {
+                    onServiceError(name, t);
+                }
+            };
+            commChannel.watchEvent(tag_on, watcher);
+            commChannel.watchEvent(tag_off, watcher);
+            btnA.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (commChannel != null) {
+                        String stateTag = isChecked ? tag_on : tag_off;
+                        text_view.setText(stateTag + ": ");
+                        commChannel.trigger(stateTag);
+                        if (btnA instanceof Switch) {
+                            String label = msgContext.getLabel(stateTag);
+                            if (label != null) {
+                                btnA.setText(label);
+                            }
+                        }
+                    }
+                }
+            });
+            if (btnA instanceof Switch) {
+                String label = msgContext.getLabel(tag_off);
+                if (label != null) {
+                    btnA.setText(label);
+                }
+            }
         }
     }
 

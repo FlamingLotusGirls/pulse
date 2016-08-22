@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        app:layout_row="0"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1">
+
+        <TextView
+            android:tag="x_spinner_1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textStyle="bold"
+            android:text="Dropdown #1"/>
+
+        <Spinner
+            android:layout_height="match_parent"
+            android:entries="@array/spinner_dummy_entries"
+            android:background="@android:drawable/btn_dropdown"
+            android:popupBackground="@android:drawable/btn_default_small"
+            android:tag="x_spinner_1"
+            style="@android:style/Widget.Spinner.DropDown"
+            android:layout_width="125dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        app:layout_row="0"
+        app:layout_column="1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1">
+
+        <TextView
+            android:tag="x_spinner_2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textStyle="bold"
+            android:text="Dropdown #2"/>
+
+        <Spinner
+            android:layout_height="match_parent"
+            android:entries="@array/spinner_dummy_entries"
+            android:background="@android:drawable/btn_dropdown"
+            android:popupBackground="@android:drawable/btn_default_small"
+            android:tag="x_spinner_2"
+            style="@android:style/Widget.Spinner.DropDown"
+            android:layout_width="125dp" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        app:layout_row="1"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1">
+
+        <TextView
+            android:tag="x_spinner_3"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textStyle="bold"
+            android:text="Dropdown #3"/>
+
+        <Spinner
+            android:layout_height="match_parent"
+            android:entries="@array/spinner_dummy_entries"
+            android:background="@android:drawable/btn_dropdown"
+            android:popupBackground="@android:drawable/btn_default_small"
+            android:tag="x_spinner_3"
+            style="@android:style/Widget.Spinner.DropDown"
+            android:layout_width="125dp" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        app:layout_row="1"
+        app:layout_column="1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1">
+
+        <TextView
+            android:tag="x_spinner_4"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textStyle="bold"
+            android:text="Dropdown #4"/>
+
+        <Spinner
+            android:layout_height="match_parent"
+            android:entries="@array/spinner_dummy_entries"
+            android:background="@android:drawable/btn_dropdown"
+            android:popupBackground="@android:drawable/btn_default_small"
+            android:tag="x_spinner_4"
+            style="@android:style/Widget.Spinner.DropDown"
+            android:layout_width="125dp" />
+    </LinearLayout>
+</merge>
