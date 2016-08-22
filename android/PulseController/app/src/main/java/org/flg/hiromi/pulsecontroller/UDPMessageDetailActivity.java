@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.View;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
@@ -17,7 +18,7 @@ import android.view.MenuItem;
  * item details are presented side-by-side with a list of items
  * in a {@link UDPMessageListActivity}.
  */
-public class UDPMessageDetailActivity extends AppCompatActivity {
+public class UDPMessageDetailActivity extends BasePulseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +58,9 @@ public class UDPMessageDetailActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
-            navigateUpTo(new Intent(this, UDPMessageListActivity.class));
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_udp, menu);
+        return true;
     }
 }

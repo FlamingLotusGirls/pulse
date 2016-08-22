@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
@@ -111,9 +112,32 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            navigateUpTo(new Intent(this, MainActivity.class));
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        switch (id) {
+            case android.R.id.home:
+                Intent intent = NavUtils.getParentActivityIntent(this);
+                if (intent == null) {
+                    intent = new Intent(this, MainActivity.class);
+                }
+                navigateUpTo(intent);
+                return true;
+            case R.id.action_settings:
+                startActivity(new Intent().setClass(getApplicationContext(), SettingsActivity.class));
+                return true;
+            case R.id.udp_messages:
+                startActivity(new Intent().setClass(getApplicationContext(), UDPMessageListActivity.class));
+                return true;
+            case R.id.main:
+                startActivity(new Intent().setClass(getApplicationContext(), MainActivity.class));
+                return true;
+            case R.id.more:
+                startActivity(new Intent().setClass(getApplicationContext(), MoreButtonsActivity.class));
+                return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 }
