@@ -16,9 +16,9 @@
         <item>9 - AORTA_CHASE</item>
         <item>10 - AORTA_ATTACK</item>
         <item>11 - PLAY_SOUND</item>
-        <item>12</item>
-        <item>13</item>
-        <item>14</item>
+        <item>12 - POOFER 1</item>
+        <item>13 - POOFER 2</item>
+        <item>14 - POOFER 3</item>
         <item>15</item>
         <item>16</item>
         <item>17</item>
@@ -86,21 +86,21 @@
     <!-- Effect poof_1 -->
     <integer-array name="poof_1">
         <item>3</item>
-        <item>4</item>
+        <item>12</item>
         <item>3</item>
     </integer-array>
 
     <!-- Effect poof_1 -->
     <integer-array name="poof_2">
         <item>3</item>
-        <item>4</item>
+        <item>13</item>
         <item>3</item>
     </integer-array>
 
     <!-- Effect poof_3 -->
     <integer-array name="poof_3">
         <item>3</item>
-        <item>4</item>
+        <item>14</item>
         <item>3</item>
     </integer-array>
 
