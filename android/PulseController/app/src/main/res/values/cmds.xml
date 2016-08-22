@@ -48,6 +48,25 @@
         <item>255 - Broadcast</item>
     </string-array>
 
+    <string-array name="spinner_dummy_entries">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+    </string-array>
+
     <!--
       - Default message specifications.
       - Each message consists of 2 or 3 integers, corresponding to the fields of the PULSE packet.
@@ -234,6 +253,24 @@
         <item>@array/x_dummy_trigger</item>
         <item>@array/x_dummy_trigger</item>
         <item>@array/x_dummy_trigger</item>
+
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
+        <item>@array/x_dummy_trigger</item>
     </array>
 
     <string-array name="trigger_names">
@@ -267,6 +304,25 @@
         <item>x_button_3a</item>
         <item>x_button_3b</item>
         <item>x_button_3c</item>
+
+        <!-- Dummy switches and toggles from More Buttons screen -->
+        <item>x_toggle_1_on</item>
+        <item>x_toggle_1_off</item>
+        <item>x_toggle_2_on</item>
+        <item>x_toggle_2_off</item>
+        <item>x_toggle_3_on</item>
+        <item>x_toggle_3_off</item>
+        <item>x_toggle_4_on</item>
+        <item>x_toggle_4_off</item>
+
+        <item>x_switch_1_on</item>
+        <item>x_switch_1_off</item>
+        <item>x_switch_2_on</item>
+        <item>x_switch_2_off</item>
+        <item>x_switch_3_on</item>
+        <item>x_switch_3_off</item>
+        <item>x_switch_4_on</item>
+        <item>x_switch_4_off</item>
     </string-array>
 
     <!-- Parameter source pod 1 -->
@@ -312,6 +368,10 @@
         <item>@array/x_dummy</item>
         <item>@array/x_dummy</item>
         <item>@array/x_dummy</item>
+        <item>@array/x_dummy</item>
+        <item>@array/x_dummy</item>
+        <item>@array/x_dummy</item>
+        <item>@array/x_dummy</item>
     </array>
 
     <string-array name="param_names">
@@ -322,6 +382,10 @@
         <item>x_slider_1</item>
         <item>x_slider_2</item>
         <item>x_slider_3</item>
+        <item>x_spinner_1</item>
+        <item>x_spinner_2</item>
+        <item>x_spinner_3</item>
+        <item>x_spinner_4</item>
     </string-array>
 
 </resources>
