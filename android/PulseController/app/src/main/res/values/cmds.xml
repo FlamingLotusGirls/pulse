@@ -107,8 +107,8 @@
     <!-- Effect CHASE -->
     <integer-array name="chase">
         <item>3</item>
-        <item>4</item>
-        <item>2</item>
+        <item>9</item>
+        <item>0</item> <!-- Does this matter? -rwk -->
     </integer-array>
 
     <!-- Command stop_all -->
