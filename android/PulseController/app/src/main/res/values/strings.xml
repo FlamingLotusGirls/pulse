@@ -56,11 +56,11 @@
     <string name="button_1b">Chase</string>
     <string name="button_2b">All Poof</string>
     <string name="button_3b">Heart FX 1</string>
-    <string name="button_4b">Heart FX 2</string>
+    <string name="button_3c">Heart FX 2</string>
     <string name="button_1b_tag">chase</string>
     <string name="button_2b_tag">all_poof</string>
     <string name="button_3b_tag">heart_fx_1</string>
-    <string name="button_4b_tag">heart_fx_2</string>
+    <string name="button_3c_tag">heart_fx_2</string>
 
 
     <string name="button_1_pod">Sound 1</string>

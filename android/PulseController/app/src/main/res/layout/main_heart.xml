@@ -7,7 +7,6 @@
 
     <Button
         android:text="@string/button_1"
-        android:id="@+id/button_1"
         android:tag="@string/button_1_tag"
         android:textStyle="bold"
         app:layout_row="0"
@@ -17,7 +16,6 @@
 
     <Button
         android:text="@string/button_2"
-        android:id="@+id/button_2"
         android:tag="@string/button_2_tag"
         android:textStyle="bold"
         app:layout_column="0"
@@ -27,7 +25,6 @@
 
     <Button
         android:text="@string/button_3"
-        android:id="@+id/button_3"
         android:tag="@string/button_3_tag"
         android:textStyle="bold"
         app:layout_row="2"
@@ -37,7 +34,6 @@
 
     <Button
         android:text="@string/button_1b"
-        android:id="@+id/button_1b"
         android:tag="@string/button_1b_tag"
         android:textStyle="bold"
         app:layout_column="1"
@@ -47,7 +43,6 @@
 
     <Button
         android:text="@string/button_2b"
-        android:id="@+id/button_2b"
         android:tag="@string/button_2b_tag"
         android:textStyle="bold"
         app:layout_column="1"
@@ -57,7 +52,6 @@
 
     <Button
         android:text="@string/button_3b"
-        android:id="@+id/button_3b"
         android:tag="@string/button_3b_tag"
         android:textStyle="bold"
         app:layout_column="1"
@@ -66,9 +60,8 @@
         app:layout_columnWeight="1" />
 
     <Button
-        android:text="@string/button_4b"
-        android:id="@+id/button_4b"
-        android:tag="@string/button_4b_tag"
+        android:text="@string/button_3c"
+        android:tag="@string/button_3c_tag"
         android:textStyle="bold"
         app:layout_column="2"
         app:layout_row="2"
