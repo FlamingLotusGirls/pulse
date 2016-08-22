@@ -4,6 +4,6 @@
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/udp_messages" android:title="UDP Message Editor"
-        app:showAsAction="never" />
+        app:showAsAction="never" android:orderInCategory="50" />
     <item android:id="@+id/more" android:title="More Buttons" app:showAsAction="withText"/>
 </menu>
