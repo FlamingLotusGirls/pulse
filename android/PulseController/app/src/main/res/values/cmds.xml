@@ -111,6 +111,25 @@
         <item>0</item> <!-- Does this matter? -rwk -->
     </integer-array>
 
+    <!-- DMX Heart Effects -->
+    <integer-array name="heart_dmx_1">
+        <item>3</item>
+        <item>7</item>
+        <item>16761024</item> <!-- What does this do?  RGB Color? (A pink near "Your Pink", #ffc0c0) -->
+    </integer-array>
+
+    <integer-array name="heart_dmx_2">
+        <item>3</item>
+        <item>8</item>
+        <item>16728128</item> <!-- What does this do?  RGB Color? (Coral Red, #ff4040) -->
+    </integer-array>
+
+    <integer-array name="heart_dmx_3">
+        <item>3</item>
+        <item>8</item>
+        <item>4259648</item> <!-- What does this do?  RGB Color? (A very bright green, #40ff40)-->
+    </integer-array>
+
     <!-- Command stop_all -->
     <integer-array name="stop_all">
         <item>255</item>
@@ -229,6 +248,11 @@
         <item>@array/poof_2</item>
         <item>@array/poof_3</item>
         <item>@array/chase</item>
+        <item>@array/heart_dmx_1</item>
+        <item>@array/heart_dmx_2</item>
+        <item>@array/heart_dmx_3</item>
+
+
         <item>@array/sound_1_p1</item>
         <item>@array/sound_2_p1</item>
         <item>@array/sound_3_p1</item>
@@ -280,6 +304,10 @@
         <item>poof_2</item>
         <item>poof_3</item>
         <item>chase</item>
+        <item>hrt_dmx_1</item>
+        <item>hrt_dmx_2</item>
+        <item>hrt_dmx_3</item>
+
         <item>sound_1_1</item>
         <item>sound_2_1</item>
         <item>sound_3_1</item>

@@ -62,6 +62,12 @@
     <string name="button_3b_tag">heart_fx_1</string>
     <string name="button_3c_tag">heart_fx_2</string>
 
+    <string name="button_4a">DMX 1</string>
+    <string name="button_4b">DMX 2</string>
+    <string name="button_4c">DMX 3</string>
+    <string name="button_4a_tag">hrt_dmx_1</string>
+    <string name="button_4b_tag">hrt_dmx_2</string>
+    <string name="button_4c_tag">hrt_dmx_3</string>
 
     <string name="button_1_pod">Sound 1</string>
     <string name="button_2_pod">Sound 2</string>
