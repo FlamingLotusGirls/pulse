@@ -66,7 +66,7 @@
         android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/pulse_icon_3"
         android:id="@+id/pulse_icon_4"
-        android:contentDescription="@string/heartbeat_3" />
+        android:contentDescription="@string/heartbeat_4" />
 
     <ImageView
         android:maxHeight="20dp"
@@ -77,5 +77,5 @@
         android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/pulse_icon_4"
         android:id="@+id/pulse_icon_5"
-        android:contentDescription="@string/heartbeat_3" />
+        android:contentDescription="@string/heartbeat_5" />
 </RelativeLayout>

@@ -102,10 +102,12 @@
     <string name="spinner_1_p1_tag">source_1</string>
     <string name="spinner_1_p2_tag">source_2</string>
 
-    <!-- Descrptions of the three beating hearts -->
-    <string name="heartbeat_1">Heartbeat Left</string>
-    <string name="heartbeat_2">Heartbeat Synth</string>
-    <string name="heartbeat_3">Heartbeat Right</string>
+    <!-- Descrptions of the five beating hearts -->
+    <string name="heartbeat_1">Heartbeat Autogen</string>
+    <string name="heartbeat_2">Heartbeat Pod 1</string>
+    <string name="heartbeat_3">Heartbeat Pod 2</string>
+    <string name="heartbeat_4">Heartbeat MUI Left</string>
+    <string name="heartbeat_5">Heartbeat MUI Right</string>
 
     <!-- Drop-down list of heartbeat sources. Ordered by ID -->
     <string-array name="spinner_1_entries">
