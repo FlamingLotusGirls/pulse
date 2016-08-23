@@ -118,7 +118,7 @@ cd pods
 ### Run
 
 ```
-python opc_client/pod_client.py
+bin/pod.py
 ```
 
 ### Test
@@ -134,6 +134,6 @@ bin/gl_server ../../models/pulse_pod.json 7890 ../../models/pulse_pod-binary.stl
 # in GL window, press 'm' for mesh wireframe of .stl
 # press 'j' to toggle between initial json file lighting (good for debug) and using opc signals
 
-cd pods/opc_client
-python opc_client/pod_client.py
+cd {proj_root}
+bin/pod.py
 ```
