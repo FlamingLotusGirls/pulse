@@ -79,7 +79,7 @@ class Renderer:
                     self.sfx_layer = None
                 else:
                     self.sfx_layer.render(model, params, frame)
-                    
+        
         self.gammaLayer.render(model, params, frame)
         
     def advanceCurrentPlaylist(self, fadeTime=1):

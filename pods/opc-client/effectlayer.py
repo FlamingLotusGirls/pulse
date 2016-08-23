@@ -12,14 +12,14 @@ class EffectParameters(object):
        """
 
     time = 0
-    targetFrameRate = 15.0 
-    lastHeartBeatStartTime = 0
-    nextHeartBeatStartTime = 0
-    beat = 0.0
-    buttonState = [0,0]  # There aren't actually any buttons in Pulse, so this is sorta boring.
+    targetFrameRate = 40.0 
+    
+    buttonCnt = 2
+    buttonState = [False]*buttonCnt # true if button is pressed or false if it is not pressed
+    buttonTimeSinceStateChange = [0]*buttonCnt #how long since the button last changed state
 
     def __str__(self):
-        return "Time: %d, lastHeartBeatTime %s, nextHeartBeatTime %s beat: %s" % (self.time, self.lastHeartBeatStartTime, self.nextHeartBeatStartTime, self.beat)
+        return "Time: %d, buttonState: %s buttonTimeSinceChange: %s " % (self.time, self.buttonState, self.buttonTimeSinceStateChange)
 
 
 class EffectLayer(object):
@@ -69,14 +69,31 @@ class MultiplierLayer(EffectLayer):
     """
     def __init__(self, layer1, layer2):
         self.layer1 = layer1
-        self.layer2 = layer2        
-        
+        self.layer2 = layer2
+
     def render(self, model, params, frame):
         temp1 = numpy.zeros(frame.shape)
         temp2 = numpy.zeros(frame.shape)
         self.layer1.render(model, params, temp1)
         self.layer2.render(model, params, temp2)
         numpy.multiply(temp1, temp2, temp1)
+        numpy.add(frame, temp1, frame)
+
+class AverageLayer(EffectLayer):
+    """ Renders two layers in temporary frames, then adds the average of those frames
+    to the frame passed into its render method
+    """
+    def __init__(self, layer1, layer2):
+        self.layer1 = layer1
+        self.layer2 = layer2
+
+    def render(self, model, params, frame):
+        temp1 = numpy.zeros(frame.shape)
+        temp2 = numpy.zeros(frame.shape)
+        self.layer1.render(model, params, temp1)
+        self.layer2.render(model, params, temp2)
+        numpy.add(temp1, temp2, temp1)
+        numpy.divide(temp1, 2.0, temp1)
         numpy.add(frame, temp1, frame)
 
 

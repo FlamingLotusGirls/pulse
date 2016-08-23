@@ -14,7 +14,8 @@ from pulse_model import *
 from renderer import Renderer
 from controller import AnimationController
 from effectlayer import *
-from effects.color_cycle_heartbeat import *
+from pulse_effect_parameters import *
+from effects.orbital import *
 from effects.random_phase import *
 from effects.random_blink_cycle import *
 from effects.chase import AxonChaseLayer
@@ -113,7 +114,7 @@ class PulseListenerThread(Thread):
         # I believe this is thread-safe because of the python GIL
         self.masterParams.nextHeartBeatStartTime = self.nextHeartBeatStartTime
         self.masterParams.lastHeartBeatStartTime = self.lastHeartBeatStartTime
-        self.masterParams.beat                   = self.bps
+        self.masterParams.bps                   = self.bps
 
     def terminate(self):
         self.running = False
@@ -140,7 +141,6 @@ class PulseListenerThread(Thread):
     def handleHeartBeatData(self, heartBeatData):    
         ### NB - XXX - This structure has to match the one in BPMPulseData_t BPMPulse.h
         # Called from the HeartBeatCommandThread
-        self.masterParams.beat = 1.0
         pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
         print "heartbeat pod_id is %d, looking for %d, bpm is %d" % (pod_id, self.currentHeartBeatSource, bpmApprox) 
         if pod_id is self.currentHeartBeatSource and self.allowHeartBeats:
@@ -192,7 +192,7 @@ class PodController(object):
         self.interval = interval
 
         # master parameters, used in rendering and updated by playlist advancer thread
-        self.masterParams = EffectParameters()
+        self.masterParams = PulseEffectParameters()
 
         # if we got a curses screen, use it for debug input through the keyboard
         if self.screen:
@@ -214,9 +214,10 @@ class PodController(object):
         # is determined by individual effect layers' render implementations)
         playlist = Playlist([
             [
-#                RandomPhaseLayer(model),
-                ColorCycleHeartbeatLayer(0.0053, 0.0),#0.0011
-                # Lightning(),
+              AverageLayer(
+                OrbitalLayer(0.0013, 0.0011, 3.0, 5.0, 1, 3.0),
+                OrbitalLayer(0.0007, 0.0011, 5.0, 5.0, -1, 5.0),
+              )
             ],
         ])
 

@@ -37,7 +37,7 @@ class PulseModel(Model):
                 region = self.json[i]['region']
                 idx_list = self.regionIndicies.setdefault(region, [])
                 idx_list.append(i)
-
+        self.allIndices = self.regionIndicies.values()
 
         # get indices of nodes in different portions of the sculpture
         self.branch1Indices = self._getBranch1Indices()
