@@ -44,6 +44,9 @@ allowStrobing = True
 isStrobing = False
 currentHeartBeatSource = 0 # ???
 dmx = None
+heartBeatListener = None
+commandListener   = None
+eventQueue = None
 gReceiverId = 3
 
 HEARTBEAT = 1
@@ -190,13 +193,16 @@ def dmxSingleColor():
 
 def stopHeartBeat():
     global allowHeartBeats
+    global eventQueue
     eventQueue[:] = [e for e in eventQueue if (e.get("effectId") != HEARBTEAT)]
     allowHeartBeats = False
 
 def removeEffect(effectId):
+    global eventQueue
     eventQueue[:] = [e for e in eventQueue if (e.get("effectId") == effectId)]
 
 def removeEffectInstance(instanceId):
+    global eventQueue
     if not instanceId:
         return
 
@@ -204,11 +210,11 @@ def removeEffectInstance(instanceId):
 
 
 def removeAllEffects():
+    global eventQueue
     eventQueue = []
 
 def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need is heartbeat duration
     global gGlobalEffectId
-
     if repeatMs != 0 and effectId != HEARTBEAT:
         removeEffect(effectId)
 
@@ -287,6 +293,7 @@ def renderEvents():
                 processStrobe(event)
 
 def processHeartbeat(event):
+    global dmx
     if not allowHeartBeats:
         return
 
