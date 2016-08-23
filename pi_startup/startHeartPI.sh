@@ -10,13 +10,20 @@
 
 SRCDIR=/home/flaming
 CONTROL=$SRCDIR/pulse/network/heartbeat_controller.py
+DMX=$SRCDIR/pulse/dmx/dmx_controller.py
 
 PODID=`cat /etc/pod.id`
-LOG=/var/log/heart.log
+HB_LOG=/var/log/heart.log
+DMX_LOG=/var/log/dmx.log
 
-$SRCDIR/pulse/pi_startup/cycleLogs.sh $LOG
+$SRCDIR/pulse/pi_startup/cycleLogs.sh $HB_LOG
+$SRCDIR/pulse/pi_startup/cycleLogs.sh $DMX_LOG
 
-echo starting HEART PI on `hostname` > $LOG
+echo starting HEART PI on `hostname` > $HB_LOG
 
-stdbuf -oL python $CONTROL >> $LOG 2>&1 &
+stdbuf -oL python $CONTROL $PODID >> $HB_LOG 2>&1 &
 
+echo starting DMX PI on `hostname` > $DMX_LOG
+
+stdbuf -oL python $DMX $PODID >> $DMX_LOG 2>&1 &
+ 

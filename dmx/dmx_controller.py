@@ -343,6 +343,9 @@ if __name__ == '__main__':
     commandListener   = createBroadcastListener(COMMAND_PORT)
     eventQueue = []
 
+    if len(sys.argv) > 1:
+        gReceiverId = int(sys.argv[1])
+
     try:
         while (running):
             readfds = [heartBeatListener, commandListener]

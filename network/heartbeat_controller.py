@@ -54,15 +54,18 @@ class Commands():
     START_EFFECT         = 4
     STOP_EFFECT          = 5
     USE_HEARTBEAT_SOURCE = 6
-
+    DMX_STROBE           = 7
+    DMX_SINGLE_COLOR     = 8
+    AORTA_CHASE          = 9
+    AORTA_ATTACK         = 10
+    PLAY_SOUND           = 11
 
 running = True
 allowHeartBeats = True
 currentHeartBeatSource = 0
 ser = None
 previousHeartBeatTime = None
-gReceiverId = 0  # XXX need to set the receiver Id, or more properly, the unit id, from a file or something
-
+gReceiverId = 0
 gCurrentHeartBeat  = None
 gNextHeartBeat     = None
 gNextNextHeartBeat = None
@@ -186,24 +189,24 @@ def sortEventQueue():
 
 def handleCommandData(commandData):
     global currentHeartBeatSource
-    receiverId, commandTrackingId, commandId = struct.unpack("=BBH", commandData)
-    if receiverId is gReceiverId:                  # it's for us!
+    receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
+    if receiverId is gReceiverId  or receiverId is ALL_LISTENERS: # it's for us!
         if commandId is Command.STOP_ALL:
             removeAllEffects()
         elif commandId is Command.STOP_HEARTBEAT:
             allowHeartBeats = False
             stopHeartBeat()
-        elif commandId is Command.START_EFFECT:
-            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-            loadEffect(effectId, datetime.datetime.now())
-        elif commandId is Command.STOP_EFFECT:
-            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-            removeEffect(effectId)
+#        elif commandId is Command.START_EFFECT:
+#            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
+#            loadEffect(effectId, datetime.datetime.now())
+#        elif commandId is Command.STOP_EFFECT:
+#            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
+#            removeEffect(effectId)
         elif commandId is Command.START_HEARTBEAT:
             allowHeartBeats = True
         elif commandId is Command.USE_HEARTBEAT_SOURCE:
-            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
-            currentHeartBeatSource = pod_id
+#            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
+            currentHeartBeatSource = data
 
         sortEventQueue()
 
@@ -401,6 +404,7 @@ def sendEvents():
                 if instanceId != None:
                     print "Auto schedule instance ", instanceId
                     sortEventQueue()
+                
 
 if __name__ == '__main__':
     running = True
@@ -408,6 +412,11 @@ if __name__ == '__main__':
     commandListener   = createBroadcastListener(COMMAND_PORT)
     ser = initSerial() #XXX need to handle serial disconnect, restart
     eventQueue = [] # NB - don't need a real queue here. Only one thread
+    
+    if len(sys.argv) > 1:
+        gReceiverId = int(sys.argv[1])
+        
+    print "gReceiverId is ", gReceiverId
     try:
         while (running):
             readfds = [heartBeatListener, commandListener]
