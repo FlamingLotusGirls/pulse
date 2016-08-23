@@ -33,6 +33,7 @@ from threading import Thread
 from threads import PlaylistAdvanceThread, KeyboardMonitorThread
 from random import random
 from math import *
+from network.commands import *
 
 # Common variables
 #BROADCAST_ADDR = "224.51.105.104"
@@ -45,22 +46,6 @@ MULTICAST_TTL  = 4
 ALL_RECEIVERS  = 255
 
 gReceiverId = 3
-
-# Commands
-class Commands():
-    STOP_ALL             = 1
-    STOP_HEARTBEAT       = 2
-    START_HEARTBEAT      = 3
-    START_EFFECT         = 4
-    STOP_EFFECT          = 5
-    USE_HEARTBEAT_SOURCE = 6
-    DMX_STROBE           = 7
-    DMX_SINGLE_COLOR     = 8
-    AORTA_CHASE          = 9
-    AORTA_ATTACK         = 10
-    PLAY_SOUND           = 11
-    POD_R_TO_L_FLASH     = 12
-    POD_L_TO_R_FLASH     = 13
 
 class PulseListenerThread(Thread):
     allowHeartBeats = True
@@ -220,7 +205,9 @@ class PodController(object):
             keymonitor = KeyboardMonitorThread(self.masterParams, self.screen)
             keymonitor.start()
 
-        model = PulseModel(points_filename='./models/pulse_pod.json') 
+        points_filename = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                             '..', 'models', 'pulse_pod.json'))
+        model = PulseModel(points_filename=points_filename)
 
         # a playlist. each entry in a playlist can contain one or more effect layers
         # (if more than one, they are all rendered into the same frame...mixing method
@@ -271,9 +258,7 @@ class PodController(object):
         #except KeyboardInterrupt:
         #    pass
 
-    
-
-if __name__ == '__main__':
+def main():
     #  - NB - this stuff is all going to get done by the startup script that calls this thing
     # sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
@@ -287,4 +272,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         gReceiverId = int(sys.argv[1])
 
-    pod = PodController(None, 3)
+    pod = PodController(None, 3)    
+
+if __name__ == '__main__':
+    main()

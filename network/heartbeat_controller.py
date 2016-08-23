@@ -20,6 +20,7 @@ import serial
 import socket
 import struct
 import sys
+from commands import *
 
 # Common variables
 #BROADCAST_ADDR = "224.51.105.104"
@@ -46,21 +47,11 @@ effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
            ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]]}
 
 
-# Commands
-class Commands():
-    STOP_ALL             = 1
-    STOP_HEARTBEAT       = 2
-    START_HEARTBEAT      = 3
-    START_EFFECT         = 4
-    STOP_EFFECT          = 5
-    USE_HEARTBEAT_SOURCE = 6
-    DMX_STROBE           = 7
-    DMX_SINGLE_COLOR     = 8
-    AORTA_CHASE          = 9
-    AORTA_ATTACK         = 10
-    PLAY_SOUND           = 11
-
 running = True
+heartBeatListener = None
+commandListener   = None
+ser = None #XXX need to handle serial disconnect, restart
+eventQueue = None # NB - don't need a real queue here. Only one thread
 allowHeartBeats = True
 currentHeartBeatSource = 0
 ser = None
@@ -281,6 +272,7 @@ def loadEffect(effectId, starttime, repeatMs=0):
     return globalId
 
 def removeAllEffects():
+    global eventQueue
     eventQueue = []
 
 def stopHeartBeat():
@@ -406,7 +398,13 @@ def sendEvents():
                     sortEventQueue()
                 
 
-if __name__ == '__main__':
+def main():
+    global running
+    global heartBeatListener
+    global commandListener
+    global ser
+    global eventQueue
+    global gReceiverId
     running = True
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
     commandListener   = createBroadcastListener(COMMAND_PORT)
@@ -446,6 +444,9 @@ if __name__ == '__main__':
         running = False
         heartBeatListener.close()
         commandListener.close()
+
+if __name__ == '__main__':
+    main()
 
 
 # heart beat comes in... scheduled for .8 seconds in future... new heart beat comes in... removes

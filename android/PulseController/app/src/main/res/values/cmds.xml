@@ -16,9 +16,9 @@
         <item>9 - AORTA_CHASE</item>
         <item>10 - AORTA_ATTACK</item>
         <item>11 - PLAY_SOUND</item>
-        <item>12</item>
-        <item>13</item>
-        <item>14</item>
+        <item>12 - POOFER 1</item>
+        <item>13 - POOFER 2</item>
+        <item>14 - POOFER 3</item>
         <item>15</item>
         <item>16</item>
         <item>17</item>
@@ -86,29 +86,48 @@
     <!-- Effect poof_1 -->
     <integer-array name="poof_1">
         <item>3</item>
-        <item>4</item>
+        <item>12</item>
         <item>3</item>
     </integer-array>
 
     <!-- Effect poof_1 -->
     <integer-array name="poof_2">
         <item>3</item>
-        <item>4</item>
+        <item>13</item>
         <item>3</item>
     </integer-array>
 
     <!-- Effect poof_3 -->
     <integer-array name="poof_3">
         <item>3</item>
-        <item>4</item>
+        <item>14</item>
         <item>3</item>
     </integer-array>
 
     <!-- Effect CHASE -->
     <integer-array name="chase">
         <item>3</item>
-        <item>4</item>
-        <item>2</item>
+        <item>9</item>
+        <item>0</item> <!-- Does this matter? -rwk -->
+    </integer-array>
+
+    <!-- DMX Heart Effects -->
+    <integer-array name="heart_dmx_1">
+        <item>3</item>
+        <item>7</item>
+        <item>16761024</item> <!-- What does this do?  RGB Color? (A pink near "Your Pink", #ffc0c0) -->
+    </integer-array>
+
+    <integer-array name="heart_dmx_2">
+        <item>3</item>
+        <item>8</item>
+        <item>16728128</item> <!-- What does this do?  RGB Color? (Coral Red, #ff4040) -->
+    </integer-array>
+
+    <integer-array name="heart_dmx_3">
+        <item>3</item>
+        <item>8</item>
+        <item>4259648</item> <!-- What does this do?  RGB Color? (A very bright green, #40ff40)-->
     </integer-array>
 
     <!-- Command stop_all -->
@@ -229,6 +248,11 @@
         <item>@array/poof_2</item>
         <item>@array/poof_3</item>
         <item>@array/chase</item>
+        <item>@array/heart_dmx_1</item>
+        <item>@array/heart_dmx_2</item>
+        <item>@array/heart_dmx_3</item>
+
+
         <item>@array/sound_1_p1</item>
         <item>@array/sound_2_p1</item>
         <item>@array/sound_3_p1</item>
@@ -280,6 +304,10 @@
         <item>poof_2</item>
         <item>poof_3</item>
         <item>chase</item>
+        <item>hrt_dmx_1</item>
+        <item>hrt_dmx_2</item>
+        <item>hrt_dmx_3</item>
+
         <item>sound_1_1</item>
         <item>sound_2_1</item>
         <item>sound_3_1</item>
