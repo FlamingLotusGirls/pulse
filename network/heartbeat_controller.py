@@ -20,6 +20,7 @@ import serial
 import socket
 import struct
 import sys
+from commands import *
 
 # Common variables
 #BROADCAST_ADDR = "224.51.105.104"
@@ -44,16 +45,6 @@ ALLPOOF   = 3
 effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
            CHASE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]],
            ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]]}
-
-
-# Commands
-class Commands():
-    STOP_ALL             = 1
-    STOP_HEARTBEAT       = 2
-    START_HEARTBEAT      = 3
-    START_EFFECT         = 4
-    STOP_EFFECT          = 5
-    USE_HEARTBEAT_SOURCE = 6
 
 
 running = True

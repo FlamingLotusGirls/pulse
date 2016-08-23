@@ -14,7 +14,7 @@ import sys
 import pysimpledmx
 import time
 import random
-
+from network.commands import *
 
 BROADCAST_ADDR = "192.168.1.255"
 HEARTBEAT_PORT = 5000
@@ -67,20 +67,6 @@ effects = {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100
 # {HEARTBEAT:[[1,100,100], [2,250,150], [1,80,275], [2,180,400], [1,100,450]],
 
 # {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,350]],
-
-class Commands():
-    STOP_ALL             = 1
-    STOP_HEARTBEAT       = 2
-    START_HEARTBEAT      = 3
-    START_EFFECT         = 4
-    STOP_EFFECT          = 5
-    USE_HEARTBEAT_SOURCE = 6
-    DMX_STROBE           = 7
-    DMX_SINGLE_COLOR     = 8
-    AORTA_CHASE          = 9
-    AORTA_ATTACK         = 10
-    PLAY_SOUND           = 11
-
 
 
 def createBroadcastListener(port, addr=BROADCAST_ADDR):
@@ -335,8 +321,7 @@ def initDMX():
             return pysimpledmx.DMXConnection("/dev/" + filename)
     return None
 
-
-if __name__ == '__main__':
+def main():
     running = True
     dmx = initDMX()
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
@@ -380,3 +365,6 @@ if __name__ == '__main__':
         running = False
         heartBeatListener.close()
         commandListener.close()
+
+if __name__ == '__main__':
+    main()
