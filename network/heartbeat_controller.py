@@ -181,6 +181,7 @@ def sortEventQueue():
 
 def handleCommandData(commandData):
     global currentHeartBeatSource
+    global allowHeartBeats
     receiverId, commandTrackingId, commandId = struct.unpack("=BBH", commandData)
     if receiverId is gReceiverId:                  # it's for us!
         if commandId is Command.STOP_ALL:
