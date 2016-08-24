@@ -6,6 +6,9 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.util.Log;
+
+import static org.flg.hiromi.pulsecontroller.Pulse.*;
 
 public class PulseCommService extends Service {
     private SharedPreferences prefs;
@@ -28,12 +31,14 @@ public class PulseCommService extends Service {
 
     @Override
     public void onCreate() {
+        Log.i(PULSE, "Create PulseCommService");
         super.onCreate();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.i(PULSE, "Bind PulseCommService");
         switch (prefs.getString("protocol", "UDP")) {
             case "REST":
                 channel = new RESTPulseCommChannel(this);
@@ -50,6 +55,7 @@ public class PulseCommService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
+        Log.i(PULSE, "Unbind PulseCommService");
         channel = null;
         return super.onUnbind(intent);
     }

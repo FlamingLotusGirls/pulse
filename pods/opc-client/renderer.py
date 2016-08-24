@@ -15,6 +15,11 @@ class Renderer:
     playlists or to advancing the selection in the current playlist).
     
     Also applies a gamma correction layer after everything else is rendered.
+    
+    8-16. Adding a special effect layer for Pulse. This is an additional layer that
+    is temporarily added by some external event - detecting a heartbeat, interactive event,
+    whatever. Special effect layers must self-terminate by returning True to the is_done()
+    call
     """
     def __init__(self, playlists, activePlaylist=None, useFastFades=False, gamma=2.2):
         """
@@ -42,6 +47,7 @@ class Renderer:
         self.useFastFades = useFastFades
         self.fade = None
         self.gammaLayer = GammaLayer(gamma)
+        self.sfx_layer = None
         
     def _get(self, playlistKey):
         if playlistKey:
@@ -68,6 +74,12 @@ class Renderer:
             for layer in self._active().selection():
                 layer.render(model, params, frame)
                 # layer.safely_render(model, params, frame)
+            if self.sfx_layer:
+                if self.sfx_layer.is_done():
+                    self.sfx_layer = None
+                else:
+                    self.sfx_layer.render(model, params, frame)
+        
         self.gammaLayer.render(model, params, frame)
         
     def advanceCurrentPlaylist(self, fadeTime=1):
@@ -79,6 +91,16 @@ class Renderer:
             self.fade = LinearFade(selection, active.selection(), fadeTime)
         else:
             raise Exception("Can't advance playlist - no playlist is currently active")
+            
+    def addSpecialEffectLayer(self, sfx_layer):
+        """ Add special effect layer (will be drawn after all other layers. There is only
+        one special effect layer, and it is expected to self-terminate by setting its 'done'
+        flag. If a second special effect layer is added while the current one is still playing,
+        the second special effect layer will displace the first.) """
+        if not hasattr(sfx_layer, "is_done"):
+            print "Special effects layer has no is_done() function, ignoring"
+        else:
+            self.sfx_layer = sfx_layer
         
 
     def _fadeTimeForTransition(self, playlist):

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:text="Spare #1a"
+        android:tag="x_button_1a"
+        android:textStyle="bold"
+        app:layout_row="0"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="Spare #1b"
+        android:tag="x_button_1b"
+        android:textStyle="bold"
+        app:layout_row="0"
+        app:layout_column="1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="Spare #1c"
+        android:tag="x_button_1c"
+        android:textStyle="bold"
+        app:layout_row="0"
+        app:layout_column="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="Spare #2a"
+        android:tag="x_button_2a"
+        android:textStyle="bold"
+        app:layout_row="1"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="Spare #2b"
+        android:tag="x_button_2b"
+        android:textStyle="bold"
+        app:layout_row="1"
+        app:layout_column="1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="Spare #2c"
+        android:tag="x_button_2c"
+        android:textStyle="bold"
+        app:layout_row="1"
+        app:layout_column="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="Spare #3a"
+        android:tag="x_button_3a"
+        android:textStyle="bold"
+        app:layout_row="2"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="Spare #3b"
+        android:tag="x_button_3b"
+        android:textStyle="bold"
+        app:layout_row="2"
+        app:layout_column="1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="Spare #3c"
+        android:tag="x_button_3c"
+        android:textStyle="bold"
+        app:layout_row="2"
+        app:layout_column="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+</merge>

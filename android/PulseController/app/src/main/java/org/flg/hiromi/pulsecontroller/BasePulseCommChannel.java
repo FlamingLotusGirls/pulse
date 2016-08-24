@@ -19,6 +19,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.flg.hiromi.pulsecontroller.Pulse.*;
 /**
  * Created by rwk on 2016-08-15.
  */
@@ -47,7 +48,7 @@ public abstract class BasePulseCommChannel extends Binder implements IPulseCommC
                     try {
                         iw.onChange(name, val, update);
                     } catch (Error | Exception t) {
-                        Log.e("SVC", "Error while reporting change.", t);
+                        Log.e(PULSE, "Error while reporting change.", t);
                         sendError(t);
                     }
                 }
@@ -86,10 +87,10 @@ public abstract class BasePulseCommChannel extends Binder implements IPulseCommC
             public void run() {
                 for (ErrWatcher ew : errWatchers) {
                     try {
-                        Log.e("SVC", "Sending error to UI", t);
+                        Log.e(PULSE, "Sending error to UI", t);
                         ew.onError(t);
                     } catch (Error | Exception t) {
-                        Log.e("SVC", "Error while reporting error.", t);
+                        Log.e(PULSE, "Error while reporting error.", t);
                     }
                 }
             }

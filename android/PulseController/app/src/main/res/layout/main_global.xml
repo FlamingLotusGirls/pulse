@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+    <TextView android:text="@string/title_slider1"
+        android:tag="@string/slider_1_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"
+        android:textSize="@dimen/control_label"
+        app:layout_column="0"
+        app:layout_columnSpan="2"
+        app:layout_row="0"
+        app:layout_gravity="center_horizontal"/>
+
+    <SeekBar
+        android:id="@+id/slider1"
+        android:max="255"
+        android:indeterminate="false"
+        android:progress="60"
+        android:tag="@string/slider_1_tag"
+        app:layout_column="0"
+        app:layout_row="1"
+        app:layout_columnSpan="2"
+        app:layout_gravity="fill_horizontal"/>
+
+    <Button
+        android:text="@string/fx_1"
+        android:id="@+id/button_fx_1"
+        android:tag="@string/fx_1_tag"
+        android:textStyle="bold"
+        app:layout_column="0"
+        app:layout_row="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1" />
+
+    <Button
+        android:text="@string/fx_2"
+        android:id="@+id/button_fx_2"
+        android:tag="@string/fx_2_tag"
+        android:textStyle="bold"
+        app:layout_column="1"
+        app:layout_row="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1" />
+
+</merge>

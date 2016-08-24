@@ -20,6 +20,7 @@ import serial
 import socket
 import struct
 import sys
+from commands import *
 
 # Common variables
 #BROADCAST_ADDR = "224.51.105.104"
@@ -46,23 +47,16 @@ effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
            ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]]}
 
 
-# Commands
-class Commands():
-    STOP_ALL             = 1
-    STOP_HEARTBEAT       = 2
-    START_HEARTBEAT      = 3
-    START_EFFECT         = 4
-    STOP_EFFECT          = 5
-    USE_HEARTBEAT_SOURCE = 6
-
-
 running = True
+heartBeatListener = None
+commandListener   = None
+ser = None #XXX need to handle serial disconnect, restart
+eventQueue = None # NB - don't need a real queue here. Only one thread
 allowHeartBeats = True
 currentHeartBeatSource = 0
 ser = None
 previousHeartBeatTime = None
-gReceiverId = 0  # XXX need to set the receiver Id, or more properly, the unit id, from a file or something
-
+gReceiverId = 0
 gCurrentHeartBeat  = None
 gNextHeartBeat     = None
 gNextNextHeartBeat = None
@@ -186,24 +180,24 @@ def sortEventQueue():
 
 def handleCommandData(commandData):
     global currentHeartBeatSource
-    receiverId, commandTrackingId, commandId = struct.unpack("=BBH", commandData)
-    if receiverId is gReceiverId:                  # it's for us!
+    receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
+    if receiverId is gReceiverId  or receiverId is ALL_LISTENERS: # it's for us!
         if commandId is Command.STOP_ALL:
             removeAllEffects()
         elif commandId is Command.STOP_HEARTBEAT:
             allowHeartBeats = False
             stopHeartBeat()
-        elif commandId is Command.START_EFFECT:
-            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-            loadEffect(effectId, datetime.datetime.now())
-        elif commandId is Command.STOP_EFFECT:
-            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
-            removeEffect(effectId)
+#        elif commandId is Command.START_EFFECT:
+#            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
+#            loadEffect(effectId, datetime.datetime.now())
+#        elif commandId is Command.STOP_EFFECT:
+#            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
+#            removeEffect(effectId)
         elif commandId is Command.START_HEARTBEAT:
             allowHeartBeats = True
         elif commandId is Command.USE_HEARTBEAT_SOURCE:
-            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
-            currentHeartBeatSource = pod_id
+#            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
+            currentHeartBeatSource = data
 
         sortEventQueue()
 
@@ -278,6 +272,7 @@ def loadEffect(effectId, starttime, repeatMs=0):
     return globalId
 
 def removeAllEffects():
+    global eventQueue
     eventQueue = []
 
 def stopHeartBeat():
@@ -401,13 +396,25 @@ def sendEvents():
                 if instanceId != None:
                     print "Auto schedule instance ", instanceId
                     sortEventQueue()
+                
 
-if __name__ == '__main__':
+def main():
+    global running
+    global heartBeatListener
+    global commandListener
+    global ser
+    global eventQueue
+    global gReceiverId
     running = True
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
     commandListener   = createBroadcastListener(COMMAND_PORT)
     ser = initSerial() #XXX need to handle serial disconnect, restart
     eventQueue = [] # NB - don't need a real queue here. Only one thread
+    
+    if len(sys.argv) > 1:
+        gReceiverId = int(sys.argv[1])
+        
+    print "gReceiverId is ", gReceiverId
     try:
         while (running):
             readfds = [heartBeatListener, commandListener]
@@ -437,6 +444,9 @@ if __name__ == '__main__':
         running = False
         heartBeatListener.close()
         commandListener.close()
+
+if __name__ == '__main__':
+    main()
 
 
 # heart beat comes in... scheduled for .8 seconds in future... new heart beat comes in... removes

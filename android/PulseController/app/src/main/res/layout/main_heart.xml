@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:text="@string/button_1"
+        android:tag="@string/button_1_tag"
+        android:textStyle="bold"
+        app:layout_row="0"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="@string/button_2"
+        android:tag="@string/button_2_tag"
+        android:textStyle="bold"
+        app:layout_column="0"
+        app:layout_row="1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="@string/button_3"
+        android:tag="@string/button_3_tag"
+        android:textStyle="bold"
+        app:layout_row="2"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="@string/button_1b"
+        android:tag="@string/button_1b_tag"
+        android:textStyle="bold"
+        app:layout_column="1"
+        app:layout_row="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1" />
+
+    <Button
+        android:text="@string/button_2b"
+        android:tag="@string/button_2b_tag"
+        android:textStyle="bold"
+        app:layout_column="1"
+        app:layout_row="1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="@string/button_3b"
+        android:tag="@string/button_3b_tag"
+        android:textStyle="bold"
+        app:layout_column="1"
+        app:layout_row="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1" />
+
+    <Button
+        android:text="@string/button_3c"
+        android:tag="@string/button_3c_tag"
+        android:textStyle="bold"
+        app:layout_column="2"
+        app:layout_row="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="4" />
+
+    <Spinner
+        android:id="@+id/spinner_1"
+        android:entries="@array/spinner_1_entries"
+        android:background="@android:drawable/btn_dropdown"
+        android:popupBackground="@android:drawable/btn_default_small"
+        android:tag="@string/spinner_1_tag"
+        android:spinnerMode="dialog"
+        style="@android:style/Widget.Spinner.DropDown"
+        app:layout_row="0"
+        app:layout_column="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="4"
+        android:layout_width="75dp" />
+
+
+    <Button
+        android:text="@string/button_4a"
+        android:tag="@string/button_4a_tag"
+        android:textStyle="bold"
+        app:layout_row="3"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="@string/button_4b"
+        android:tag="@string/button_4b_tag"
+        android:textStyle="bold"
+        app:layout_row="3"
+        app:layout_column="1"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="1"/>
+
+    <Button
+        android:text="@string/button_4c"
+        android:tag="@string/button_4c_tag"
+        android:textStyle="bold"
+        app:layout_row="3"
+        app:layout_column="2"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnWeight="4"/>
+</merge>

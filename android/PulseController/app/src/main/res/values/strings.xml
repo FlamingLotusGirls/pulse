@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">PulseController</string>
+    <string name="app_name_more">More Buttons</string>
     <string name="hello_world">Hi, Alien Overlords</string>
     <string name="action_settings">Settings</string>
     <string name="test">Large Text</string>
@@ -55,19 +56,25 @@
     <string name="button_1b">Chase</string>
     <string name="button_2b">All Poof</string>
     <string name="button_3b">Heart FX 1</string>
-    <string name="button_4b">Heart FX 2</string>
+    <string name="button_3c">Heart FX 2</string>
     <string name="button_1b_tag">chase</string>
     <string name="button_2b_tag">all_poof</string>
     <string name="button_3b_tag">heart_fx_1</string>
-    <string name="button_4b_tag">heart_fx_2</string>
+    <string name="button_3c_tag">heart_fx_2</string>
 
+    <string name="button_4a">DMX 1</string>
+    <string name="button_4b">DMX 2</string>
+    <string name="button_4c">DMX 3</string>
+    <string name="button_4a_tag">hrt_dmx_1</string>
+    <string name="button_4b_tag">hrt_dmx_2</string>
+    <string name="button_4c_tag">hrt_dmx_3</string>
 
     <string name="button_1_pod">Sound 1</string>
     <string name="button_2_pod">Sound 2</string>
     <string name="button_3_pod">Sound 3</string>
     <string name="button_1_p1_tag">sound_1_1</string>
     <string name="button_2_p1_tag">sound_2_1</string>
-    <string name="button_3_p1_tag">sound_3_3</string>
+    <string name="button_3_p1_tag">sound_3_1</string>
     <string name="button_1_p2_tag">sound_1_2</string>
     <string name="button_2_p2_tag">sound_2_2</string>
     <string name="button_3_p2_tag">sound_3_2</string>
@@ -95,10 +102,12 @@
     <string name="spinner_1_p1_tag">source_1</string>
     <string name="spinner_1_p2_tag">source_2</string>
 
-    <!-- Descrptions of the three beating hearts -->
-    <string name="heartbeat_1">Heartbeat Left</string>
-    <string name="heartbeat_2">Heartbeat Synth</string>
-    <string name="heartbeat_3">Heartbeat Right</string>
+    <!-- Descrptions of the five beating hearts -->
+    <string name="heartbeat_1">Heartbeat Autogen</string>
+    <string name="heartbeat_2">Heartbeat Pod 1</string>
+    <string name="heartbeat_3">Heartbeat Pod 2</string>
+    <string name="heartbeat_4">Heartbeat MUI Left</string>
+    <string name="heartbeat_5">Heartbeat MUI Right</string>
 
     <!-- Drop-down list of heartbeat sources. Ordered by ID -->
     <string-array name="spinner_1_entries">

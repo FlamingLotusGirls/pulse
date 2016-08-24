@@ -6,19 +6,19 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import static org.flg.hiromi.pulsecontroller.Pulse.*;
 
 public class HeartbeatService extends Service {
     private volatile boolean runOK = false;
@@ -59,6 +59,7 @@ public class HeartbeatService extends Service {
     }
 
     public void sendError(final Throwable e) {
+        Log.e(PULSE, "Error", e);
         main.post(new Runnable() {
             @Override
             public void run() {
@@ -79,6 +80,7 @@ public class HeartbeatService extends Service {
                 DatagramSocket sock = new DatagramSocket(null);
                 sock.setReuseAddress(true);
                 sock.bind(new InetSocketAddress(5000));
+                Log.i(PULSE, "Socket open on port 5000");
                 return sock;
             } catch (SocketException e) {
                 sendError(e);
@@ -99,6 +101,7 @@ public class HeartbeatService extends Service {
 
     private final class HeartbeatThread extends Thread {
         public void run() {
+            Log.i(PULSE, "PULSE Thread Started");
             while (runOK && heartbeatThread == this) {
                 byte[] data = new byte[20];
                 DatagramPacket pkt = new DatagramPacket(data, data.length);
@@ -118,8 +121,11 @@ public class HeartbeatService extends Service {
                             );
                             sendBeat(pulse);
                         }
+                    } else {
+                        Log.e(PULSE, "No Socket");
                     }
                 } catch (IOException e) {
+                    Log.e(PULSE, "Socket error", e);
                     sendError(e);
                 }
             }
@@ -129,18 +135,22 @@ public class HeartbeatService extends Service {
     private volatile Thread heartbeatThread = null;
 
     private void startThread() {
+        Log.i(PULSE, "Starting PULSE Thread");
         if (!runOK) {
             int port = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this)
                                             .getString("heartbeat_port", "5000"));
             heartbeatSocket = openSocket(port);
             runOK = true;
-            heartbeatThread = new HeartbeatThread();
-            heartbeatThread.start();
+            if (heartbeatThread == null) {
+                heartbeatThread = new HeartbeatThread();
+                heartbeatThread.start();
+            }
         }
     }
 
     @Override
     public void onCreate() {
+        Log.i(PULSE, "Create Heartbeat");
         super.onCreate();
         main = new Handler(getMainLooper());
         startThread();
@@ -148,19 +158,30 @@ public class HeartbeatService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.i(PULSE, "Bind Heartbeat");
         startThread();
         return new Channel();
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
+        Log.i(PULSE, "Unbind Heartbeat");
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(PULSE, "Destroy Heartbeat Service");
         runOK = false;
+        if (heartbeatThread != null) {
+            heartbeatThread.interrupt();;
+        }
         heartbeatThread = null;
         DatagramSocket s = heartbeatSocket;
         if (s != null) {
             heartbeatSocket = null;
             s.disconnect();
         }
-        return super.onUnbind(intent);
+        super.onDestroy();
     }
 }

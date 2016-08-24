@@ -15,18 +15,28 @@ PORT=5000
 HOME=/home/flaming
 BPMMON=$HOME/pulse/BPM/PulsePolarBPM
 SOUND=$HOME/pulse/audio/sound_test
+OPCSERVER=$HOME/fadecandy/bin/fcserver-rpi
 
 BPMLOG=/var/log/pod.log
 SOUNDLOG=/var/log/sound.log
+OPCLOG=/var/log/opc_server.log
+LEDLOG=/var/log/opc_client.log
 
-$HOME/pulse/pi_startup/cycleLogs.sh $BPMLOG
+CYCLELOGS=$HOME/pulse/pi_startup/cycleLogs.sh
+
+$CYCLELOGS $BPMLOG
+$CYCLELOGS $SOUNDLOG
+$CYCLELOGS $OPCLOG
+#$CYCLELOGS $LEDLOG
 
 # start BPM monitor. Need to background this.
 stdbuf -oL $BPMMON -i$PODID -a$IP -p$PORT >& $BPMLOG &
 
+# start OPC server
+stdbuf -oL $OPC_SERVER $OPC_CONFIG >& $OPC_LOG &
+
 # start LED monitor... background.
 
-$HOME/pulse/pi_startup/cycleLogs.sh $SOUNDLOG
 # start audio ...
 stdbuf -oL $SOUND -i$PODID >& $SOUNDLOG &
 

@@ -1,0 +1,76 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
+    android:id="@+id/nandesuka"
+    android:background="@drawable/heart_image_fx">
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/group_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_margin="2sp"
+        app:columnCount="3"
+        app:rowCount="4"
+        app:useDefaultMargins="true"
+        android:background="@drawable/border" >
+
+    <include layout="@layout/more_buttons"/>
+
+    </android.support.v7.widget.GridLayout>
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/group_4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/group_3"
+        android:layout_margin="2sp"
+        app:columnCount="2"
+        app:rowCount="8"
+        app:useDefaultMargins="true"
+        android:background="@drawable/border" >
+
+        <include layout="@layout/more_sliders" />
+
+    </android.support.v7.widget.GridLayout>
+
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/group_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/group_1"
+        android:layout_margin="2sp"
+        app:layout_gravity="fill_horizontal"
+        app:layout_row="1"
+        app:layout_column="0"
+        app:columnCount="3"
+        app:rowCount="4"
+        app:useDefaultMargins="true"
+        android:background="@drawable/border" >
+
+        <include layout="@layout/more_switches"/>
+
+    </android.support.v7.widget.GridLayout>
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/group_3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/group_2"
+        android:layout_margin="2sp"
+        app:columnCount="3"
+        app:rowCount="4"
+        app:useDefaultMargins="true"
+        android:background="@drawable/border" >
+
+        <include layout="@layout/more_spinners"/>
+
+    </android.support.v7.widget.GridLayout>
+    <include layout="@layout/status_bar"/>
+</RelativeLayout>
