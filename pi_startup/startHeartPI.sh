@@ -2,7 +2,7 @@
 #
 # This script is meant to be the startup for the HEART raspberry pi.
 #
-# It will start the listener to the BPM on the network for flipping 
+# It will start the listener to the BPM on the network for flipping
 # fire solendoids.
 #
 # Assumptions: NONE! use global paths ...
@@ -23,7 +23,9 @@ echo starting HEART PI on `hostname` > $HB_LOG
 
 stdbuf -oL python $CONTROL $PODID >> $HB_LOG 2>&1 &
 
+rmmod usbserial
+rmmod ftdi_sio
+
 echo starting DMX PI on `hostname` > $DMX_LOG
 
 stdbuf -oL python $DMX $PODID >> $DMX_LOG 2>&1 &
- 
