@@ -102,7 +102,7 @@ def handleHeartBeatData(heartBeatData):
 	### This structure has to match the one in BPMPulseData_t BPMPulse.h
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
     print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox)
-    if pod_id is currentHeartBeatSource and allowHeartBeats and bpmApprox != 0:
+    if pod_id is currentHeartBeatSource and allowHeartBeats and bpmApprox != 0 and beatIntervalMs > 0:
 #        stopHeartBeat() # XXX should allow the last bit of the heart beat to finish, if we're in the middle
 
         if beatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...

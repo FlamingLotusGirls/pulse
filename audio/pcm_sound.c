@@ -144,7 +144,7 @@ void pcmPlayHeartBeat(unsigned int freqBPM, unsigned char volume)
         freqBPM = HB_FREQ_MIN;
     }
     
-    printf("BPM is %d, periodMs is %d\n", freqBPM, 1000*60/freqBPM);
+    //printf("BPM is %d, periodMs is %d\n", freqBPM, 1000*60/freqBPM);
 
     // Get sound appropriate for this frequency
     sound = PcmConfig_getHbSound(freqBPM);
@@ -224,7 +224,7 @@ int pcmPlaybackInit()
     attrs.mq_msgsize = sizeof(PcmSoundMsg);
     
     
-    printf("creating message queue with attrs!, message size is %ld\n", attrs.mq_msgsize);
+    //printf("creating message queue with attrs!, message size is %ld\n", attrs.mq_msgsize);
     
     // This wipes out the message queue - remove for production XXX
     mq_unlink("/Pulse_PCM_MQ");
@@ -518,7 +518,7 @@ static void* pcmPlaybackThread(void *arg)
                                 // This message has expired. Ignore it. 
                                 printf("Received expired message, ignoring\n");  */
                             } else {
-                                printf("SOUND MESSAGE RECEIVED, sound is %s\n", soundMsg.name);
+                                //printf("SOUND MESSAGE RECEIVED, sound is %s\n", soundMsg.name);
                                 // Look up in linked list
                                 PulseSound *sound;
                                 if (!m_soundList) {
@@ -529,7 +529,7 @@ static void* pcmPlaybackThread(void *arg)
                                     while (curSound) {
                                         sound = (PulseSound *)(curSound->data);
                                         if (!strcmp(sound->name, soundMsg.name)) {
-                                            printf("Updating existing sound\n");
+                                            //printf("Updating existing sound\n");
                                             pulseSoundUpdate(sound, &soundMsg);
                                             break;
                                         }
@@ -571,7 +571,7 @@ static void* pcmPlaybackThread(void *arg)
                         m_totalFrames += m_periodSize_frames;
                         if (m_totalFrames >= m_frameRate) {
                             m_totalFrames = 0;
-                            printf("SECOND\n");
+                            //printf("SECOND\n");
                         }
 
                         // for each sound, call soundFillLocalBuffer();
@@ -710,7 +710,7 @@ static int soundFillLocalBuffer(PulseSound *sound) {
         if (sound->currentSoundDataPtr - sound->currentSoundData >= sound->currentSoundDataLen * bytesPerFrame) {  
             // we've finished the current sound. Reset variables. 
             // But first, set the next sound if there isn't one already
-            printf("!!!! Finished current sound %s\n", sound->name);
+            //printf("!!!! Finished current sound %s\n", sound->name);
             if (sound->oneShot) {
                 deleteSound = TRUE;
             } else if (!sound->nextSoundData /*&& sound->periodFrames*/) {  // Auto fill the next sound, if there is no queue'd one
@@ -721,8 +721,8 @@ static int soundFillLocalBuffer(PulseSound *sound) {
                     printf("!!!! Maximum beat frequency for sound %s\n", sound->name);
                     sound->nextSoundTimeFrames = 0;
                 }
-                printf("Auto filling next sound, nextSoundtimeFrames is %d\n", sound->nextSoundTimeFrames);
-                printf("Sound period frames is %d\n", sound->periodFrames);
+                //printf("Auto filling next sound, nextSoundtimeFrames is %d\n", sound->nextSoundTimeFrames);
+                //printf("Sound period frames is %d\n", sound->periodFrames);
             }
             sound->currentSoundData    = NULL;
             sound->currentSoundDataPtr = NULL;
@@ -748,7 +748,7 @@ static int soundFillLocalBuffer(PulseSound *sound) {
         // Next sound, if there's space for it
         if (totalFramesFilled < m_periodSize_frames) {
             assert(sound->nextSoundData);
-            printf("Starting to play sound %s\n", sound->name);
+            //printf("Starting to play sound %s\n", sound->name);
             sound->currentSoundData      = sound->nextSoundData;
             sound->currentSoundDataPtr   = sound->currentSoundData;
             sound->currentSoundDataLen   = sound->nextSoundDataLen;
@@ -817,7 +817,7 @@ static snd_pcm_sframes_t getAudioDelay(void)
         delayFrames = snd_pcm_status_get_delay(status);
     }
     
-    printf("Audio delay is %ld frames\n", (long)delayFrames);
+    //printf("Audio delay is %ld frames\n", (long)delayFrames);
     return delayFrames;
 }
 
@@ -937,11 +937,11 @@ static PulseSound *pulseSoundUpdate(PulseSound *sound, PcmSoundMsg *soundMsg) {
     int deltaNs = nextTime.tv_nsec - currentTime.tv_nsec;
     int nextSoundDelayMs = (deltaS * 1000) +  deltaNs/1000000; // how long to wait to play the next sound
     nextSoundDelayMs = MAX(0, nextSoundDelayMs);
-    printf("Next sound delay (ms) is %d\n", nextSoundDelayMs);
+    //printf("Next sound delay (ms) is %d\n", nextSoundDelayMs);
     int nextSoundDelayFrames = (nextSoundDelayMs * m_frameRate)/1000;
     snd_pcm_sframes_t delayFrames = getAudioDelay();
-    int delayMs = delayFrames*1000/m_frameRate; // XXXX check this
-    printf("Audio buffer delay (ms) is %d\n", delayMs);
+    //int delayMs = delayFrames*1000/m_frameRate; // XXXX check this
+    //printf("Audio buffer delay (ms) is %d\n", delayMs);
     
     // Which spot in the queue this goes into depends on what we've currently
     // got queued
@@ -949,29 +949,29 @@ static PulseSound *pulseSoundUpdate(PulseSound *sound, PcmSoundMsg *soundMsg) {
         sound->nextSoundData    = soundMsg->soundBuf;
     //    sound->nextSoundDataLen = soundMsg->bufLen/(m_nChannels * m_bytesPerSample); // get length in frames
         sound->nextSoundDataLen = soundMsg->bufLen/(m_bytesPerSample); // get length in frames - NB - PulseSound is Mono!
-        printf("Sound is %d frames (%d bytes)\n", sound->nextSoundDataLen, soundMsg->bufLen);
+        //printf("Sound is %d frames (%d bytes)\n", sound->nextSoundDataLen, soundMsg->bufLen);
 
         sound->nextSoundTimeFrames = nextSoundDelayFrames - delayFrames;
         sound->nextSoundTimeFrames = MAX(0, sound->nextSoundTimeFrames);
-        printf("NextSoundTimeFrames is %d\n", sound->nextSoundTimeFrames);
-        printf("Wait time between sounds is %d\n", soundMsg->periodMs);
+        //printf("NextSoundTimeFrames is %d\n", sound->nextSoundTimeFrames);
+        //printf("Wait time between sounds is %d\n", soundMsg->periodMs);
     } else {
-        printf("Already have nextSound, queuing after\n");
+        //printf("Already have nextSound, queuing after\n");
         sound->nextNextSoundData    = soundMsg->soundBuf;
     //    sound->nextNextSoundDataLen = soundMsg->bufLen/(m_nChannels * m_bytesPerSample); // get length in frames
         sound->nextNextSoundDataLen = soundMsg->bufLen/(m_bytesPerSample); // get length in frames - NB - PulseSound is Mono!
-        printf("Sound is %d frames (%d bytes)\n", sound->nextNextSoundDataLen, soundMsg->bufLen);
+        //printf("Sound is %d frames (%d bytes)\n", sound->nextNextSoundDataLen, soundMsg->bufLen);
 
         sound->nextNextSoundTimeFrames = nextSoundDelayFrames - delayFrames;
         sound->nextNextSoundTimeFrames = MAX(0, sound->nextNextSoundTimeFrames);
-        printf("NextSoundTimeFrames is %d\n", sound->nextNextSoundTimeFrames);
+        //printf("NextSoundTimeFrames is %d\n", sound->nextNextSoundTimeFrames);
     }
-    printf("Wait time between sounds is %d\n", soundMsg->periodMs);
+    //printf("Wait time between sounds is %d\n", soundMsg->periodMs);
     sound->periodFrames = (soundMsg->periodMs * m_frameRate)/ 1000;
     sound->volume   = soundMsg->volume;
     sound->channel  = soundMsg->channels;
     sound->oneShot  = soundMsg->oneShot;
-    printf("Sound volume is %d\n", sound->volume);
+    //printf("Sound volume is %d\n", sound->volume);
     
     return sound;
 }

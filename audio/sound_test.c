@@ -206,7 +206,7 @@ static void pulseAudioListen()
 //        printf("After select, rv is %d\n", rv);
         
         if (rv == 0) {
-            printf("listen timeout... all is well...\n");  // leaving this in because Dave likes it
+//            printf("listen timeout... all is well...\n");  // leaving this in because Dave likes it
             continue; // timeout, nothing to do.
         }
         
@@ -215,9 +215,9 @@ static void pulseAudioListen()
             continue;
         }
         
-        if (rv > 0) {
-            printf("Select returns event\n");
-        }
+//        if (rv > 0) {
+//            printf("Select returns event\n");
+//        }
         
         if (FD_ISSET(cmdSocket, &read_fds)) {
             // receive command datagram
@@ -228,7 +228,7 @@ static void pulseAudioListen()
             } else if (numBytesRead < sizeof(command)) {
                 printf("WARNING: Command socket: Receiving fewer bytes than expected, ignoring\n"); // Do we want/need to do anything with this?
             } else {
-                printf("Received data on command socket\n");
+                //printf("Received data on command socket\n");
                 // a real live command to parse!
                 if (command.receiver_id == myId || command.receiver_id == ALL_RECEIVERS) {
                     if (command.command_id == HEARTBEAT_SOURCE) {
@@ -250,7 +250,7 @@ static void pulseAudioListen()
                 printf("WARNING: HB socket: Receiving fewer bytes than expected, ignoring\n"); // Do we want/need to do anything with this?
             } else {
                 // a real, live heartbeat!
-                printf("Received data on hb socket, id is %d\n", hbData.pod_id);
+                //printf("Received data on hb socket, id is %d\n", hbData.pod_id);
                 if (hbData.pod_id == hbSource) {
                     uint32_t hbRate = hbData.est_BPM; // yes, I am rounding here.
                     if (hbRate < 30 || hbRate > 200) { 
@@ -258,7 +258,7 @@ static void pulseAudioListen()
 			hbRate = MAX(hbRate,30);
 			hbRate = MIN(hbRate,200);
                     } else {
-                        printf("received heart beat at %d\n", hbRate);
+                        //printf("received heart beat at %d\n", hbRate);
                     }
                     pcmPlayHeartBeat(hbRate, 128);
                 }

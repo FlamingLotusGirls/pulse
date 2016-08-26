@@ -99,7 +99,7 @@ def handleHeartBeatData(heartBeatData):
 
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
 
-    if pod_id is currentHeartBeatSource and allowHeartBeats:
+    if pod_id is currentHeartBeatSource and allowHeartBeats and beatIntervalMs > 0:
 
         if beatOffsetMs < beatIntervalMs:
             heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
@@ -330,6 +330,7 @@ def initDMX():
     return None
 
 def main(args):
+    global gReceiverId
     running = True
     dmx = initDMX()
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
