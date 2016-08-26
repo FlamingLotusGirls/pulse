@@ -102,13 +102,13 @@ def handleHeartBeatData(heartBeatData):
 	### This structure has to match the one in BPMPulseData_t BPMPulse.h
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
     print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox)
-    if pod_id is currentHeartBeatSource and allowHeartBeats:
+    if pod_id is currentHeartBeatSource and allowHeartBeats and bpmApprox != 0:
 #        stopHeartBeat() # XXX should allow the last bit of the heart beat to finish, if we're in the middle
 
         if beatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...
             heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
         else:
-            heartBeatStartTime = datetime.dateTime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
+            heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
 
         #if previousHeartBeatTime:
         #    heartBeatStartTime = previousHeartBeatTime + datetime.timedelta(milliseconds = beatIntervalMs)
@@ -398,7 +398,7 @@ def sendEvents():
                     sortEventQueue()
                 
 
-def main():
+def main(args):
     global running
     global heartBeatListener
     global commandListener
@@ -411,8 +411,8 @@ def main():
     ser = initSerial() #XXX need to handle serial disconnect, restart
     eventQueue = [] # NB - don't need a real queue here. Only one thread
     
-    if len(sys.argv) > 1:
-        gReceiverId = int(sys.argv[1])
+    if len(args) > 1:
+        gReceiverId = int(args[1])
         
     print "gReceiverId is ", gReceiverId
     try:
@@ -446,7 +446,7 @@ def main():
         commandListener.close()
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
 
 
 # heart beat comes in... scheduled for .8 seconds in future... new heart beat comes in... removes

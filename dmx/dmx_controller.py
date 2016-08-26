@@ -22,9 +22,9 @@ COMMAND_PORT   = 5001
 MULTICAST_TTL  = 4
 BAUDRATE       = 19200
 
-DMX_RED_CHANNEL = 2
+DMX_RED_CHANNEL   = 2
 DMX_GREEN_CHANNEL = 3
-DMX_BLUE_CHANNEL = 4
+DMX_BLUE_CHANNEL  = 4
 DMX_WHITE_CHANNEL = 5
 DMX_CHANNEL_COUNT = 6 # Can be 6/7/8/12
 
@@ -104,7 +104,7 @@ def handleHeartBeatData(heartBeatData):
         if beatOffsetMs < beatIntervalMs:
             heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
         else:
-            heartBeatStartTime = datetime.dateTime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
+            heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
 
         instanceId = loadEffect(HEARTBEAT, heartBeatStartTime, beatIntervalMs)
 
@@ -319,24 +319,25 @@ def processStrobe(event):
     eventQueue.append(event)
     sortEventQueue()
 
-
+# XXX FIXME - WE HAVE TWO FTDI DEVICES ON THIS THING. WE CANNOT MAKE ASSUMPTIONS ABOUT WHICH IS
+# THE ENTEC AND WHICH IS THE HEART CONTROL BOX. NEED TO INTERREGATE THE USB DEVICE
 def initDMX():
     for filename in os.listdir("/dev"):
         if filename.startswith("tty.usbserial"):  # this is the ftdi usb cable on the Mac
             return pysimpledmx.DMXConnection("/dev/" + filename)
-        elif filename.startswith("ttyUSB0"):      # this is the ftdi usb cable on the Pi (Linux Debian)
+        elif filename.startswith("ttyUSB1"):      # this is the ftdi usb cable on the Pi (Linux Debian)
             return pysimpledmx.DMXConnection("/dev/" + filename)
     return None
 
-def main():
+def main(args):
     running = True
     dmx = initDMX()
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
     commandListener   = createBroadcastListener(COMMAND_PORT)
     eventQueue = []
 
-    if len(sys.argv) > 1:
-        gReceiverId = int(sys.argv[1])
+    if len(args) > 1:
+        gReceiverId = int(args[1])
 
     try:
         while (running):
@@ -377,4 +378,4 @@ def main():
         commandListener.close()
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)

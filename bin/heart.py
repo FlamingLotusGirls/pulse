@@ -8,4 +8,4 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              '..')))
 
 from network import heartbeat_controller # should really be a class that init's self if run from cli (__name == __main__)
-heartbeat_controller.main()
+heartbeat_controller.main(sys.argv)

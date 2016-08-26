@@ -9,4 +9,4 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              '../dmx')))
 import dmx_controller # should really be a class that init's self if run from cli (__name == __main__)
-dmx_controller.main()
+dmx_controller.main(sys.argv)
