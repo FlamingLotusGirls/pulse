@@ -17,28 +17,28 @@ BPMMON=$HOME/pulse/BPM/PulsePolarBPM
 SOUND=$HOME/pulse/audio/sound_test
 OPC_SERVER=$HOME/fadecandy/bin/fcserver-rpi
 OPC_CONFIG=$HOME/pulse/pi_startup/pulse_fc-config.json
+POD_LED=$HOME/pulse/bin/pod.py
 
 BPMLOG=/var/log/pod.log
 SOUNDLOG=/var/log/sound.log
 OPCLOG=/var/log/opc_server.log
-LEDLOG=/var/log/opc_client.log
-
+LEDLOG=/var/log/led.log
 
 CYCLELOGS=$HOME/pulse/pi_startup/cycleLogs.sh
 
 $CYCLELOGS $BPMLOG
 $CYCLELOGS $SOUNDLOG
 $CYCLELOGS $OPCLOG
-#$CYCLELOGS $LEDLOG
+$CYCLELOGS $LEDLOG
 
 # start BPM monitor. Need to background this.
 stdbuf -oL $BPMMON -i$PODID -a$IP -p$PORT >& $BPMLOG &
 
 # start OPC server
 stdbuf -oL $OPC_SERVER $OPC_CONFIG  &
-#stdbuf -oL "$OPC_SERVER" >& $OPCLOG &
 
-# start LED monitor... background.
+# start LED code 
+stdbuf -oL $POD_LED $PODID >& $LEDLOG &
 
 # start audio ...
 stdbuf -oL $SOUND -i$PODID >& $SOUNDLOG &

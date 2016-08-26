@@ -278,9 +278,10 @@ def main():
     # sys.stderr = sys.stdout
     # old.close()
 
-    print "Starup, PID", os.getpid()
+    print "Startup, PID", os.getpid()
 
     if len(sys.argv) > 1:
+        print "Receiver Id is", int(sys.argv[1])
         gReceiverId = int(sys.argv[1])
 
     pod = PodController(None, 3)    

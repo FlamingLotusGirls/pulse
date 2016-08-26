@@ -9,4 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              '../pods/opc-client')))
 import pod_client # should really be a class that init's self if run from cli (__name == __main__)
-pod_client.main()
+if len(sys.argv) > 1:
+    pod_client.main()
+else:
+    pod_client.main(sys.argv[1])
