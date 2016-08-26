@@ -18,7 +18,6 @@ class OrbitalLayer(EffectLayer):
     def render(self, model, params, frame):
         self.hue = self.increment(self.hue, self.hueSpeed)
         # self.saturation = self.increment(self.saturation, self.saturationSpeed)
-        print params
         _2pi = 2.0 * math.pi
         t_center = ((params.time % self.orbital_period) / self.orbital_period) * _2pi
         x, y = math.cos(t_center), self.rotation_direction * math.sin(t_center)
