@@ -120,7 +120,7 @@ class PulseListenerThread(Thread):
         # I believe this is thread-safe because of the python GIL
         self.masterParams.nextHeartBeatStartTime = self.nextHeartBeatStartTime
         self.masterParams.lastHeartBeatStartTime = self.lastHeartBeatStartTime
-        self.masterParams.bps                   = self.bps
+        self.masterParams.bps                    = self.bps
 
     def terminate(self):
         self.running = False
@@ -225,8 +225,8 @@ class PodController(object):
         playlist = Playlist([
             [
               AverageLayer(
-                OrbitalLayer(0.0013, 0.0011, 3.0, 5.0, 1, 3.0),
-                OrbitalLayer(0.0007, 0.0011, 5.0, 5.0, -1, 5.0),
+                OrbitalLayer(0.0013, 0.0011, 3.0, 5.0, 1, 13.0),
+                OrbitalLayer(0.0007, 0.0011, 8.0, 5.0, -1, 15.0),
               )
             ],
         ])

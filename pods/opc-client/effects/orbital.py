@@ -18,28 +18,30 @@ class OrbitalLayer(EffectLayer):
     def render(self, model, params, frame):
         self.hue = self.increment(self.hue, self.hueSpeed)
         # self.saturation = self.increment(self.saturation, self.saturationSpeed)
-
+        print params
         _2pi = 2.0 * math.pi
         t_center = ((params.time % self.orbital_period) / self.orbital_period) * _2pi
         x, y = math.cos(t_center), self.rotation_direction * math.sin(t_center)
-        t_radius = 0.7#((params.time % self.radius_period) / self.radius_period) * _2pi
+        t_radius = ((params.time % self.radius_period) / self.radius_period) * _2pi
         radius = (math.sin(t_radius) + 1.0) / 2.0
         x = (x * radius + 1.0) / 2.0 # put [-1,1] into positive unit coord space
         y = (y * radius + 1.0) / 2.0
         t_r1 = ((params.time % self.r1_period) / self.r1_period) * _2pi
-        r1 = 0.2 + ((math.sin(t_radius) + 1.0) / 2.0) / 2.0
+        r1 = 0.2 + ((math.sin(t_r1) + 1.0) / 2.0) / 2.0
         a1 = 3
         branches = [model.branch1Indices, model.branch2Indices, model.branch3Indices, model.branch4Indices]
         for idx1, branchIndices in enumerate(branches):
             x_norm = float(idx1) / (len(branches) - 1)
             for idx2, i in enumerate(branchIndices):
                 y_norm = float(idx2) / (len(branchIndices) - 1)
-                dist = math.sqrt((x_norm - x) ** 2 + (y_norm - y) ** 2)
+                dist = math.sqrt((x_norm - x)  ** 2 + (y_norm - y) ** 2)
                 value = 1.0 / (dist / r1) ** a1
+                pump = params.beat_amplitude()
+                value = (0.5 * pump) + (0.8 * value)
                 frame[i] = numpy.array(colorsys.hsv_to_rgb(self.hue, self.saturation, value))
 
     def increment(self, value, step):
         value += step
-        if value>1:
+        if value > 1:
             value -= 1
         return value
