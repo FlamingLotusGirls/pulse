@@ -46,7 +46,7 @@ COMMAND_PORT   = 5001
 MULTICAST_TTL  = 4
 ALL_RECEIVERS  = 255
 
-gReceiverId = 3
+gReceiverId = 0 
 
 class PulseListenerThread(Thread):
     allowHeartBeats = True
@@ -81,9 +81,10 @@ class PulseListenerThread(Thread):
         try:
             readfds = [self.heartBeatListener, self.commandListener]
             if self.nextHeartBeatStartTime:
-                waitTime = datetime.datetime.now() - self.nextHeartBeatStartTime
-                waitTime = max(waitTime, 0)
-                inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime)
+                waitTime = self.nextHeartBeatStartTime - datetime.datetime.now() 
+                if waitTime < datetime.timedelta(seconds=0):
+                    waitTime = datetime.timedelta(seconds=0)
+                inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime.total_seconds())
             else:
                 inputReady, outputReady, exceptReady = select(readfds, [], []) 
             if inputReady:
@@ -97,20 +98,25 @@ class PulseListenerThread(Thread):
                         self.handleCommandData(commandData)
             # if we've gone past the nextHeartBeatStartTime, move up
             if self.nextHeartBeatStartTime:
-                if datetime.datatime.now() - self.nextHeartBeatStartTime <= 0:  
+               if self.nextHeartBeatStartTime -  datetime.datetime.now() <= datetime.timedelta(seconds=0):  
+                    print "next heart beat expires!" 
+                    
                     self.lastHeartBeatStartTime = self.nextHeartBeatStartTime
                     if self.nextNextHeartBeatStartTime:
+                        print "next becomes current!" 
                         self.nextHeartBeatStartTime = self.nextNextHeartBeatStartTime
+                        self.nextNextHeartBeatStartTime = None 
                     else:
-                        self.nextHeartBeatStartTime = self.nextHeartBeatStartTime + self.bps
-                self.setMasterParams()
+                        if self.bps != 0: 
+                            self.nextHeartBeatStartTime = self.nextHeartBeatStartTime + datetime.timedelta(seconds=1/self.bps)
+               self.setMasterParams()
             
         except KeyboardInterrupt: 
             print "Keyboard interrupt detected, terminating"
             running = False
             self.terminate()
             
-    def setMasterParams():
+    def setMasterParams(self):
         # I believe this is thread-safe because of the python GIL
         self.masterParams.nextHeartBeatStartTime = self.nextHeartBeatStartTime
         self.masterParams.lastHeartBeatStartTime = self.lastHeartBeatStartTime
@@ -144,6 +150,7 @@ class PulseListenerThread(Thread):
         pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
         print "heartbeat pod_id is %d, looking for %d, bpm is %d" % (pod_id, self.currentHeartBeatSource, bpmApprox) 
         if pod_id is self.currentHeartBeatSource and self.allowHeartBeats:
+            print "heartbeat we are interested in" 
             if beatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...
                 heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
             else:
@@ -153,11 +160,14 @@ class PulseListenerThread(Thread):
             if self.nextHeartBeatStartTime:
                 self.nextNextHeartBeatStartTime = heartBeatStartTime
             else:
-                self.nextNextHeartBeatStartTime = heartBeatStartTime
-                
-            self.bps = bpmApprox
-
-            
+                self.nextHeartBeatStartTime = heartBeatStartTime
+                self.nextNextHeartBeatStartTime = None
+ 
+            self.bps = bpmApprox/60
+            print "Next heart beat time is ", self.nextHeartBeatStartTime
+            print "Last heart beat time was ", self.lastHeartBeatStartTime
+            print "Next next heart beat time is ", self.nextNextHeartBeatStartTime
+ 
     def handleCommandData(self, commandData):
         # Called from the HeartBeatCommandThread
         receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
