@@ -2,4 +2,5 @@
 *.sublime*
 pods/vendor
 design
+*.o
 *.pyc
