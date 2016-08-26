@@ -170,7 +170,7 @@ class PulseListenerThread(Thread):
  
     def handleCommandData(self, commandData):
         # Called from the HeartBeatCommandThread
-        receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
+        receiverId, commandTrackingId, command, data = struct.unpack("=BBHL", commandData)
         if ((receiverId is gReceiverId) or (receiverId is ALL_RECEIVERS)):
             if command is Commands.STOP_HEARTBEAT:
                 self.allowHeartBeats = False
@@ -181,12 +181,12 @@ class PulseListenerThread(Thread):
                 pass
             elif command is Commands.START_HEARTBEAT:
                 self.allowHeartBeats = True
-            elif command is Commands.POD_R_TO_L_FLASH:
+            #elif command is Commands.POD_R_TO_L_FLASH:
                 # controller.renderer.addSpecialEffectLayer(WhateverTheFuckSpecialEffectLayerINeed)
-                pass
-            elif command is Commands.POD_L_TO_R_FLASH:
+            #    pass
+            #elif command is Commands.POD_L_TO_R_FLASH:
                 # XXX add special effect. See above non-code
-                pass
+            #    pass
             elif command is Commands.USE_HEARTBEAT_SOURCE:
                 self.currentHeartBeatSource = data
 
@@ -269,7 +269,7 @@ class PodController(object):
         #except KeyboardInterrupt:
         #    pass
 
-def main():
+def main(args):
     #  - NB - this stuff is all going to get done by the startup script that calls this thing
     # sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
@@ -280,11 +280,11 @@ def main():
 
     print "Startup, PID", os.getpid()
 
-    if len(sys.argv) > 1:
-        print "Receiver Id is", int(sys.argv[1])
-        gReceiverId = int(sys.argv[1])
+    if len(args) > 1:
+        print "Receiver Id is", int(args[1])
+        gReceiverId = int(args[1])
 
     pod = PodController(None, 3)    
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
