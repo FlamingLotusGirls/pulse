@@ -154,7 +154,7 @@ class PulseListenerThread(Thread):
             if beatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...
                 heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
             else:
-                heartBeatStartTime = datetime.dateTime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
+                heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
                 
             # schedule next heart beat
             if self.nextHeartBeatStartTime:
