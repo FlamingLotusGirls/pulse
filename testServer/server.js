@@ -10,10 +10,22 @@ const dgram = require('dgram');
 const util = require('util');
 const os = require('os');
 
+Array.prototype.contains = function contains(val) {
+    for (var v of this) {
+        if (v === val) {
+            return true;
+        }
+    }
+    return false;
+}
+
+var ENABLE_HEARTBEAT = process.argv.contains('--heartbeat')
+
 var HEARTBEAT_PORT = 5000;
 var CMD_PORT = 5001;
 // UDP Packet is in big-endian order.
-const BIGENDIAN = true;
+//const BIGENDIAN = endian();
+const BIGENDIAN = false;
 
 app.get('/', (req, res) => res.send("Hello, World"));
 
@@ -186,6 +198,13 @@ function getBroadcastAddresses() {
 const udp_pulse = dgram.createSocket({type: 'udp4', reuseAddr: true})
       .on('listening', () => udp_pulse.setBroadcast(true));
 
+try {
+    udp_pulse
+      .bind({port: HEARTBEAT_PORT})
+} catch (e) {
+    console.log.error
+}
+
 var seq = 0;
 var hpos = 0;
 function newline() {
@@ -198,6 +217,7 @@ const BROADCAST = getBroadcastAddresses();
 BROADCAST.forEach(addr => log.info("Broadcasting heartbeat to %s:%d", addr, HEARTBEAT_PORT));
 
 function sendPulse(id) {
+    if (!ENABLE_HEARTBEAT) return;
     try {
         const c = '-+==!#$@%^&.,/?'[id];
         process.stdout.write(c);
@@ -207,10 +227,10 @@ function sendPulse(id) {
         message.writeUInt8(id, 0); // pod_id
         seq = (seq + 1) && 0xff;
         message.writeUInt8(seq, 1);    // rolling_sequence
-        message.writeUInt16LE(1000, 2); // beat_interval_ms
-        message.writeUInt32LE(0, 4);    // elapsed_ms
-        message.writeFloatLE(60.0, 8);  // est_BPM
-        message.writeUInt32LE(Date.now() & 0xfffffff, 12); // time
+        writeUInt16(message, 1000, 2); // beat_interval_ms
+        writeUInt32(message, 1000, 4);    // elapsed_ms
+        writeFloat(message, 60.0, 8);  // est_BPM
+        writeUInt32(message, Date.now() & 0xfffffff, 12); // time
         // Send to network and localhost port 5000;
         // Must set up emulator to forward:
         //   telnet to emulator, authorize, and enter
@@ -221,7 +241,6 @@ function sendPulse(id) {
         error.log("Error: " + e);
     }
 }
-
 function autobeat() {
     sendPulse(0);
     setTimeout(autobeat, (60*1000)/PARAMS.bpm);
@@ -239,11 +258,44 @@ function readUInt16(msg, idx) {
         return msg.readUInt16LE(idx);
     }
 }
+
+function writeUInt16(msg, data, idx) {
+    if (BIGENDIAN) {
+        return msg.writeInt16BE(data, idx);
+    } else {
+        return msg.writeUInt16LE(data, idx);
+    }
+}
+
 function readUInt32(msg, idx) {
     if (BIGENDIAN) {
         return msg.readUInt32BE(idx);
     } else {
         return msg.readUInt32LE(idx);
+    }
+}
+
+function writeUInt32(msg, data, idx) {
+    if (BIGENDIAN) {
+        return msg.writeUInt32BE(data, idx);
+    } else {
+        return msg.writeUInt32LE(data, idx);
+    }
+}
+
+function readFloat(msg, idx) {
+    if (BIGENDIAN) {
+        return msg.readFloatBE(idx);
+    } else {
+        return msg.readFloatLE(idx);
+    }
+}
+
+function writeFloat(msg, data, idx) {
+    if (BIGENDIAN) {
+        return msg.writeFloatBE(data, idx);
+    } else {
+        return msg.writeFloatLE(data, idx);
     }
 }
 
@@ -286,3 +338,28 @@ udp_cmd
     .on('message', setBPM)
     .on('message', show)
     .bind({port: CMD_PORT});
+
+function decode_heartbeat(msg) {
+    try {
+        if (msg.length < 16) {
+            return "Length = " + msg.length;
+        }
+        return util.inspect({
+            pod: msg.readUInt8(0),
+            seq: msg.readUInt8(1),
+            interval: readUInt16(msg, 2),
+            elapsed: readUInt32(msg, 4),
+            est_BPM: readFloat(msg, 8),
+            time: readUInt32(msg, 12)
+        });
+    } catch (e) {
+        return {
+            err: e.message
+        }
+    }
+}
+
+/*
+udp_pulse
+    .on('message', (msg, info) => console.log("PULSE", decode_heartbeat(msg)));
+*/

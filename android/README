@@ -1,15 +1,4 @@
-Test server for prototyping Android client.
-
-To set up:
-1) Install node
-2) cd to this directory.
-3) Ensure you're on the net
-4) npm install
-
-To run, do
-node server.js
-
-Runs on port 8081
+To build: Use latest Android Studio and Tools.
 
 To set up emulator:
 1) The broadcast address (configured in the Settings of the app) must be 10.0.2.255
