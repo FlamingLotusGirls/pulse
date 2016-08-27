@@ -111,6 +111,7 @@
 
     <!-- Drop-down list of heartbeat sources. Ordered by ID -->
     <string-array name="spinner_1_entries">
+        <item>[Select Source]</item>
         <item>Heartbeat Synth</item>
         <item>Pod 1</item>
         <item>Pod 2</item>
