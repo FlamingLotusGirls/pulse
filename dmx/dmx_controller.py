@@ -37,15 +37,15 @@ ALL_BLUE_CHANNELS = map(lambda x: x+(DMX_BLUE_CHANNEL-DMX_RED_CHANNEL), ALL_RED_
 ALL_WHITE_CHANNELS = map(lambda x: x+(DMX_WHITE_CHANNEL-DMX_RED_CHANNEL), ALL_RED_CHANNELS)
 ALL_COLOR_CHANNELS = ALL_RED_CHANNELS + ALL_GREEN_CHANNELS + ALL_BLUE_CHANNELS
 
-running = True
+#running = True
 allowHeartBeats = True
 allowSingleColor = True
 allowStrobing = True
 isStrobing = False
 currentHeartBeatSource = 0 # ???
 dmx = None
-heartBeatListener = None
-commandListener   = None
+#heartBeatListener = None
+#commandListener   = None
 eventQueue = None
 gReceiverId = 3
 
@@ -144,20 +144,20 @@ def handleCommandData(commandData):
     # TODO: There is a new command format
     receiverId, commandTrackingId, commandId, commandData = struct.unpack("=BBHI", commandData)
     if receiverId is gReceiverId:                  # it's for us!
-        if commandId is Command.STOP_ALL:
+        if commandId is Commands.STOP_ALL:
             allowHeartBeats = False
             allowSingleColor = False
             isStrobing = False
             removeAllEffects()
-        elif commandId is Command.STOP_HEARTBEAT:
+        elif commandId is Commands.STOP_HEARTBEAT:
             stopHeartBeat()
-        elif commandId is Command.START_HEARTBEAT:
+        elif commandId is Commands.START_HEARTBEAT:
             allowHeartBeats = True
-        elif commandId is Command.DMX_SINGLE_COLOR:
+        elif commandId is Commands.DMX_SINGLE_COLOR:
             dmxSingleColor()
-        elif commandId is Command.DMX_STROBE:
+        elif commandId is Commands.DMX_STROBE:
             dmxStrobe()
-        elif commandId is Command.USE_HEARTBEAT_SOURCE:
+        elif commandId is Commands.USE_HEARTBEAT_SOURCE:
             dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
             currentHeartBeatSource = pod_id
 
@@ -330,7 +330,11 @@ def initDMX():
     return None
 
 def main(args):
+    global eventQueue
+    global dmx
     global gReceiverId
+    global gNextHeartBeat
+
     running = True
     dmx = initDMX()
     heartBeatListener = createBroadcastListener(HEARTBEAT_PORT)
