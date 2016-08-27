@@ -19,7 +19,7 @@ OPC_SERVER=$HOME/fadecandy/bin/fcserver-rpi
 OPC_CONFIG=$HOME/pulse/pi_startup/pulse_fc-config.json
 POD_LED=$HOME/pulse/bin/pod.py
 
-BPMLOG=/var/log/pod.log
+BPMLOG=/var/log/bpm.log
 SOUNDLOG=/var/log/sound.log
 OPCLOG=/var/log/opc_server.log
 LEDLOG=/var/log/led.log
