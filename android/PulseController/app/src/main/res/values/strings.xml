@@ -111,13 +111,15 @@
 
     <!-- Drop-down list of heartbeat sources. Ordered by ID -->
     <string-array name="spinner_1_entries">
-        <item>None</item>
+        <item>[Select Source]</item>
+        <item>Heartbeat Synth</item>
         <item>Pod 1</item>
         <item>Pod 2</item>
+        <item>None</item>
         <item>MUI Left</item>
         <item>MUI Right</item>
-        <item>Heartbeat Synth</item>
     </string-array>
+
     <string name="title_udpmessage_list">UDP Messages</string>
     <string name="title_udpmessage_detail">UDP Message Detail</string>
     <string name="label_receiver">Receiver</string>

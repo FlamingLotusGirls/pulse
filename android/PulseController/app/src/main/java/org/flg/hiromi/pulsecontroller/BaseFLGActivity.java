@@ -383,9 +383,6 @@ public class BaseFLGActivity extends ActionBarActivity {
             public void onChange(String name, int val, boolean update) {
                 Object item = spinner.getItemAtPosition(val);
                 text_view.setText(name + ": " + item);
-                if (!update) {
-                    spinner.setSelection(val);
-                }
             }
 
             @Override
@@ -396,10 +393,12 @@ public class BaseFLGActivity extends ActionBarActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String tag = (String)spinner.getTag();
-                text_view.setText(tag + ": ");
-                if (commChannel != null) {
-                    commChannel.setIntParam(tag, position);
+                if (position > 0) {
+                    String tag = (String) spinner.getTag();
+                    text_view.setText(tag + ": ");
+                    if (commChannel != null) {
+                        commChannel.setIntParam(tag, position - 1);
+                    }
                 }
             }
 
