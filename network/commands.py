@@ -1,7 +1,7 @@
 class Commands():
     STOP_ALL             = 1
-    STOP_HEARTBEAT       = 2
-    START_HEARTBEAT      = 3
+    START_HEARTBEAT      = 2
+    STOP_HEARTBEAT       = 3
     START_EFFECT         = 4
     STOP_EFFECT          = 5
     USE_HEARTBEAT_SOURCE = 6
