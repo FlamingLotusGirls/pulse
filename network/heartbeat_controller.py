@@ -36,7 +36,12 @@ BAUDRATE       = 19200
 HEARTBEAT = 1
 CHASE     = 2
 ALLPOOF   = 3
+POOF_1    = 4
+POOF_2    = 5
+POOF_3    = 6
 
+
+ALL_RECEIVERS = 255
 # XXX could have fast heartbeats, and slow heartbeats, and big heartbeats,
 # and little heartbeats. All types of heartbeats
 # could I specify the timing of these things in the command channel? I could specify a timing multiplier
@@ -44,7 +49,10 @@ ALLPOOF   = 3
 # Effect definitions
 effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
            CHASE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]],
-           ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]]}
+           ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]],
+           POOF_1:   [[3,1,0], [3,0,1000]],
+           POOF_2:   [[4,1,0], [4,0,1000]],
+           POOF_3:   [[5,1,0], [5,0,1000]]}
 
 
 running = True
@@ -101,7 +109,7 @@ def createBroadcastListener(port, addr=BROADCAST_ADDR):
 def handleHeartBeatData(heartBeatData):
 	### This structure has to match the one in BPMPulseData_t BPMPulse.h
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
-    print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox)
+    #print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox)
     if pod_id is currentHeartBeatSource and allowHeartBeats and bpmApprox != 0 and beatIntervalMs > 0:
 #        stopHeartBeat() # XXX should allow the last bit of the heart beat to finish, if we're in the middle
 
@@ -153,10 +161,10 @@ def helper_addHBReference(instanceId, heartBeatStartTime):
     global gNextNextHeartBeat
     global gNextNextHeartBeatStartTime
 
-    print "adding reference for ", instanceId
+    #print "adding reference for ", instanceId
 
     if (gNextHeartBeat == None or (gNextHeartBeat != None and gNextHeartBeatStartTime > heartBeatStartTime)):
-        print "new heart beat replaces previous"
+        #print "new heart beat replaces previous"
         # replace gNextHeartBeat
         removeEffectInstance(gNextHeartBeat)
         gNextHeartBeat = instanceId
@@ -171,8 +179,8 @@ def helper_addHBReference(instanceId, heartBeatStartTime):
         gNextNextHeartBeat = instanceId
         gNextNextHeartBeatStartTime = heartBeatStartTime
 
-    print "Next hbId is ", gNextHeartBeat
-    print "NextNext hbId is ", gNextNextHeartBeat
+    #print "Next hbId is ", gNextHeartBeat
+    #print "NextNext hbId is ", gNextNextHeartBeat
 
 
 def sortEventQueue():
@@ -181,23 +189,41 @@ def sortEventQueue():
 def handleCommandData(commandData):
     global currentHeartBeatSource
     receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
-    if receiverId is gReceiverId  or receiverId is ALL_LISTENERS: # it's for us!
-        if commandId is Command.STOP_ALL:
+    print "receiver id is ", receiverId
+    print "command id is ", commandId
+    print "data is ", data
+
+
+    if receiverId is gReceiverId  or receiverId is ALL_RECEIVERS: # it's for us!
+        if commandId is Commands.STOP_ALL:
             removeAllEffects()
-        elif commandId is Command.STOP_HEARTBEAT:
+        elif commandId is Commands.STOP_HEARTBEAT:
             allowHeartBeats = False
             stopHeartBeat()
-#        elif commandId is Command.START_EFFECT:
+#        elif commandId is Commands.START_EFFECT:
 #            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
 #            loadEffect(effectId, datetime.datetime.now())
-#        elif commandId is Command.STOP_EFFECT:
+#        elif commandId is Commands.STOP_EFFECT:
 #            dummy1, dummy2, dummy3, effectId = struct.unpack("=BBHL", commandData)
 #            removeEffect(effectId)
-        elif commandId is Command.START_HEARTBEAT:
+        elif commandId is Commands.AORTA_1:
+            loadEffect(POOF_1, datetime.datetime.now())
+        elif commandId is Commands.AORTA_2:
+            loadEffect(POOF_2, datetime.datetime.now())
+        elif commandId is Commands.AORTA_3:
+            loadEffect(POOF_3, datetime.datetime.now())
+        elif commandId is Commands.AORTA_ATTACK:
+            loadEffect(ALLPOOF, datetime.datetime.now())
+        elif commandId is Commands.AORTA_CHASE:
+            loadEffect(CHASE, datetime.datetime.now())
+        elif commandId is Commands.START_HEARTBEAT:
             allowHeartBeats = True
-        elif commandId is Command.USE_HEARTBEAT_SOURCE:
+        elif commandId is Commands.USE_HEARTBEAT_SOURCE:
+            print "Command use heartbeat source received, source is", data
 #            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
-            currentHeartBeatSource = data
+            if currentHeartBeatSource != data:
+                removeEffect(HEARTBEAT)
+                currentHeartBeatSource = data
 
         sortEventQueue()
 
@@ -210,14 +236,14 @@ def removeEffect(effectId):
             eventQueue.remove(event)
 
 def removeEffectInstance(instanceId):
-    print "removing instance", instanceId
+    #print "removing instance", instanceId
     if instanceId == None:
         return
 
     for event in eventQueue:
-        print "  found event", event
+        #print "  found event", event
         if event["globalId"] == instanceId:
-            print "   removing an event", event
+            #print "   removing an event", event
             eventQueue.remove(event)
 
 hexStr = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
@@ -251,7 +277,7 @@ def loadEffect(effectId, starttime, repeatMs=0):
         for event in effects[effectId]:
             canonicalEvent = {}
             canonicalEvent["effectId"]     = effectId
-            print "add event" + str(event)
+            #print "add event" + str(event)
             canonicalEvent["globalId"]     = globalId
             canonicalEvent["controllerId"] = intToHex(event[0]//8)
             canonicalEvent["channel"]      = event[0] %8
@@ -362,7 +388,7 @@ def sendEvents():
     if currentEvents:
         currentEvents.sort(key=itemgetter("controllerId"))
         eventString = createEventString(currentEvents)
-        print "Event string is %s" %eventString
+        #print "Event string is %s" %eventString
         if not ser:
             ser = initSerial()
         if ser:
@@ -373,15 +399,15 @@ def sendEvents():
                 ser = None
         for event in currentEvents:
             # if we're starting a heartbeat, reset the pointers to current, next, and next next heartbeat ids
-            print "playing effect instance ", event["globalId"]
-            print "nextHeartBeat is ", gNextHeartBeat
+            #print "playing effect instance ", event["globalId"]
+            #print "nextHeartBeat is ", gNextHeartBeat
             if event["globalId"] == gNextHeartBeat:
                 gCurrentHeartBeat = event["globalId"]
                 gNextHeartBeat = gNextNextHeartBeat
                 gNextHeartBeatStartTime = gNextNextHeartBeatStartTime
                 gNextNextHeartBeat = None
-                print "Starting heart beat ", gCurrentHeartBeat
-                print "Next beat is ", gNextHeartBeat
+                #print "Starting heart beat ", gCurrentHeartBeat
+                #print "Next beat is ", gNextHeartBeat
             # if we're ending a heartbeat, load up the next one and reset pointers...
             if event["repeatMs"] != 0:
                 instanceId = None
@@ -394,7 +420,7 @@ def sendEvents():
                     instanceId = loadEffect(event["effectId"], event["nextStartTime"], event["repeatMs"]) # XXX what thread is this normally called from?
 
                 if instanceId != None:
-                    print "Auto schedule instance ", instanceId
+                    #print "Auto schedule instance ", instanceId
                     sortEventQueue()
                 
 
@@ -419,22 +445,22 @@ def main(args):
         while (running):
             readfds = [heartBeatListener, commandListener]
             if not eventQueue:
-                print "doing select, no timeout"
+                #print "doing select, no timeout"
                 inputReady, outputReady, exceptReady = select(readfds, [], [])
             else:
                 waitTime = (eventQueue[len(eventQueue)-1]["time"] - datetime.datetime.now()).total_seconds()
-                print "!!doing select, timeout is %f" % waitTime
+                #print "!!doing select, timeout is %f" % waitTime
                 waitTime = max(waitTime, 0)
                 inputReady, outputReady, exceptReady = select(readfds, [], [], waitTime)
             if inputReady:
-                print "Have data to read"
+                #print "Have data to read"
                 for fd in inputReady:
                     if fd is heartBeatListener:
-                        print "received heartbeat"
+                        #print "received heartbeat"
                         heartBeatData = fd.recv(1024)
                         handleHeartBeatData(heartBeatData)
                     elif fd is commandListener:
-                        print "received command"
+                        #print "received command"
                         commandData = fd.recv(1024)
                         handleCommandData(commandData)
             sendEvents()
