@@ -718,7 +718,7 @@ static int soundFillLocalBuffer(PulseSound *sound) {
                 sound->nextSoundDataLen = sound->currentSoundDataLen;
                 sound->nextSoundTimeFrames = sound->periodFrames - sound->currentSoundDataLen + totalFramesFilled; // NB - at this point, nextSoundTime is supposed to be offset from the beginning of the period. That's why we add totalFramesFilled
                 if (sound->nextSoundTimeFrames <= 0 ){
-                    printf("!!!! Maximum beat frequency for sound %s\n", sound->name);
+                    //printf("!!!! Maximum beat frequency for sound %s\n", sound->name);
                     sound->nextSoundTimeFrames = 0;
                 }
                 //printf("Auto filling next sound, nextSoundtimeFrames is %d\n", sound->nextSoundTimeFrames);
@@ -742,7 +742,7 @@ static int soundFillLocalBuffer(PulseSound *sound) {
 //            printf("Skipping frames, totalFrames %d, periodSize_frames %d, nextSoundFrames %d\n", totalFramesFilled, (int)m_periodSize_frames, sound->nextSoundTimeFrames);
             totalFramesFilled += MIN(m_periodSize_frames-totalFramesFilled, sound->nextSoundTimeFrames - totalFramesFilled);
         } else {
-            printf("No silence - maximum speed for sound %s\n", sound->name);
+            //printf("No silence - maximum speed for sound %s\n", sound->name);
         }
         
         // Next sound, if there's space for it

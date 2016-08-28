@@ -108,6 +108,7 @@ int PcmConfig_Read()
                 if (validFreqEnd == -1) {
                     printf("Invalid frequency %s in config file\n", strPtr);
                     break;
+
                 }
                 printf("freqEnd is %d\n", validFreqEnd);
                 
@@ -119,13 +120,14 @@ int PcmConfig_Read()
                     break;
                 }
 
-                data->filename = (char *)malloc(strlen(filename) + 1);
+                data->filename = (char *)malloc(strlen(HOME_DIR) + strlen(filename) + 1);
                 if (!data->filename) {
                     printf("Error our of memory\n");
                     break;
                 }
-                strcpy(data->filename, filename);
-                data->filename = filename;
+                strcpy(data->filename, HOME_DIR);
+                strcpy(data->filename + strlen(HOME_DIR), filename);
+                //data->filename = filename;
                 data->data = NULL;
                 data->validFreqStart = validFreqStart;
                 data->validFreqEnd   = validFreqEnd;
@@ -200,21 +202,25 @@ hb_sounds_iterate:
         printf("Memory allocation failure\n");
         goto Exit;
     }
-    
-    m_BreathingData->filename = strdup(BREATHING_FILE_NAME);
+   
+    m_BreathingData->filename = (char *)malloc(strlen(HOME_DIR) + strlen(BREATHING_FILE_NAME) + 1);
     if (!m_BreathingData->filename) {
         printf("Memory allocation failure\n");
         goto Exit;
     }
+    strcpy(m_BreathingData->filename, HOME_DIR);
+    strcpy(m_BreathingData->filename + strlen(HOME_DIR), BREATHING_FILE_NAME); 
         
-    if (pcmReadData(BREATHING_FILE_NAME, m_BreathingData) != 0){
+    if (pcmReadData(m_BreathingData->filename, m_BreathingData) != 0){
         printf("Error reading breathing data\n");
         // XXX - not errorring out just yet since I don't actually have breathing data FIXME
     }
     
     // and a transient
     PcmData *transient = &m_transients[0];
-    transient->filename = strdup(m_transient_filenames[0]);
+    transient->filename = (char *)malloc(strlen(HOME_DIR) + strlen(m_transient_filenames[0] + 1));
+    strcpy(transient->filename, HOME_DIR);
+    strcpy(transient->filename + strlen(HOME_DIR), m_transient_filenames[0]);
     if (pcmReadData(transient->filename, transient) != 0) {
         printf("Error reading transient data\n");
         // XXX - not errorring out just yet since I don't actually have proper transient data FIXME
