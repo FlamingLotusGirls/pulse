@@ -81,7 +81,7 @@ int clock_gettime(int clk_id, struct timespec *t){
 #define GOIO_MAX_SIZE_DEVICE_NAME 128
 #endif
 
-static int verbose = 0;
+static int verbose = 3;
 static bool keepRunning = true; // this will keep the main loop running, can set to false in a signal handler. 
 
 const char *deviceDesc[8] = {"?", "?", "Go! Temp", "Go! Link", "Go! Motion", "?", "?", "Mini GC"};
@@ -114,6 +114,9 @@ typedef struct {
  unsigned beat_intervals_ms[AVERAGING_PULSES];
 
  int earlyMaxBooboo;
+
+ // good for debugging
+ char dev_name[60];
 
  time_t lastBeatSent;
  uint8_t sequence;
@@ -195,7 +198,12 @@ ProcessNextMeasurement(double val, bpm_det_state_t& bs)
 	bs.justGenerated = 0; // by default, we only update state ...
 	bs.count++;
 
-	if (verbose>3) printf("%d: %f, s %ld, n %ld\n", bs.count, val, now.tv_sec, now.tv_nsec);
+	if (verbose>=4) {
+		printf("ProcessNextMeasurement %s %d: val %f, s %ld, n %ld\n", bs.dev_name, bs.count, val, now.tv_sec, now.tv_nsec);
+	}
+	else {
+		if ((verbose>=3) && ( val > 0.2 ) ) printf("ProcessNextMeasurement %s %d: val %f, s %ld, n %ld\n", bs.dev_name, bs.count, val, now.tv_sec, now.tv_nsec);
+	}	
 
 	if (bs.count > 1) {
 
@@ -215,7 +223,8 @@ ProcessNextMeasurement(double val, bpm_det_state_t& bs)
 
 				bs.prevBeatTime = bs.prevMaxTime;
 
-//printf("computed interval %u\n", beat_interval_ms);
+if (verbose >= 2) { printf("PNM: %s maxima: %d computed interval %u\n", bs.dev_name, bs.dtCount, beat_interval_ms); }
+
 				// Is the previous heart beat from this person?
 				if (legal_interval_range(beat_interval_ms)) {
 
@@ -363,9 +372,11 @@ GoIOReadAndProcessOneMeasurement(GOIO_SENSOR_HANDLE hDevice, bpm_det_state_t& bs
 				bs.sequence++,
 				sock, si_tobrain);
 
-			if (verbose>0) {
-				printf("period %f ms @%ld,%ld\n",
+			if (verbose>=1) {
+				printf("ReadAndProcess: %s Announced: interval %f BPM %f prevBeat: sec,ns @%ld,%ld\n",
+					bs.dev_name,
 					bs.currentBeatInterval_ms,
+					60000.0 / bs.currentBeatInterval_ms,
 					bs.prevBeatTime.tv_sec,
 					bs.prevBeatTime.tv_nsec);
 			}
@@ -383,6 +394,7 @@ GoIOReadAndProcessOneMeasurement(GOIO_SENSOR_HANDLE hDevice, bpm_det_state_t& bs
 			pod_id,
 			bs.sequence++,
 			sock, si_tobrain);
+		if (verbose>=1) { printf("ReadAndProcess: %s null beat: seq %d\n",bs.dev_name, bs.sequence-1); }
 	}
 }
 
@@ -419,7 +431,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	if (verbose>0) {
+	if (verbose>=1) {
 		printf("Use ip '%s' port %hd\n", ip, port);
 	}
 
@@ -440,8 +452,14 @@ int main(int argc, char* argv[])
 	} else {
 		GOIO_SENSOR_HANDLE hDevice=0L,hDevice2=0L;
 
-		if (deviceName[0])  SetupGoIO(deviceName,  vendorId, productId, hDevice);
-		if (deviceName2[0]) SetupGoIO(deviceName2, vendorId, productId, hDevice2);
+		if (deviceName[0]) {
+			SetupGoIO(deviceName,  vendorId, productId, hDevice);
+			if (hDevice) strcpy(bs1.dev_name, deviceName );
+		}
+		if (deviceName2[0]) {
+			SetupGoIO(deviceName2, vendorId, productId, hDevice2);
+			if (hDevice2) strcpy( bs2.dev_name, deviceName2 );
+	 	}	
 
 		if (!hDevice && !hDevice2) return -1; // need at least 1!
 
