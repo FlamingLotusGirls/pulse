@@ -13,7 +13,7 @@
 //#define BROADCAST_ADDR "255.255.255.255"
 #define BROADCAST_ADDR "192.168.1.255"
 #define ALL_RECEIVERS 255
-#define HEARTBEAT_SOURCE 1
+#define HEARTBEAT_SOURCE 6 
 #define COMMAND_PORT 5001
 #define HB_PORT 5000
 
@@ -43,10 +43,9 @@ struct __BPMPulseData_t {
     // max BPM 200 has ms interval of 300
 
     uint32_t elapsed_ms; // how long before now did this happen?
-    
-    uint32_t timestamp;  // timestamp, normalized to the pod that sent this. Do not assume that the pods are in sync.
 
     float est_BPM; // computed as 60*1000/beat_interval_ms by sender.
+    uint32_t timestamp;  // timestamp, normalized to the pod that sent this. Do not assume that the pods are in sync.
  
 }__attribute__((packed)); 
 
@@ -86,7 +85,7 @@ GetOpts(int argc, char* argv[], uint8_t* pod_id)
 			case 'h': Help();
 			break;
 			case 'i': *pod_id = atoi(argv[i]+2);
-			break;
+                        break;
 			case 'v': verbose++;
 			break;
 			default: fprintf(stderr, "unknown option '%c'\n", argv[i][1]);
@@ -115,7 +114,6 @@ int main(int argc, char **argv)
     pcmPlaybackStop();
     */
     
-    // XXX TODO - read myId from config file
     hbSource = myId;
     
     hbSocket = initBroadcastSocketListener(HB_PORT);
