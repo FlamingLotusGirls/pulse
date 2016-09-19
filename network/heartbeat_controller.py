@@ -42,15 +42,16 @@ POOF_3    = 6
 
 
 ALL_RECEIVERS = 255
+WAIT_HB_SECONDS = 5  # Number of seconds to wait after not getting a valid heartbeat to provisionally swap back to the synthetic hb
 # XXX could have fast heartbeats, and slow heartbeats, and big heartbeats,
 # and little heartbeats. All types of heartbeats
 # could I specify the timing of these things in the command channel? I could specify a timing multiplier
 
 # Effect definitions
 effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
-           CHASE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]],
-           ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]],
-           POOF_1:   [[3,1,0], [3,0,1000]],
+           CHASE:    [[6,1,0], [4,1,400], [5,1,800], [6,0,400], [4,0,800], [5,0,1200]],
+           ALLPOOF:  [[6,1,0], [4,1,0],   [5,1, 0],  [6,0,700], [4,0,700], [5,0,700]],
+           POOF_1:   [[6,1,0], [6,0,1000]],
            POOF_2:   [[4,1,0], [4,0,1000]],
            POOF_3:   [[5,1,0], [5,0,1000]]}
 
@@ -70,6 +71,9 @@ gNextHeartBeat     = None
 gNextNextHeartBeat = None
 gNextHeartBeatStartTime     = 0
 gNextNextHeartBeatStartTime = 0
+gUseSyntheticAsBackup = False
+gLastHbReceiveTime = datetime.datetime.now()
+
 
 gGlobalEffectId    = 0
 
@@ -105,12 +109,27 @@ def createBroadcastListener(port, addr=BROADCAST_ADDR):
 
     return sock
 
-# And we need to generate another heart beat if I dont hear one... XXX
 def handleHeartBeatData(heartBeatData):
-	### This structure has to match the one in BPMPulseData_t BPMPulse.h
+    ### This structure has to match the one in BPMPulseData_t BPMPulse.h
+    
+    global gUseSyntheticAsBackup
+    global gLastHbReceiveTime
+    
+    timeNow = datetime.datetime.now()
+    
+    if (timeNow - gLastHbReceiveTime > datetime.timedelta(seconds = WAIT_HB_SECONDS)):
+        if not gUseSyntheticAsBackup: 
+            print "Swap to synthetic source" 
+            gUseSyntheticAsBackup = True
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
-    #print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox)
-    if pod_id is currentHeartBeatSource and allowHeartBeats and bpmApprox != 0 and beatIntervalMs > 0:
+    if bpmApprox != 0:
+        print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox)
+    if ((pod_id is currentHeartBeatSource and allowHeartBeats and bpmApprox != 0 and beatIntervalMs > 0) or
+       (gUseSyntheticAsBackup and pod_id is 0)):
+        if pod_id is currentHeartBeatSource and pod_id != 0:
+            gUseSyntheticAsBackup = False
+            print "valid heartbeat on source ", pod_id 
+            gLastHbReceiveTime = timeNow
 #        stopHeartBeat() # XXX should allow the last bit of the heart beat to finish, if we're in the middle
 
         if beatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...
