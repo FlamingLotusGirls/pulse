@@ -99,7 +99,7 @@ static int m_localSoundRightChannelHasData = 0;
 
 
 // initialization
-static void createPcmSoundMsg(PcmSoundMsg *soundMsg, unsigned char *pcmSoundBuf, int pcmBufLen, int periodMs, int channels, const char *name, unsigned char volume, int oneShot); 
+static void createPcmSoundMsg(PcmSoundMsg *soundMsg, unsigned char *pcmSoundBuf, int pcmBufLen, unsigned int periodMs, int channels, const char *name, unsigned char volume, int oneShot, int timeOffset); 
 static int setPcmParams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwParams, snd_pcm_sw_params_t *swParams); 
 static int setHwParams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwParams);
 static int setSwParams(snd_pcm_t *handle, snd_pcm_sw_params_t *swParams);
@@ -122,10 +122,10 @@ static void fillLocalBufferWithSound(unsigned char volume, int channel, unsigned
 static void resetNextSoundTime(PulseSound *sound, int missingFrames);
 static int soundFillLocalBuffer(PulseSound *sound);
 
-int pcmPlaySound(unsigned char* pcmSoundBuf, int pcmBufLen, unsigned int periodMs, int channels, unsigned char volume, const char *name, int oneShot)
+int pcmPlaySound(unsigned char* pcmSoundBuf, int pcmBufLen, unsigned int periodMs, int channels, unsigned char volume, const char *name, int oneShot, int timeOffset)
 {
     PcmSoundMsg newSound; 
-    createPcmSoundMsg(&newSound, pcmSoundBuf, pcmBufLen, periodMs, channels, name, volume, oneShot);
+    createPcmSoundMsg(&newSound, pcmSoundBuf, pcmBufLen, periodMs, channels, name, volume, oneShot, timeOffset);
     if (mq_send(commandmq, (const char *)&newSound, sizeof(newSound), 0) != 0) {
         printf("Could not send message to play sound: %s\n", strerror(errno));
         return ERR_PCM_MISC;
@@ -134,7 +134,7 @@ int pcmPlaySound(unsigned char* pcmSoundBuf, int pcmBufLen, unsigned int periodM
     return 0;
 }
 
-void pcmPlayHeartBeat(unsigned int freqBPM, unsigned char volume)   
+void pcmPlayHeartBeat(unsigned int freqBPM, unsigned char volume, unsigned int timeOffset)   
 {
     HbData *sound;
     
@@ -149,7 +149,7 @@ void pcmPlayHeartBeat(unsigned int freqBPM, unsigned char volume)
     // Get sound appropriate for this frequency
     sound = PcmConfig_getHbSound(freqBPM);
     if (sound) {
-        pcmPlaySound(sound->data, sound->datalen, freqBPM != 0 ? 1000*60/freqBPM : 0, CHANNEL_RIGHT | CHANNEL_LEFT, volume, "2-channel heartbeat", FALSE);
+        pcmPlaySound(sound->data, sound->datalen, freqBPM != 0 ? 1000*60/freqBPM : 0, CHANNEL_RIGHT | CHANNEL_LEFT, volume, "2-channel heartbeat", FALSE, timeOffset);
     } else {
         printf("No heartbeat sound to play\n");
     }
@@ -160,7 +160,7 @@ void pcmPlayBreathing(unsigned int freqBPM, unsigned char volume)
 {
     PcmData *breathing = PcmConfig_getBreathingSound();
     if (breathing) {
-        pcmPlaySound(breathing->data, breathing->datalen, freqBPM != 0 ? 1000*60/freqBPM : 0, CHANNEL_RIGHT, volume, "breathing", FALSE);
+        pcmPlaySound(breathing->data, breathing->datalen, freqBPM != 0 ? 1000*60/freqBPM : 0, CHANNEL_RIGHT, volume, "breathing", FALSE, 0);
     } else {
         printf("No breathing sound to play\n");
     }
@@ -171,7 +171,7 @@ void pcmPlaySpecial(TransientSoundType soundId, unsigned char volume)
 {
     PcmData *sound = PcmConfig_getTransientSound(soundId);
     if (sound) {
-        pcmPlaySound(sound->data, sound->datalen, 0, CHANNEL_LEFT, volume, "transient", TRUE);  // XXX FIXME - one shot please!
+        pcmPlaySound(sound->data, sound->datalen, 0, CHANNEL_LEFT, volume, "transient", TRUE, 0);
     } else {
         printf("Transient sound type %d not found\n", (int)soundId);
     }
@@ -253,8 +253,8 @@ int pcmPlaybackInit()
 
 
 static void createPcmSoundMsg(PcmSoundMsg *sound, unsigned char *pcmSoundBuf, int pcmBufLen, 
-                              int periodMs, int channels, const char *name, unsigned char volume,
-                              int oneShot) 
+                              unsigned int periodMs, int channels, const char *name, unsigned char volume,
+                              int oneShot, int timeOffsetMs) 
 {
     if (sound) {
         sound->soundBuf = pcmSoundBuf;
@@ -262,14 +262,14 @@ static void createPcmSoundMsg(PcmSoundMsg *sound, unsigned char *pcmSoundBuf, in
         struct timespec currentTime;
         clock_gettime(CLOCK_MONOTONIC, &currentTime);
         
-        int playbackStartDeltaS  = periodMs/1000;
-        int playbackStartMs = periodMs - (playbackStartDeltaS * 1000);
+        int playbackStartDeltaS  = (periodMs - timeOffsetMs)/1000;
+        int playbackStartMs = (periodMs - timeOffsetMs) - (playbackStartDeltaS * 1000);
         int playbackStartNs = currentTime.tv_nsec + (playbackStartMs * 1000000);
         if (playbackStartNs < currentTime.tv_nsec) {  // do we ever actually wrap? check the resolution
             printf("create pcm sound wraps!");
             // XXX check can wrap happen
         } else if (playbackStartNs > 1000000000) {
-            printf("adding a second, subtracting ns\n");
+            //printf("adding a second, subtracting ns\n");
             playbackStartDeltaS++;
             playbackStartNs -= 1000000000;
         }
