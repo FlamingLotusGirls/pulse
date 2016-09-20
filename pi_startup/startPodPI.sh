@@ -32,6 +32,7 @@ $CYCLELOGS $OPCLOG
 $CYCLELOGS $LEDLOG
 
 # start BPM monitor. Need to background this.
+#stdbuf -oL $BPMMON -v4 -i$PODID -a$IP -p$PORT >& $BPMLOG &
 stdbuf -oL $BPMMON -i$PODID -a$IP -p$PORT >& $BPMLOG &
 
 # start OPC server

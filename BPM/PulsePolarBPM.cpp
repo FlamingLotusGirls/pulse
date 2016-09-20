@@ -81,7 +81,7 @@ int clock_gettime(int clk_id, struct timespec *t){
 #define GOIO_MAX_SIZE_DEVICE_NAME 128
 #endif
 
-static int verbose = 3;
+static int verbose = 2;
 static bool keepRunning = true; // this will keep the main loop running, can set to false in a signal handler. 
 
 const char *deviceDesc[8] = {"?", "?", "Go! Temp", "Go! Link", "Go! Motion", "?", "?", "Mini GC"};
@@ -261,7 +261,7 @@ if (verbose >= 2) { printf("PNM: %s maxima: %d computed interval %u\n", bs.dev_n
 void
 Help() {
 	fprintf(stderr, "PulsePolarBPM -v -iPODID\n"
-		" -v for verbose output\n"
+		" -vLEVEL for verbose output\n"
 		" -iPODID  where PODID is a small number indicating this pod\n\n"
 		" -aIPADDR  where IPADDR is an IPv4 dotted quad\n\n"
 		" -pPORT where PORT is the port number\n\n");
@@ -286,7 +286,7 @@ GetOpts(int argc, char* argv[], uint8_t* pod_id, char** ip, short* port)
 			break;
 			case 'i': *pod_id = atoi(argv[i]+2);
 			break;
-			case 'v': verbose++;
+			case 'v': verbose = atoi(argv[i]+2);
 			break;
 			default: fprintf(stderr, "unknown option '%c'\n", argv[i][1]);
 				Usage();
@@ -467,10 +467,16 @@ int main(int argc, char* argv[])
 		// MAIN LOOP - keep reading measurements forever ....
 		// ... or until we read a command to stop on the network ...
 
+                printf("Device1 is %d, device 2 is %d\n", hDevice, hDevice2);
+		
 		// yeah, it's forever at the moment. Defer restart to watchdog?
 		while (keepRunning) {
-			GoIOReadAndProcessOneMeasurement(hDevice,  bs1, sock, &si_tobrain, pod_id);
-			GoIOReadAndProcessOneMeasurement(hDevice2, bs2, sock, &si_tobrain, pod_id+1);
+		        if (hDevice) { 	
+                        	GoIOReadAndProcessOneMeasurement(hDevice,  bs1, sock, &si_tobrain, pod_id);
+			} 
+			if (hDevice2) {
+				GoIOReadAndProcessOneMeasurement(hDevice2, bs2, sock, &si_tobrain, pod_id+1);
+		 	}	
 			OSSleep(10); // 10 ms.
 
 			// TODO - check global signal handler flags to exit ...
