@@ -29,6 +29,7 @@ class OrbitalLayer(EffectLayer):
         r1 = 0.2 + ((math.sin(t_r1) + 1.0) / 2.0) / 2.0
         a1 = 3
         branches = [model.branch1Indices, model.branch2Indices, model.branch3Indices, model.branch4Indices]
+        frameIdx = 0
         for idx1, branchIndices in enumerate(branches):
             x_norm = float(idx1) / (len(branches) - 1)
             for idx2, i in enumerate(branchIndices):
@@ -37,7 +38,8 @@ class OrbitalLayer(EffectLayer):
                 value = 1.0 / (dist / r1) ** a1
                 pump = params.beat_amplitude()
                 value = (0.5 * pump) + (0.8 * value)
-                frame[i] = numpy.array(colorsys.hsv_to_rgb(self.hue, self.saturation, value))
+                frame[frameIdx] = numpy.array(colorsys.hsv_to_rgb(self.hue, self.saturation, value))
+                frameIdx = frameIdx + 1
 
     def increment(self, value, step):
         value += step
