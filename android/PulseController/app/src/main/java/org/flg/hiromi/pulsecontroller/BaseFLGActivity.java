@@ -137,30 +137,32 @@ public class BaseFLGActivity extends ActionBarActivity {
             beatChannel.registerListener(new HeartbeatService.HeartbeatListener() {
                 @Override
                 public void onBeat(Pulse pulse) {
-                    final ImageView icon = chooseIcon(pulse.getPod());
-                    if (icon != null) {
-                        try {
-                            icon.animate()
-                                    .setDuration(50)
-                                    .y(iy + 7)
-                                    .scaleX(.5f)
-                                    .scaleY(.5f)
-                                    .withEndAction(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            icon.animate()
-                                                    .setDuration(270)
-                                                    .y(iy)
-                                                    .scaleX(1)
-                                                    .scaleY(1);
-                                        }
-                                    });
-                        } catch (Error | Exception e) {
-                            onError(e);
+                    // Only do anything if this is a valid pulse - bpm needs to be non-zero, etc
+                    if (pulse.getInterval() > 0 && pulse.getBpm() > 0) {
+                        final ImageView icon = chooseIcon(pulse.getPod());
+                        if (icon != null) {
+                            try {
+                                icon.animate()
+                                        .setDuration(50)
+                                        .y(iy + 7)
+                                        .scaleX(.5f)
+                                        .scaleY(.5f)
+                                        .withEndAction(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                icon.animate()
+                                                        .setDuration(270)
+                                                        .y(iy)
+                                                        .scaleX(1)
+                                                        .scaleY(1);
+                                            }
+                                        });
+                            } catch (Error | Exception e) {
+                                onError(e);
+                            }
                         }
                     }
                 }
-
                 @Override
                 public void onError(Throwable t) {
                     onServiceError(name.flattenToShortString(), t);
