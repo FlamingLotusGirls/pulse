@@ -12,8 +12,8 @@
 
 #include "pcm_sound.h"
 
-//#define BROADCAST_ADDR "255.255.255.255"
-#define BROADCAST_ADDR "192.168.1.255"
+#define BROADCAST_ADDR "255.255.255.255"
+//#define BROADCAST_ADDR "192.168.1.255"
 // XXX - this needs to go into a header file!
 // XXX - see commands.py! 
 typedef enum Commands{
@@ -90,7 +90,7 @@ typedef struct __attribute((packed)) {
     uint8_t  receiver_id;         // which unit is this command for. 255 means 'this is for everyone'
     uint8_t  command_tracking_id; // id specific to this command, can be used for ACK/NACK if we build that 
     uint16_t command_id;          // command for the unit; do not respond to commands that you don't understand
-    int32_t  command_data;        // may or may not have anything in it, depending on the command
+    uint32_t command_data;        // may or may not have anything in it, depending on the command
 } PulseCommand_t;
 
 static uint8_t myId = 0; // Now read from command line. Caller reads config.
@@ -150,9 +150,9 @@ int main(int argc, char **argv)
     pcmPlaybackStop();
     */
     
-    hbSource = myId;
-    printf("*** Initial hearbeat source is %d\n", hbSource);
- 
+    // XXX TODO - read myId from config file
+    hbSource = 0; //myId;
+    
     hbSocket = initBroadcastSocketListener(HB_PORT);
     if (hbSocket < 0) {
         printf("Could not creating hb socket listener (error %d), aborting\n", hbSocket);
@@ -245,9 +245,8 @@ static void pulseAudioListen()
 //        printf("After select, rv is %d\n", rv);
 
         clock_gettime(CLOCK_MONOTONIC, &currentTime);
-        if ((currentTime.tv_sec - lastHeartBeatTime.tv_sec) >= 5 && !bFallback) {
+        if ((currentTime.tv_sec - lastHeartBeatTime.tv_sec) >= 5) {
             bFallback = TRUE;
-            printf("Did not get heartbeat, falling back to synthetic hb\n"); 
         }
         
         if (rv == 0) {
@@ -280,7 +279,6 @@ static void pulseAudioListen()
                     switch ((Commands_t)(command.command_id)) {
                         case USE_HEARTBEAT_SOURCE:
                             hbSource = (uint8_t)(command.command_data);
-                            printf("Switching to heartbeat source %d\n", hbSource); 
                             break;
                         case ARP:
                             {
@@ -295,9 +293,8 @@ static void pulseAudioListen()
                             }
                             break;
                         case HEARTBEAT_OFFSET:
-                            hbOffset = (int16_t)command.command_data;
-                            printf("Heartbeat offset is now %d\n", hbOffset);
-                            break; 
+                            hbOffset = (uint16_t)command.command_data;
+                            
                         default:
                             printf("Received unknown command %d\n", command.command_id);
                     }
@@ -315,8 +312,8 @@ static void pulseAudioListen()
                 printf("WARNING: HB socket: Receiving fewer bytes than expected, ignoring\n"); // Do we want/need to do anything with this?
             } else {
                 // a real, live heartbeat!
-                //printf("Received data on hb socket, id is %d, bpm is %f\n", hbData.pod_id, hbData.est_BPM);
-                if (hbData.est_BPM != 0 && (hbData.pod_id == hbSource || (bFallback && hbData.pod_id == 0))) { // use synthetic heartbeat source if in fallback mode
+                //printf("Received data on hb socket, id is %d\n", hbData.pod_id);
+                if (hbData.pod_id == hbSource || (bFallback && hbData.pod_id == 0)) { // use synthetic heartbeat source if in fallback mode
                     uint32_t hbRate = hbData.est_BPM; // yes, I am rounding here.
                     if (hbRate < 30 || hbRate > 200) { 
                         printf("Heartbeat rate %d is out of bounds\n", hbRate);
@@ -327,7 +324,6 @@ static void pulseAudioListen()
                     }
                     pcmPlayHeartBeat(hbRate, 128, hbData.elapsed_ms + hbOffset); // XXX the offset might end up being a minus - check the signs!
                     if (hbData.pod_id == hbSource) {
-                        if (bFallback) printf("Removing fallback, got valid heartbeat with source %d\n", hbData.pod_id); 
                         bFallback = FALSE;
                         clock_gettime(CLOCK_MONOTONIC, &lastHeartBeatTime);
                     }
