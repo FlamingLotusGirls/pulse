@@ -99,7 +99,7 @@ static int m_localSoundRightChannelHasData = 0;
 
 
 // initialization
-static void createPcmSoundMsg(PcmSoundMsg *soundMsg, unsigned char *pcmSoundBuf, int pcmBufLen, unsigned int periodMs, int channels, const char *name, unsigned char volume, int oneShot, int timeOffset); 
+static void createPcmSoundMsg(PcmSoundMsg *soundMsg, unsigned char *pcmSoundBuf, unsigned int pcmBufLen, int periodMs, int channels, const char *name, unsigned char volume, int oneShot, unsigned int timeOffset); 
 static int setPcmParams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwParams, snd_pcm_sw_params_t *swParams); 
 static int setHwParams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwParams);
 static int setSwParams(snd_pcm_t *handle, snd_pcm_sw_params_t *swParams);
@@ -122,7 +122,7 @@ static void fillLocalBufferWithSound(unsigned char volume, int channel, unsigned
 static void resetNextSoundTime(PulseSound *sound, int missingFrames);
 static int soundFillLocalBuffer(PulseSound *sound);
 
-int pcmPlaySound(unsigned char* pcmSoundBuf, int pcmBufLen, unsigned int periodMs, int channels, unsigned char volume, const char *name, int oneShot, int timeOffset)
+int pcmPlaySound(unsigned char* pcmSoundBuf, int pcmBufLen, unsigned int periodMs, int channels, unsigned char volume, const char *name, int oneShot, unsigned int timeOffset)
 {
     PcmSoundMsg newSound; 
     createPcmSoundMsg(&newSound, pcmSoundBuf, pcmBufLen, periodMs, channels, name, volume, oneShot, timeOffset);
@@ -254,7 +254,7 @@ int pcmPlaybackInit()
 
 static void createPcmSoundMsg(PcmSoundMsg *sound, unsigned char *pcmSoundBuf, int pcmBufLen, 
                               unsigned int periodMs, int channels, const char *name, unsigned char volume,
-                              int oneShot, int timeOffsetMs) 
+                              int oneShot, unsigned int timeOffsetMs) 
 {
     if (sound) {
         sound->soundBuf = pcmSoundBuf;
