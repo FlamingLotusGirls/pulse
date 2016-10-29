@@ -13,3 +13,5 @@ class Commands():
     AORTA_1              = 12
     AORTA_2              = 13
     AORTA_3              = 14
+    HEARTBEAT_OFFSET     = 15
+    ARP                  = 16

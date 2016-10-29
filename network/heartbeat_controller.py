@@ -2,14 +2,21 @@
 # Python for controlling the heart fire effects. Will do heartbeat, other effects
 # as directed.
 
-# listen on broadcast receiver
+# The code listens on the broadcast receiver for heartbeats and commands. It has an internal
+# sense of who it is (gReceiverId) and which heartbeat it is currently listening for 
+# (gCurrentHeartBeatSource). If it does not receive a heartbeat within some number of 
+# seconds (currently 5, set by WAIT_HB_SECONDS) it switches over to responding to the 
+# synthetic heartbeat, at least until it hears a heartbeat on its preferred channel. 
+# The code will also set up the 'next' heartbeat based on the previous heartbeat interval
+# when it acts on the one at the top of the queue - this allows us to compensate
+# for missed heartbeats. If a real heartbeat comes in, the system will removed the 
+# generated heartbeat from the event queue and replace it with the real hearbeat
+
 # send out heartbeat poofs (and color poofs, and sparkle wtfs
 # do special effects - chase, all poof, alterna-poof, throbbing poof
 
 # XXX - TODO: Test serial connects, disconnects, reconnects...
 # XXX - TODO: Better cleanup
-# XXX - TODO: Auto-start
-# XXX - TODO: Schedule next heartbeat when previous one clears (allows us to miss heartbeats)
 # XXX - TODO: Put common #defines in a shared piece of code
 
 import datetime
@@ -49,9 +56,9 @@ WAIT_HB_SECONDS = 5  # Number of seconds to wait after not getting a valid heart
 
 # Effect definitions
 effects = {HEARTBEAT:[[1,1,0], [2,1,100], [1,0,200], [2,0,300]],
-           CHASE:    [[6,1,0], [4,1,400], [5,1,800], [6,0,400], [4,0,800], [5,0,1200]],
-           ALLPOOF:  [[6,1,0], [4,1,0],   [5,1, 0],  [6,0,700], [4,0,700], [5,0,700]],
-           POOF_1:   [[6,1,0], [6,0,1000]],
+           CHASE:    [[3,1,0], [4,1,400], [5,1,800], [3,0,400], [4,0,800], [5,0,1200]],
+           ALLPOOF:  [[3,1,0], [4,1,0],   [5,1, 0],  [3,0,700], [4,0,700], [5,0,700]],
+           POOF_1:   [[3,1,0], [3,0,1000]],
            POOF_2:   [[4,1,0], [4,0,1000]],
            POOF_3:   [[5,1,0], [5,0,1000]]}
 
@@ -62,7 +69,7 @@ commandListener   = None
 ser = None #XXX need to handle serial disconnect, restart
 eventQueue = None # NB - don't need a real queue here. Only one thread
 allowHeartBeats = True
-currentHeartBeatSource = 0
+gCurrentHeartBeatSource = 0
 ser = None
 previousHeartBeatTime = None
 gReceiverId = 0
@@ -73,10 +80,10 @@ gNextHeartBeatStartTime     = 0
 gNextNextHeartBeatStartTime = 0
 gUseSyntheticAsBackup = False
 gLastHbReceiveTime = datetime.datetime.now()
+gGlobalBeatOffsetMs = 0
 
 
 gGlobalEffectId    = 0
-
 
 
 # XXX - since we're using a list, we probably want to be pulling off the end of the list
@@ -114,33 +121,29 @@ def handleHeartBeatData(heartBeatData):
     
     global gUseSyntheticAsBackup
     global gLastHbReceiveTime
+    global gGlobalBeatOffsetMs
     
     timeNow = datetime.datetime.now()
     
     if (timeNow - gLastHbReceiveTime > datetime.timedelta(seconds = WAIT_HB_SECONDS)):
-        if not gUseSyntheticAsBackup: 
-            print "Swap to synthetic source" 
+        if not gUseSyntheticAsBackup:
+            print "Swap to synthetic source"
             gUseSyntheticAsBackup = True
+        
     pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
     if bpmApprox != 0:
         print "heartbeat pod_id is %d bpm is %d" % (pod_id, bpmApprox)
-    if ((pod_id is currentHeartBeatSource and allowHeartBeats and bpmApprox != 0 and beatIntervalMs > 0) or
-       (gUseSyntheticAsBackup and pod_id is 0)):
-        if pod_id is currentHeartBeatSource and pod_id != 0:
+    if ((bpmApprox != 0 and beatIntervalMs > 0) and ((pod_id is gCurrentHeartBeatSource and allowHeartBeats) or
+       (gUseSyntheticAsBackup and pod_id is 0))):
+        if pod_id is gCurrentHeartBeatSource and pod_id != 0:
             gUseSyntheticAsBackup = False
-            print "valid heartbeat on source ", pod_id 
             gLastHbReceiveTime = timeNow
 #        stopHeartBeat() # XXX should allow the last bit of the heart beat to finish, if we're in the middle
 
-        if beatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...
-            heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
+        if beatOffsetMs - gGlobalBeatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...
+            heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs - gGlobalBeatOffsetMs))
         else:
-            heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - (beatOffsetMs % beatIntervalMs))
-
-        #if previousHeartBeatTime:
-        #    heartBeatStartTime = previousHeartBeatTime + datetime.timedelta(milliseconds = beatIntervalMs)
-        #else:
-        #    heartBeatStartTime = datetime.datetime.now()
+            heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - ((beatOffsetMs - gGlobalBeatOffsetMs) % beatIntervalMs))
 
         # schedule next heart beat
         instanceId = loadEffect(HEARTBEAT, heartBeatStartTime, beatIntervalMs)
@@ -149,32 +152,12 @@ def handleHeartBeatData(heartBeatData):
         # if there's already a next heart beat, and the start time is *greater than* the incoming time, kill it
         helper_addHBReference(instanceId, heartBeatStartTime)
 
-#        if (gNextHeartBeat != None && gNextHeartBeatStartTime > heartBeatStartTime):
-#            # replace gNextHeartBeat
-#            removeEffectInstance(gNextHeartBeat)
-#            gNextHeartBeat = instanceId
-#            gNextHeartBeatStartTime = heartBeatStartTime
-#            # nuke NextNextHeartBeat
-#            removeEffectInstance(gNextNextHeartBeat)
-#            gNextNextHeartBeat = None
-#        else:
-#            # replaceNextNextHeartBeat
-#            if gNextNextHeartBeat != None:
-#                removeEffectInstance(gNextNextHeartBeat)
-#            gNextNextHeartBeat = instanceId
-#            gNextNextHeartBeatStartTime = heartBeatStartTime
-
-
-      #  if heartBeatStartTime <= datetime.datetime.now():
-      #      print "1"
-      #      loadEffect(HEARTBEAT, datetime.datetime.now(), beatIntervalMs)
-      #  else:
-      #      print "2 ", heartBeatStartTime
-      #      loadEffect(HEARTBEAT, heartBeatStartTime, beatIntervalMs)
-
         sortEventQueue()
 
 def helper_addHBReference(instanceId, heartBeatStartTime):
+    ''' Modify internal structures to set up playing of new heartbeat
+        Depending on the timing and what is already set up, we either
+        replace gNextHeartBeat, or gNextNextHeartBeat '''
     global gNextHeartBeat
     global gNextHeartBeatStartTime
     global gNextNextHeartBeat
@@ -206,7 +189,9 @@ def sortEventQueue():
     eventQueue.sort(key=itemgetter("time"), reverse=True)
 
 def handleCommandData(commandData):
-    global currentHeartBeatSource
+    global gCurrentHeartBeatSource
+    global allowHeartBeats
+    global gGlobalBeatOffsetMs
     receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
     print "receiver id is ", receiverId
     print "command id is ", commandId
@@ -239,14 +224,14 @@ def handleCommandData(commandData):
             allowHeartBeats = True
         elif commandId is Commands.USE_HEARTBEAT_SOURCE:
             print "Command use heartbeat source received, source is", data
-#            dummy1, dummy2, dummy3, pod_id = struct.unpack("=BBHL", commandData)
-            if currentHeartBeatSource != data:
+            if gCurrentHeartBeatSource != data:
                 removeEffect(HEARTBEAT)
-                currentHeartBeatSource = data
+                gCurrentHeartBeatSource = data
+        elif commandId is Commands.HEARTBEAT_OFFSET:
+            gGlobalBeatOffsetMs = data;
 
         sortEventQueue()
 
-    # could have a define effect as well... XXX MAYBE
 
 def removeEffect(effectId):
     print "removing effect ", effectId

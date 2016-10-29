@@ -54,7 +54,7 @@ class HeartBeatSender():
             self.heartBeatId  = heartBeatId
             self.heartBeatSequenceId = 0
             self.cmdTrackingId = 0
-            self.socket = createBroadcastSender()
+            self.senderSocket = createBroadcastSender()
             self.bps = -1;
         
         def run(self):
@@ -102,7 +102,7 @@ class HeartBeatSender():
             self.heartBeatSequenceId += 1
             if (self.heartBeatSequenceId >= 256) :
                 self.heartBeatSequenceId = 0
-            self.socket.sendto(heartBeatData, (BROADCAST_ADDR, HEARTBEAT_PORT)) # haz exception XXX?
+            self.senderSocket.sendto(heartBeatData, (BROADCAST_ADDR, HEARTBEAT_PORT)) # haz exception XXX?
 
 # XXX utility function
 def createBroadcastSender(ttl=MULTICAST_TTL):
@@ -111,19 +111,40 @@ def createBroadcastSender(ttl=MULTICAST_TTL):
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 #    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
     return sock
+    
+def createBroadcastListener(port, addr=BROADCAST_ADDR):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    # Set some options to make it multicast-friendly
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    except AttributeError:
+        pass # Some systems don't support SO_REUSEPORT
+
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
         
 class CommandSender():
     ''' Sends out commands on the wire '''
     def __init__(self):
         ''' Constructor. '''
-        self.socket = createBroadcastSender()
+        self.senderSocket = createBroadcastSender()
 
     def sendCommand(self, unitId, command, data):
         commandData = struct.pack("=BBHL", unitId, self.cmdTrackingId, command_id, data) # XXX for the moment, no extra data associated with command  XXX WTF IS THE COMMAND???
         self.cmdTrackingId += 1
         if (self.cmdTrackingId >= 256):
             self.cmdTrackingId = 0
-        self.socket.sendto(commandData, (BROADCAST_ADDR, COMMAND_PORT))
+        self.senderSocket.sendto(commandData, (BROADCAST_ADDR, COMMAND_PORT))
+        
+class CommandListener():
+    ''' Listens for commands on the wire '''
+    def __init__(self):
+        ''' Constructor. '''
+        self.listenerSocket = createBroadcastListener(COMMAND_PORT)
+        
+
         
         
 class HeartBeatHttpHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -201,20 +222,56 @@ class HeartBeatHttpHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_response(200)
         else:
             self.send_response(404)
-        
-
-if __name__ == '__main__':
+            
+def handleCommandData(commandData):
+    receiverId, commandTrackingId, commandId, data = struct.unpack("=BBHL", commandData)
+    if receiverId is gReceiverId  or receiverId is ALL_LISTENERS: # it's for us!
+        if commandId is Command.STOP_ALL:
+            pass # should stop synthetic heartbeat
+        elif commandId is Command.STOP_HEARTBEAT:
+            pass # should stop synthetic heartbeat
+        elif commandId is Command.START_HEARTBEAT:
+            print "Received heartbeat start command, frequency", data
+            try:
+                heartBeatSender.setHeartBeatFrequency(int(data))
+            except ValueError:
+                print "Heartbeat frequency non-integer"
+            
+def main():
     running = True
-    PORT = 8666
+#    PORT = 8666
     
     heartBeatSender = HeartBeatSender()
-    commandSender   = CommandSender()
-    httpd = BaseHTTPServer.HTTPServer(("localhost", PORT), HeartBeatHttpHandler)
-    time.sleep(5)
+#    commandSender   = CommandSender()
+    commandListener = createBroadcastListener(COMMAND_PORT)
+#    httpd = BaseHTTPServer.HTTPServer(("localhost", PORT), HeartBeatHttpHandler)
+#    time.sleep(5)
     heartBeatSender.setHeartBeatFrequency(60)
+    
+    try:
+        while (running):
+            readfds = [commandListener]
+            inputReady, outputReady, exceptReady = select(readfds, [], [])
+            if inputReady:
+                for fd in inputReady:
+                    if fd is commandListener:
+                        commandData = fd.recv(1024)
+                    handleCommandData(commandData)
+
+    except KeyboardInterrupt: # need something besides a keyboard interrupt to stop? or not?XXX
+        print "Keyboard interrupt detected, terminating"
+        running = False
+        heartBeatListener.close()
+        commandListener.close()
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         print "Keyboard interrupt detected, terminating"
         running = False
     httpd.server_close()
+        
+
+if __name__ == '__main__':
+    main()
+    

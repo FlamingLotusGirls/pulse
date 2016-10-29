@@ -26,7 +26,8 @@ running              = True
 
 gReceiverId = 0 # We are the synthetic heartbeat. 
 
-BROADCAST_ADDR ="192.168.1.255"
+#BROADCAST_ADDR ="192.168.1.255"
+BROADCAST_ADDR ="255.255.255.255"
 HEARTBEAT_PORT = 5000
 COMMAND_PORT   = 5001
 MULTICAST_TTL  = 4
@@ -112,7 +113,10 @@ class HeartBeatSender():
             self.heartBeatSequenceId += 1
             if (self.heartBeatSequenceId >= 256) :
                 self.heartBeatSequenceId = 0
-            self.senderSocket.sendto(heartBeatData, (BROADCAST_ADDR, HEARTBEAT_PORT)) # haz exception XXX?
+            try: 
+                self.senderSocket.sendto(heartBeatData, (BROADCAST_ADDR, HEARTBEAT_PORT)) # haz exception XXX?
+            except socket.error:
+                print "Error on socket, not sending heartbeat"
 
 # XXX utility function
 def createBroadcastSender(ttl=MULTICAST_TTL):
@@ -178,7 +182,7 @@ def main():
     
     heartBeatSender = HeartBeatSender()
     commandListener = createBroadcastListener(COMMAND_PORT)
-    heartBeatSender.setHeartBeatFrequency(60)
+    heartBeatSender.setHeartBeatFrequency(45)
     
     try:
         while (running):
