@@ -14,7 +14,7 @@ PORT=5000
 
 HOME=/home/flaming
 BPMMON=$HOME/pulse/BPM/PulsePolarBPM
-SOUND=$HOME/pulse/audio/sound_test
+SOUND=$HOME/pulse/audio/pulse_sound
 OPC_SERVER=$HOME/fadecandy/bin/fcserver-rpi
 OPC_CONFIG=$HOME/pulse/pi_startup/pulse_fc-config.json
 POD_LED=$HOME/pulse/bin/pod.py
@@ -32,7 +32,6 @@ $CYCLELOGS $OPCLOG
 $CYCLELOGS $LEDLOG
 
 # start BPM monitor. Need to background this.
-#stdbuf -oL $BPMMON -v4 -i$PODID -a$IP -p$PORT >& $BPMLOG &
 stdbuf -oL $BPMMON -i$PODID -a$IP -p$PORT >& $BPMLOG &
 
 # start OPC server
