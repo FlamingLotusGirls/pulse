@@ -44,6 +44,8 @@ class PulseModel(Model):
         self.branch2Indices = self._getBranch2Indices()
         self.branch3Indices = self._getBranch3Indices()
         self.branch4Indices = self._getBranch4Indices()
+        
+        print "number of branch1 indices is ", len(self._getBranch1Indices())
 
         # Axis-aligned bounding box, for understanding the extent of the coordinate space.
         # The minimum and maximum are 3-vectors in the same coordinate space as self.nodes.

@@ -150,7 +150,7 @@ class PulseListenerThread(Thread):
         pod_id, sequenceId, beatIntervalMs, beatOffsetMs, bpmApprox, timestamp = struct.unpack("=BBHLfL", heartBeatData)
         print "heartbeat pod_id is %d, looking for %d, bpm is %d" % (pod_id, self.currentHeartBeatSource, bpmApprox) 
         if pod_id is self.currentHeartBeatSource and self.allowHeartBeats and beatIntervalMs > 0:
-            print "heartbeat we are interested in" 
+            #print "heartbeat we are interested in" 
             if beatOffsetMs < beatIntervalMs: # if we haven't already missed the 'next' beat...
                 heartBeatStartTime = datetime.datetime.now() + datetime.timedelta(milliseconds = beatIntervalMs - beatOffsetMs)
             else:
@@ -164,9 +164,9 @@ class PulseListenerThread(Thread):
                 self.nextNextHeartBeatStartTime = None
  
             self.bps = bpmApprox/60
-            print "Next heart beat time is ", self.nextHeartBeatStartTime
-            print "Last heart beat time was ", self.lastHeartBeatStartTime
-            print "Next next heart beat time is ", self.nextNextHeartBeatStartTime
+            #print "Next heart beat time is ", self.nextHeartBeatStartTime
+            #print "Last heart beat time was ", self.lastHeartBeatStartTime
+            #print "Next next heart beat time is ", self.nextNextHeartBeatStartTime
  
     def handleCommandData(self, commandData):
         # Called from the HeartBeatCommandThread
