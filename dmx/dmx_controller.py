@@ -49,7 +49,18 @@ ALL_BLUE_CHANNELS = map(lambda x: x+(DMX_BLUE_CHANNEL-DMX_RED_CHANNEL), ALL_RED_
 ALL_WHITE_CHANNELS = map(lambda x: x+(DMX_WHITE_CHANNEL-DMX_RED_CHANNEL), ALL_RED_CHANNELS)
 ALL_COLOR_CHANNELS = ALL_RED_CHANNELS + ALL_GREEN_CHANNELS + ALL_BLUE_CHANNELS
 
-#running = True
+# channel offset from dmx device id. For some completely unknown reason, pysimpledmx
+# starts the counting at channel 2 rather than channel 1.
+RED_OFFSET    = 1
+GREEN_OFFSET  = 2
+BLUE_OFFSET   = 3
+WHITE_OFFSET  = 4
+AMBER_OFFSET  = 5
+UV_OFFSET     = 6
+DIMMER_OFFSET = 7
+STROBE_OFFSET = 8
+
+
 allowHeartBeats = True
 allowSingleColor = True
 allowStrobing = True
@@ -58,9 +69,18 @@ dmx = None
 eventQueue = None
 gReceiverId = 3
 
+# Named effects...
 HEARTBEAT = 1
 STROBE    = 2
 SINGLE    = 3
+FADEUP_RED = 4
+
+FRAMES_PER_SECOND = 12
+
+# effect element types
+SET  = 1
+FADE = 2
+STROBE = 3 
 
 WAIT_HB_SECONDS = 5
 
@@ -74,12 +94,22 @@ gUseSyntheticAsBackup = False
 gLastHbReceiveTime = datetime.datetime.now()
 gGlobalBeatOffsetMs = 0
 
-gGlobalEffectId = 0
+gGlobalEffectInstance = 0
 
 # Effects format ---  EFFECT:[[channels], intensity, duration from start of heartbeat(ms)]
-effects = {HEARTBEAT:[[1,100,100], [2,250,150], [1,100,225], [2,180,300], [1,100,350]],
-            STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
+# NB - channel is not currently being used in the heartbeat. It just does all red channels.
+#effects = {HEARTBEAT:[[1,100,0], [2,250,50], [1,100,125], [2,180,200], [1,100,250]],
+#effects = {HEARTBEAT:[[1,100,0], [1,250,125], [1,100,200], [1,180,275], [1,100,325]],
+#effects = {HEARTBEAT:[[1,250,0], [1,100,100], [1,180,225], [1,100,275]],
+#            STROBE:    [[3,1,0], [4,1,100], [5,1,200], [3,0,300], [4,0,400], [5,0,500]]}
 
+effects = {HEARTBEAT:[[SET,[1],[255,255,0],0], [SET,[1],[100,100,0],100], [SET,[1],[180,180,0],225], [SET,[1],[100,100,0],275]],
+            STROBE:    [[SET,3,1,0], [SET,4,1,100], [SET,5,1,200], [SET,3,0,300], [SET,4,0,400], [SET,5,0,500]]}
+            
+# nb - should be nice to have a sense of the current color, and then fade from current to 
+# new. Current color could be specified by [], the empty array
+
+#{FADEUP_RED: [[FADE, 1, [0,0,0], [255,0,0], 0, 250]]}
 # {HEARTBEAT:[[1,100,100], [2,250,200], [1,80,300], [2,180,400], [1,100,500]],
 
 # {HEARTBEAT:[[1,100,100], [2,250,150], [1,80,275], [2,180,400], [1,100,450]],
@@ -178,7 +208,7 @@ def processNextHeartBeat(instanceId, heartBeatStartTime):
         gNextNextHeartBeatStartTime = heartBeatStartTime
 
     #print "Setting all white channels OFF"
-    dmx.setChannel(ALL_WHITE_CHANNELS, 0)
+    #dmx.setChannel(ALL_WHITE_CHANNELS, 0)
 
 
 def handleCommandData(commandData):
@@ -257,23 +287,146 @@ def removeEffectInstance(instanceId):
     if not instanceId:
         return
 
-    eventQueue[:] = [e for e in eventQueue if (e.get("globalId") != instanceId)]
+    eventQueue[:] = [e for e in eventQueue if (e.get("globalInstance") != instanceId)]
 
 
 def removeAllEffects():
     global eventQueue
     eventQueue = []
+    
+def eventSectionGetTime(eventSection, startTime):
+    
+    eventTime = 0
+    # switch on event section type
+    if eventSection[0] == SET:
+        eventTime = eventSection[3]
+    elif eventSection[0] == FADE:
+        eventTime = eventSection[4]
+    elif eventSection[0] == STROBE:
+        eventTime = eventSection[3]
+    else:
+        pass
+        
+    return startTime + datetime.timedelta(milliseconds = eventTime)
+    
+def eventSectionGetStartColor(eventSection):
+    ''' return the start color of the event, as a triple with range 0...255 '''
+    if eventSection[0] == SET or eventSection[0] == FADE:
+        if len(eventSection) >= 3 and len(eventSection[2]) >= 3:
+            return eventSection[2][0], eventSection[2][1], eventSection[2][2]
+        else:
+            return 0,0,0
+    else:
+        return 0,0,0
+
+def eventSectionGetEndColor(eventSection):
+    ''' return the end color of the event, as a triple with range 0...255. 
+    If the section has no end color, will return the start color '''
+    if eventSection[0] == FADE:
+        if len(eventSection) >= 4 and len(eventSection[3]) >= 3:
+            return eventSection[3][0], eventSection[3][1], eventSection[3][2]
+        else:
+            return 0,0,0
+    elif eventSection[0] == SET:
+        if len(eventSection) >= 3 and len(eventSection[2]) >= 3:
+            return eventSection[2][0], eventSection[2][1], eventSection[2][2]
+        else:
+            return 0,0,0
+    else:
+        return 0,0,0
 
 def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need is heartbeat duration
     ''' Queue up an effect. There can be only a single one-shot effect in the 
         queue at a time, but there can be multiple repeating effects (Although in practice,
         the only repeating effect is the heartbeat) '''
-    global gGlobalEffectId
+    global gGlobalEffectInstance
     
     if repeatMs != 0 and effectId != HEARTBEAT:
         removeEffect(effectId)
 
-    firstEffectId = gGlobalEffectId
+    effectInstance = gGlobalEffectInstance
+
+    index = 0
+    nEvents = len(effects[effectId])
+    for eventSection in effects[effectId]:
+        event = {}
+        if eventSection[0] == SET:
+            red, green, blue = eventSectionGetStartColor(eventSection)
+            event["effectId"]       = effectId
+            event["globalInstance"] = effectInstance
+            event["time"] = eventSectionGetTime(eventSection, startTime)
+            event["color"] = [red, green, blue]
+            event["devices"] = eventSection[1]
+
+            if repeatMs != 0 and index >= nEvents-1:  # put repeat flag only on last event in effect
+                event["repeatMs"] = repeatMs
+                event["nextStartTime"] = startTime + datetime.timedelta(milliseconds = repeatMs)
+            else:
+                event["repeatMs"] = 0
+
+            eventQueue.append(event)
+        elif eventSection[0] == FADE: # creating individual simple events for the fade
+            eventStartTime      = eventSectionGetTime(eventSection, startTime)
+            eventEndTime        = eventStartTime + datetime.timedelta(milliseconds = eventSection[5])
+            nFrames = (eventEndTime - eventStartTime).getSeconds()*FRAMES_PER_SECOND
+            # we're going to use a logarithmic fade, because someone on the interwebs says it's more pleasing
+            startR, startG, startB = eventSectionGetStartColor(eventSection)
+            endR, endG, endB       = eventSectionGetEndColor(eventSection)
+            startR = math.log(startR)
+            endR   = math.log(endR)
+            rangeR = startR - endR
+            deltaR = rangeR/nFrame
+            red = startR
+            
+            startG = math.log(startG)
+            endG   = math.log(endG)
+            rangeG= startG - endG
+            deltaG = rangeG/nFrames
+            green = startG
+            
+            startB = math.log(startB)
+            endB   = math.log(endB)
+            rangeB = startB - endB
+            deltaB = rangeB/nFrames
+            blue = startB
+            
+            for i in range(nFrames+1):
+                event = {}
+                red   = math.exp(red)
+                green = math.exp(green)
+                blue  = math.exp(blue)
+                event["effectId"]       = effectId
+                event["globalInstance"] = effectInstance
+                event["time"]  = eventStartTime + datetime.timedelta(seconds = (1/FRAMES_PER_SECOND * i))
+                event["color"] = [max(min(red,255),0), max(min(green,255),0), max(min(blue,255),0)]
+                event["devices"] = eventSection[1]
+                if repeatMs != 0 and index >= nEvents-1 and i >= nFrames + 1 :  # put repeat flag only on last event in effect
+                    event["repeatMs"] = repeatMs
+                    event["nextStartTime"] = startTime + datetime.timedelta(milliseconds = repeatMs)
+                else:
+                    event["repeatMs"] = 0
+                eventQueue.append(event)
+                red   += deltaR
+                blue  += deltaB
+                green += deltaG
+        elif eventSection[0] == STROBE: 
+            pass
+            
+        index += 1
+
+    gGlobalEffectInstance += 1
+    return effectInstance
+
+def loadEffect_old(effectId, startTime, repeatMs=0): # TODO: The information we need is heartbeat duration
+    ''' Queue up an effect. There can be only a single one-shot effect in the 
+        queue at a time, but there can be multiple repeating effects (Although in practice,
+        the only repeating effect is the heartbeat) '''
+    global gGlobalEffectInstance
+    
+    if repeatMs != 0 and effectId != HEARTBEAT:
+        removeEffect(effectId)
+
+    effectInstance = gGlobalEffectInstance
 
     if effectId is HEARTBEAT:
         index = 0
@@ -281,7 +434,7 @@ def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need
         for eventSection in effects[effectId]:
             event = {}
             event["effectId"] = effectId
-            event["globalId"] = gGlobalEffectId
+            event["globalInstance"] = gGlobalEffectInstance
             event["sectionIndex"] = index
             index += 1
 
@@ -299,15 +452,17 @@ def loadEffect(effectId, startTime, repeatMs=0): # TODO: The information we need
                 # TODO: Still need to figure out times for each event
                 event["time"] = startTime + datetime.timedelta(milliseconds = 1000)
             eventQueue.append(event)
-        gGlobalEffectId += 1
     elif effectId is STROBE:
         event = {}
         event["effectId"] = effectId
         event["time"]     = startTime
         event["repeatMs"] = repeatMs
+        event["globalInstance"] = gGlobalEffectInstance
         eventQueue.append(event)
 
-    return firstEffectId
+    gGlobalEffectInstance += 1
+
+    return effectInstance
 
 
 def sortEventQueue():
@@ -347,14 +502,16 @@ def renderEvents():
     if currentEvents:
         if not dmx:
             dmx = initDMX()
-        for event in currentEvents:
-            if event["effectId"] == HEARTBEAT:
-                processHeartbeat(event)
-            elif event["effectId"] is STROBE:
-                processStrobe(event)
+            if not dmx:
+                return
                 
-            if event["globalId"] == gNextHeartBeat:
-                gCurrentHeartBeat = event["globalId"]
+        for event in currentEvents:
+            dmx.setChannel(map(lambda x: (x-1)*DMX_CHANNEL_COUNT + 1 + RED_OFFSET,   event["devices"]), event["color"][0])
+            dmx.setChannel(map(lambda x: (x-1)*DMX_CHANNEL_COUNT + 1 + GREEN_OFFSET, event["devices"]), event["color"][1])
+            dmx.setChannel(map(lambda x: (x-1)*DMX_CHANNEL_COUNT + 1 + BLUE_OFFSET,  event["devices"]), event["color"][2])
+                
+            if event["globalInstance"] == gNextHeartBeat:
+                gCurrentHeartBeat = event["globalInstance"]
                 gNextHeartBeat = gNextNextHeartBeat
                 gNextHeartBeatStartTime = gNextNextHeartBeatStartTime
                 gNextNextHeartBeat = None
@@ -372,7 +529,9 @@ def renderEvents():
                     #print "Auto schedule instance ", instanceId
                     sortEventQueue()            
                     
-                    
+        dmx.render()
+        
+        
 def processHeartbeat(event):
     global dmx
     if not allowHeartBeats:
@@ -384,6 +543,7 @@ def processHeartbeat(event):
     dmx.setChannel(ALL_RED_CHANNELS, heartbeatSection[1], autorender=True)
 
 def processStrobe(event):
+    ''' Randomly sets colors, repeats after repeat ms '''
     colorsOn = []
     colorsOff = []
 
@@ -441,9 +601,9 @@ def main(args):
                     print "no gNextHeartBeat"
                 print "Setting all red channels OFF"
                 dmx.setChannel(ALL_RED_CHANNELS, 0)
-                if allowSingleColor:
-                    print "No heartbeat - Setting all white channels ON, autorender"
-                    dmx.setChannel(ALL_WHITE_CHANNELS, 255, autorender = True)
+                #if allowSingleColor:
+                #    print "No heartbeat - Setting all white channels ON, autorender"
+                #    dmx.setChannel(ALL_WHITE_CHANNELS, 255, autorender = True)
 
                 inputReady, outputReady, exceptReady = select(readfds, [], [])
             else:
